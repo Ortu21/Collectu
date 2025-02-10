@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "YDCj7nGRvsb14hRbcvqcmGD6AH4RmcJx1HejhCMsmRs=",
+  "Source": "CardCollectionAPI",
+  "BasePath": "_content/CardCollectionAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
