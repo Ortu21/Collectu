@@ -150,3 +150,6 @@ S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.pdb
 S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.genruntimeconfig.cache
 S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\ref\CardCollectionAPI.dll
 S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.sourcelink.json
+S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\firebase-config.json
+S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\package-lock.json
+S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\package.json
