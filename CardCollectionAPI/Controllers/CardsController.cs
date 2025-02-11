@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CardCollectionAPI.Services;
 
@@ -6,7 +5,7 @@ namespace CardCollectionAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Solo utenti autenticati possono accedere
+
     public class PokemonCardController : ControllerBase
     {
         private readonly PokemonCardService _pokemonCardService;
