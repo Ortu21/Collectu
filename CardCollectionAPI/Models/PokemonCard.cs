@@ -26,6 +26,6 @@ namespace CardCollectionAPI.Models
         public List<PokemonWeakness> Weaknesses { get; set; } = [];
         public List<PokemonResistance> Resistances { get; set; } = [];
 
-        public required PokemonPrice Price { get; set; } // Prezzi della carta
+        public PokemonPrice? Price { get; set; } // Prezzi della carta
     }
 }

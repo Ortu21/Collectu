@@ -18,15 +18,18 @@ namespace CardCollectionAPI.Services
             _httpClient = httpClient;
             _dbContext = dbContext;
             _logger = logger;
+
+            if (!_httpClient.DefaultRequestHeaders.Contains("X-Api-Key"))
+            {
+                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
+            }
         }
 
         public async Task ImportPokemonCardsAsync()
         {
             try
             {
-                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
                 var response = await _httpClient.GetAsync(ApiUrl);
-
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogError($"Errore API: {response.StatusCode}");
@@ -39,21 +42,15 @@ namespace CardCollectionAPI.Services
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (apiResponse?.Data == null) return;
+                if (apiResponse?.Data == null)
+                {
+                    _logger.LogWarning("Nessun dato ricevuto dall'API.");
+                    return;
+                }
 
                 foreach (var card in apiResponse.Data)
                 {
-                    var existingCard = await _dbContext.PokemonCards.FindAsync(card.Id);
-                    if (existingCard == null)
-                    {
-                        _dbContext.PokemonCards.Add(card);
-                    }
-                    else
-                    {
-                        existingCard.PriceLow = card.PriceLow;
-                        existingCard.PriceMid = card.PriceMid;
-                        existingCard.PriceHigh = card.PriceHigh;
-                    }
+                    await AddOrUpdatePokemonCardAsync(card);
                 }
 
                 await _dbContext.SaveChangesAsync();
@@ -62,6 +59,75 @@ namespace CardCollectionAPI.Services
             catch (Exception ex)
             {
                 _logger.LogError($"Errore durante l'importazione delle carte: {ex.Message}");
+            }
+        }
+
+        private async Task AddOrUpdatePokemonCardAsync(PokemonCardDto cardDto)
+        {
+            var existingCard = await _dbContext.PokemonCards
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == cardDto.Id);
+
+            var set = await _dbContext.PokemonSets.FirstOrDefaultAsync(s => s.SetName == cardDto.Set.Name);
+            if (set == null)
+            {
+                set = new PokemonSet
+                {
+                    SetName = cardDto.Set.Name,
+                    Series = cardDto.Set.Series,
+                    ReleaseDate = cardDto.Set.ReleaseDate,
+                    LogoUrl = cardDto.Set.Images.Logo
+                };
+                _dbContext.PokemonSets.Add(set);
+            }
+
+            var pokemonCard = new PokemonCard
+            {
+                Id = cardDto.Id,
+                Name = cardDto.Name,
+                Supertype = cardDto.Supertype,
+                Hp = cardDto.Hp,
+                EvolvesFrom = cardDto.EvolvesFrom,
+                Rarity = cardDto.Rarity,
+                ImageUrl = cardDto.Images?.Large,
+                Set = set,
+                Attacks = cardDto.Attacks?.Select(a => new PokemonAttack
+                {
+                    Name = a.Name,
+                    Damage = a.Damage,
+                    Text = a.Text,
+                    Cost = string.Join(",", a.Cost),
+                    ConvertedEnergyCost = a.ConvertedEnergyCost
+                }).ToList(),
+                Weaknesses = cardDto.Weaknesses?.Select(w => new PokemonWeakness
+                {
+                    Type = w.Type,
+                    Value = w.Value
+                }).ToList(),
+                Resistances = cardDto.Resistances?.Select(r => new PokemonResistance
+                {
+                    Type = r.Type,
+                    Value = r.Value
+                }).ToList(),
+                Price = new PokemonPrice
+                {
+                    TcgLow = cardDto.Tcgplayer?.Prices?.Holofoil?.Low,
+                    TcgMid = cardDto.Tcgplayer?.Prices?.Holofoil?.Mid,
+                    TcgHigh = cardDto.Tcgplayer?.Prices?.Holofoil?.High,
+                    TcgMarket = cardDto.Tcgplayer?.Prices?.Holofoil?.Market,
+                    CardmarketLow = cardDto.Cardmarket?.Prices?.LowPrice,
+                    CardmarketTrend = cardDto.Cardmarket?.Prices?.TrendPrice,
+                    CardmarketReverseHolo = cardDto.Cardmarket?.Prices?.ReverseHoloTrend
+                }
+            };
+
+            if (existingCard == null)
+            {
+                _dbContext.PokemonCards.Add(pokemonCard);
+            }
+            else
+            {
+                _dbContext.PokemonCards.Update(pokemonCard);
             }
         }
     }
