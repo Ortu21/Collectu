@@ -1,6 +1,7 @@
 using System.Text.Json;
 using CardCollectionAPI.Data;
 using CardCollectionAPI.Models;
+using CardCollectionAPI.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace CardCollectionAPI.Services
@@ -18,117 +19,159 @@ namespace CardCollectionAPI.Services
             _httpClient = httpClient;
             _dbContext = dbContext;
             _logger = logger;
-
-            if (!_httpClient.DefaultRequestHeaders.Contains("X-Api-Key"))
-            {
-                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
-            }
         }
 
-        public async Task ImportPokemonCardsAsync()
+        public async Task ImportCardsAsync()
         {
             try
             {
+                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
                 var response = await _httpClient.GetAsync(ApiUrl);
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError($"Errore API: {response.StatusCode}");
+                    _logger.LogError($"TCG API request failed with status code: {response.StatusCode}");
                     return;
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<PokemonApiResponse>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var apiResponse = JsonSerializer.Deserialize<PokemonApiResponse>(content, options);
 
                 if (apiResponse?.Data == null)
                 {
-                    _logger.LogWarning("Nessun dato ricevuto dall'API.");
+                    _logger.LogWarning("No data received from TCG API");
                     return;
                 }
 
-                foreach (var card in apiResponse.Data)
+                foreach (var cardDto in apiResponse.Data)
                 {
-                    await AddOrUpdatePokemonCardAsync(card);
+                    await ProcessCardAsync(cardDto);
                 }
 
                 await _dbContext.SaveChangesAsync();
-                _logger.LogInformation("Dati delle carte Pokémon aggiornati con successo.");
+                _logger.LogInformation($"Successfully imported {apiResponse.Data.Count} Pokémon cards");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Errore durante l'importazione delle carte: {ex.Message}");
+                _logger.LogError(ex, "Error occurred during Pokémon card import");
+                throw;
             }
         }
 
-        private async Task AddOrUpdatePokemonCardAsync(PokemonCardDto cardDto)
+        private async Task ProcessCardAsync(PokemonCardDto cardDto)
         {
             var existingCard = await _dbContext.PokemonCards
-                .AsNoTracking()
+                .Include(c => c.Set)
+                .Include(c => c.Price)
                 .FirstOrDefaultAsync(c => c.Id == cardDto.Id);
-
-            var set = await _dbContext.PokemonSets.FirstOrDefaultAsync(s => s.SetName == cardDto.Set.Name);
-            if (set == null)
-            {
-                set = new PokemonSet
-                {
-                    SetName = cardDto.Set.Name,
-                    Series = cardDto.Set.Series,
-                    ReleaseDate = cardDto.Set.ReleaseDate,
-                    LogoUrl = cardDto.Set.Images.Logo
-                };
-                _dbContext.PokemonSets.Add(set);
-            }
-
-            var pokemonCard = new PokemonCard
-            {
-                Id = cardDto.Id,
-                Name = cardDto.Name,
-                Supertype = cardDto.Supertype,
-                Hp = cardDto.Hp,
-                EvolvesFrom = cardDto.EvolvesFrom,
-                Rarity = cardDto.Rarity,
-                ImageUrl = cardDto.Images?.Large,
-                Set = set,
-                Attacks = cardDto.Attacks?.Select(a => new PokemonAttack
-                {
-                    Name = a.Name,
-                    Damage = a.Damage,
-                    Text = a.Text,
-                    Cost = string.Join(",", a.Cost),
-                    ConvertedEnergyCost = a.ConvertedEnergyCost
-                }).ToList(),
-                Weaknesses = cardDto.Weaknesses?.Select(w => new PokemonWeakness
-                {
-                    Type = w.Type,
-                    Value = w.Value
-                }).ToList(),
-                Resistances = cardDto.Resistances?.Select(r => new PokemonResistance
-                {
-                    Type = r.Type,
-                    Value = r.Value
-                }).ToList(),
-                Price = new PokemonPrice
-                {
-                    TcgLow = cardDto.Tcgplayer?.Prices?.Holofoil?.Low,
-                    TcgMid = cardDto.Tcgplayer?.Prices?.Holofoil?.Mid,
-                    TcgHigh = cardDto.Tcgplayer?.Prices?.Holofoil?.High,
-                    TcgMarket = cardDto.Tcgplayer?.Prices?.Holofoil?.Market,
-                    CardmarketLow = cardDto.Cardmarket?.Prices?.LowPrice,
-                    CardmarketTrend = cardDto.Cardmarket?.Prices?.TrendPrice,
-                    CardmarketReverseHolo = cardDto.Cardmarket?.Prices?.ReverseHoloTrend
-                }
-            };
 
             if (existingCard == null)
             {
-                _dbContext.PokemonCards.Add(pokemonCard);
+                var newCard = MapDtoToEntity(cardDto);
+                _dbContext.PokemonCards.Add(newCard);
             }
             else
             {
-                _dbContext.PokemonCards.Update(pokemonCard);
+                UpdateExistingCard(existingCard, cardDto);
             }
         }
+
+        private static void UpdateExistingCard(PokemonCard card, PokemonCardDto dto)
+        {
+            card.Name = dto.Name;
+            card.Supertype = dto.Supertype;
+            card.Hp = dto.Hp;
+            card.EvolvesFrom = dto.EvolvesFrom;
+            card.Rarity = dto.Rarity;
+            card.ImageUrl = dto.Images.Large;
+
+            card.Price ??= new PokemonPrice
+            {
+                PokemonCardId = card.Id,
+                PokemonCard = card
+            };
+
+            card.Price.TcgLow = dto.Tcgplayer.Prices.Holofoil.Low;
+            card.Price.TcgMid = dto.Tcgplayer.Prices.Holofoil.Mid;
+            card.Price.TcgHigh = dto.Tcgplayer.Prices.Holofoil.High;
+            card.Price.TcgMarket = dto.Tcgplayer.Prices.Holofoil.Market;
+            card.Price.CardmarketLow = dto.Cardmarket.Prices.LowPrice;
+            card.Price.CardmarketTrend = dto.Cardmarket.Prices.TrendPrice;
+            card.Price.CardmarketReverseHolo = dto.Cardmarket.Prices.ReverseHoloTrend;
+        }
+
+        private static PokemonCard MapDtoToEntity(PokemonCardDto dto)
+        {
+            var card = new PokemonCard
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Supertype = dto.Supertype,
+                Hp = dto.Hp,
+                EvolvesFrom = dto.EvolvesFrom,
+                Rarity = dto.Rarity,
+                ImageUrl = dto.Images.Large,
+                Set = new PokemonSet
+                {
+                    SetName = dto.Set.Name,
+                    Series = dto.Set.Series,
+                    ReleaseDate = dto.Set.ReleaseDate,
+                    LogoUrl = dto.Set.Images.Logo
+                }
+            };
+
+            // Aggiungi gli attacchi
+            card.Attacks = dto.Attacks.Select(a => new PokemonAttack
+            {
+                PokemonCardId = dto.Id,
+                PokemonCard = card,  // Aggiungi il riferimento alla carta
+                Name = a.Name,
+                Damage = a.Damage,
+                Text = a.Text,
+                Cost = string.Join(", ", a.Cost),
+                ConvertedEnergyCost = a.ConvertedEnergyCost.ToString()
+            }).ToList();
+
+            // Aggiungi le debolezze
+            card.Weaknesses = dto.Weaknesses.Select(w => new PokemonWeakness
+            {
+                PokemonCardId = dto.Id,
+                PokemonCard = card,  // Aggiungi il riferimento alla carta
+                Type = w.Type,
+                Value = w.Value
+            }).ToList();
+
+            // Aggiungi le resistenze
+            card.Resistances = dto.Resistances.Select(r => new PokemonResistance
+            {
+                PokemonCardId = dto.Id,
+                PokemonCard = card,  // Aggiungi il riferimento alla carta
+                Type = r.Type,
+                Value = r.Value
+            }).ToList();
+
+            // Aggiungi il prezzo
+            var price = new PokemonPrice
+            {
+                PokemonCardId = dto.Id,
+                PokemonCard = card,  // Aggiungi il riferimento alla carta
+                TcgLow = dto.Tcgplayer.Prices.Holofoil.Low,
+                TcgMid = dto.Tcgplayer.Prices.Holofoil.Mid,
+                TcgHigh = dto.Tcgplayer.Prices.Holofoil.High,
+                TcgMarket = dto.Tcgplayer.Prices.Holofoil.Market,
+                CardmarketLow = dto.Cardmarket.Prices?.LowPrice,
+                CardmarketTrend = dto.Cardmarket.Prices?.TrendPrice,
+                CardmarketReverseHolo = dto.Cardmarket.Prices?.ReverseHoloTrend
+            };
+            card.Price = price;
+
+            return card;
+        }
+    }
+
+    public class PokemonApiResponse
+    {
+        public List<PokemonCardDto> Data { get; set; } = new();
     }
 }

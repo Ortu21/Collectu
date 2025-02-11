@@ -80,7 +80,7 @@ namespace CardCollectionAPI.Models.Dtos
 
     public class PokemonCardMarketDto
     {
-        public PokemonCardMarketPriceDto? Prices { get; set; }
+        public required PokemonCardMarketPriceDto Prices { get; set; }
     }
 
     public class PokemonCardMarketPriceDto
