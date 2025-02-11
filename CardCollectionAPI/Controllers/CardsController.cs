@@ -1,35 +1,26 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using CardCollectionAPI.Data;
-using CardCollectionAPI.Models;
-using Microsoft.EntityFrameworkCore;
+using CardCollectionAPI.Services;
 
 namespace CardCollectionAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize] // Solo utenti autenticati possono accedere
-    public class CardsController : ControllerBase
+    public class PokemonCardController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly PokemonCardService _pokemonCardService;
 
-        public CardsController(AppDbContext context)
+        public PokemonCardController(PokemonCardService pokemonCardService)
         {
-            _context = context;
+            _pokemonCardService = pokemonCardService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Card>>> GetCards()
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportPokemonCards()
         {
-            return await _context.Cards.ToListAsync();
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<Card>> AddCard(Card card)
-        {
-            _context.Cards.Add(card);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetCards), new { id = card.Id }, card);
+            await _pokemonCardService.ImportPokemonCardsAsync();
+            return Ok("Importazione completata!");
         }
     }
 }

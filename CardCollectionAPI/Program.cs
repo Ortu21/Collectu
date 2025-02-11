@@ -1,4 +1,5 @@
 using CardCollectionAPI.Data;
+using CardCollectionAPI.Services;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,6 +38,7 @@ builder.Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient<PokemonCardService>();
 
 var app = builder.Build();
 
