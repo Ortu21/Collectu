@@ -21,7 +21,7 @@ namespace CardCollectionAPI.Services
             _logger = logger;
         }
 
-        public async Task ImportCardsAsync()
+        public async Task ImportPokemonCardsAsync()
         {
             try
             {
@@ -57,6 +57,46 @@ namespace CardCollectionAPI.Services
                 _logger.LogError(ex, "Error occurred during Pokémon card import");
                 throw;
             }
+        }
+
+        public async Task ImportSingleCardAsync(string cardId)
+        {
+            try
+            {
+                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
+                var response = await _httpClient.GetAsync($"{ApiUrl}/{cardId}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"TCG API request failed with status code: {response.StatusCode}");
+                    return;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var cardDto = JsonSerializer.Deserialize<SingleCardResponse>(content, options)?.Data;
+
+                if (cardDto == null)
+                {
+                    _logger.LogWarning($"No data received from TCG API for card {cardId}");
+                    return;
+                }
+
+                await ProcessCardAsync(cardDto);
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation($"Successfully imported card {cardId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred during import of card {cardId}");
+                throw;
+            }
+        }
+
+        // Aggiungi questa classe per gestire la risposta di una singola carta
+        public class SingleCardResponse
+        {
+            public PokemonCardDto Data { get; set; } = null!;
         }
 
         private async Task ProcessCardAsync(PokemonCardDto cardDto)

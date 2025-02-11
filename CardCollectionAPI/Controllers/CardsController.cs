@@ -15,11 +15,18 @@ namespace CardCollectionAPI.Controllers
             _pokemonCardService = pokemonCardService;
         }
 
-        [HttpPost("import")]
+        [HttpPost("import/")]
         public async Task<IActionResult> ImportPokemonCards()
         {
             await _pokemonCardService.ImportPokemonCardsAsync();
             return Ok("Importazione completata!");
+        }
+        
+        [HttpPost("import/{id}")]
+        public async Task<IActionResult> ImportSingleCard(string id)
+        {
+            await _pokemonCardService.ImportSingleCardAsync(id);
+            return Ok($"Importazione della carta {id} completata!");
         }
     }
 }
