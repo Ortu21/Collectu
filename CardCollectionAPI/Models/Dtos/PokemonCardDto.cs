@@ -2,13 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace CardCollectionAPI.Models.Dtos;
 
-    public partial class Pokemon
-{
-    [JsonPropertyName("data")]
-    public required Data Data { get; set; }
-}
-
-public partial class Data
+public partial class PokemonCardDto
 {
     [JsonPropertyName("id")]
     public required string Id { get; set; }
@@ -23,7 +17,7 @@ public partial class Data
     public required List<string> Subtypes { get; set; }
 
     [JsonPropertyName("hp")]
-    public long Hp { get; set; }
+    public int Hp { get; set; }
 
     [JsonPropertyName("types")]
     public required List<string> Types { get; set; }
@@ -89,7 +83,7 @@ public partial class Attack
     public long ConvertedEnergyCost { get; set; }
 
     [JsonPropertyName("damage")]
-    public long Damage { get; set; }
+    public int Damage { get; set; }
 
     [JsonPropertyName("text")]
     public required string Text { get; set; }
@@ -104,7 +98,55 @@ public partial class Cardmarket
     public required string UpdatedAt { get; set; }
 
     [JsonPropertyName("prices")]
-    public required Dictionary<string, double> Prices { get; set; }
+    public required CardmarketPrices CardmarketPrices { get; set; }
+}
+
+public class CardmarketPrices
+{
+    [JsonPropertyName("averageSellPrice")]
+    public double AverageSellPrice { get; set; }
+
+    [JsonPropertyName("lowPrice")]
+    public double LowPrice { get; set; }
+
+    [JsonPropertyName("trendPrice")]
+    public double TrendPrice { get; set; }
+
+    [JsonPropertyName("germanProLow")]
+    public double GermanProLow { get; set; }
+
+    [JsonPropertyName("suggestedPrice")]
+    public double SuggestedPrice { get; set; }
+
+    [JsonPropertyName("reverseHoloSell")]
+    public double ReverseHoloSell { get; set; }
+
+    [JsonPropertyName("reverseHoloLow")]
+    public double ReverseHoloLow { get; set; }
+
+    [JsonPropertyName("reverseHoloTrend")]
+    public double ReverseHoloTrend { get; set; }
+
+    [JsonPropertyName("lowPriceExPlus")]
+    public double LowPriceExPlus { get; set; }
+
+    [JsonPropertyName("avg1")]
+    public double Avg1 { get; set; }
+
+    [JsonPropertyName("avg7")]
+    public double Avg7 { get; set; }
+
+    [JsonPropertyName("avg30")]
+    public double Avg30 { get; set; }
+
+    [JsonPropertyName("reverseHoloAvg1")]
+    public double ReverseHoloAvg1 { get; set; }
+
+    [JsonPropertyName("reverseHoloAvg7")]
+    public double ReverseHoloAvg7 { get; set; }
+
+    [JsonPropertyName("reverseHoloAvg30")]
+    public double ReverseHoloAvg30 { get; set; }
 }
 
 public partial class DataImages
@@ -182,10 +224,10 @@ public partial class Tcgplayer
     public required string UpdatedAt { get; set; }
 
     [JsonPropertyName("prices")]
-    public required Prices Prices { get; set; }
+    public required TcgplayerPrices TcgplayerPrices { get; set; }
 }
 
-public partial class Prices
+public partial class TcgplayerPrices
 {
     [JsonPropertyName("holofoil")]
     public required Holofoil Holofoil { get; set; }
@@ -197,16 +239,16 @@ public partial class Prices
 public partial class Holofoil
 {
     [JsonPropertyName("low")]
-    public double Low { get; set; }
+    public decimal Low { get; set; }
 
     [JsonPropertyName("mid")]
-    public double Mid { get; set; }
+    public decimal Mid { get; set; }
 
     [JsonPropertyName("high")]
-    public double High { get; set; }
+    public decimal High { get; set; }
 
     [JsonPropertyName("market")]
-    public double Market { get; set; }
+    public decimal Market { get; set; }
 
     [JsonPropertyName("directLow")]
     public required object DirectLow { get; set; }

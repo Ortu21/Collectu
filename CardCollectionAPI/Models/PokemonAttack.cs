@@ -8,7 +8,7 @@ namespace CardCollectionAPI.Models
         public int Id { get; set; }
         public required PokemonCard PokemonCard { get; set; }
         public required string Name { get; set; } // Nome attacco
-        public required string Damage { get; set; } // Danno (es. "40")
+        public required int Damage { get; set; } // Danno (es. "40")
         public required string Text { get; set; } // Descrizione effetto
         public required string Cost { get; set; } // Energia necessaria (es. "Metal, Colorless")
         public required string ConvertedEnergyCost { get; set; }

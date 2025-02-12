@@ -124,7 +124,7 @@ namespace CardCollectionAPI.Services
             card.Hp = dto.Hp;
             card.EvolvesFrom = dto.EvolvesFrom;
             card.Rarity = dto.Rarity;
-            card.ImageUrl = dto.Images.Large;
+            card.ImageUrl = dto.Images.Large.ToString();
 
             card.Price ??= new PokemonPrice
             {
@@ -136,7 +136,7 @@ namespace CardCollectionAPI.Services
             card.Price.TcgMid = dto.Tcgplayer.Prices.Holofoil.Mid;
             card.Price.TcgHigh = dto.Tcgplayer.Prices.Holofoil.High;
             card.Price.TcgMarket = dto.Tcgplayer.Prices.Holofoil.Market;
-            card.Price.CardmarketLow = dto.Cardmarket.Prices.LowPrice;
+            card.Price.CardmarketLow = dto.Cardmarket.Prices.Holofoil.LowPrice;
             card.Price.CardmarketTrend = dto.Cardmarket.Prices.TrendPrice;
             card.Price.CardmarketReverseHolo = dto.Cardmarket.Prices.ReverseHoloTrend;
         }
