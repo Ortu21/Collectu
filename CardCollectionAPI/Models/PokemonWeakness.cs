@@ -6,12 +6,14 @@ namespace CardCollectionAPI.Models
     {
         [Key]
         public int Id { get; set; }
+        [Key]
+        public required PokemonCard PokemonCard { get; set; }
 
         public required string Type { get; set; } // Tipo (es. "Fire")
 
         public required string Value { get; set; } // Valore (es. "x2")
 
         public required string PokemonCardId { get; set; }
-        public required PokemonCard PokemonCard { get; set; }
+
     }
 }

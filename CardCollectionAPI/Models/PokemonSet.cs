@@ -6,15 +6,10 @@ namespace CardCollectionAPI.Models
     {
         [Key]
         public int Id { get; set; }
-
         public required string SetName { get; set; } // Nome del Set
-
         public required string Series { get; set; } // Serie (es. "HeartGold & SoulSilver")
-
         public required string ReleaseDate { get; set; } // Data rilascio
-
         public required string LogoUrl { get; set; } // URL logo
-
         public List<PokemonCard> Cards { get; set; } = new List<PokemonCard>();
     }
 }
