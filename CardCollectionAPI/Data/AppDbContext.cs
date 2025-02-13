@@ -10,14 +10,18 @@ namespace CardCollectionAPI.Data
         public DbSet<PokemonAttack> PokemonAttacks { get; set; }
         public DbSet<PokemonWeakness> PokemonWeaknesses { get; set; }
         public DbSet<PokemonResistance> PokemonResistances { get; set; }
-        public DbSet<PokemonPrice> PokemonPrices { get; set; }
+
+        // CardMarket Prices
+        public DbSet<PokemonCardMarketPrices> PokemonCardMarketPrices { get; set; }
+        public DbSet<PokemonCardMarketPriceDetails> PokemonCardMarketPriceDetails { get; set; }
+
+        // TCGPlayer Prices
+        public DbSet<PokemonTcgPlayerPrices> PokemonCardTcgPrices { get; set; }
+        public DbSet<PokemonTcgPlayerPriceDetails> PokemonCardTcgPriceDetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<PokemonPrice>()
-                .HasOne(p => p.PokemonCard)
-                .WithOne(c => c.Price)
-                .HasForeignKey<PokemonPrice>(p => p.PokemonCardId);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }
 }

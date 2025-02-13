@@ -103,7 +103,8 @@ namespace CardCollectionAPI.Services
         {
             var existingCard = await _dbContext.PokemonCards
                 .Include(c => c.Set)
-                .Include(c => c.Price)
+                .Include(c => c.CardMarketPrices)
+                .Include(c => c.TcgPlayerPrices)
                 .FirstOrDefaultAsync(c => c.Id == cardDto.Id);
 
             if (existingCard == null)
@@ -126,20 +127,75 @@ namespace CardCollectionAPI.Services
             card.Rarity = dto.Rarity;
             card.ImageUrl = dto.Images.Large.ToString();
 
-            card.Price ??= new PokemonPrice
+            // Gestione prezzi CardMarket
+            card.CardMarketPrices ??= new PokemonCardMarketPrices
             {
                 PokemonCardId = card.Id,
-                PokemonCard = card
+                PokemonCard = card,
+                Url = dto.Cardmarket.Url.ToString(),
+                UpdatedAt = DateTime.Parse(dto.Cardmarket.UpdatedAt)
             };
 
-            card.Price.TcgLow = dto.Tcgplayer.Prices.Holofoil.Low;
-            card.Price.TcgMid = dto.Tcgplayer.Prices.Holofoil.Mid;
-            card.Price.TcgHigh = dto.Tcgplayer.Prices.Holofoil.High;
-            card.Price.TcgMarket = dto.Tcgplayer.Prices.Holofoil.Market;
-            card.Price.CardmarketLow = dto.Cardmarket.Prices.Holofoil.LowPrice;
-            card.Price.CardmarketTrend = dto.Cardmarket.Prices.TrendPrice;
-            card.Price.CardmarketReverseHolo = dto.Cardmarket.Prices.ReverseHoloTrend;
+            card.CardMarketPrices.PriceDetails.Add(new PokemonCardMarketPriceDetails
+            {
+                PokemonCardMarketPricesId = card.CardMarketPrices.Id,
+                PokemonCardMarketPrices = card.CardMarketPrices
+            });
+
+            card.CardMarketPriceDetails.AverageSellPrice = dto.Cardmarket.Prices.AverageSellPrice;
+            card.CardMarketPriceDetails.LowPrice = dto.Cardmarket.Prices.LowPrice;
+            card.CardMarketPriceDetails.TrendPrice = dto.Cardmarket.Prices.TrendPrice;
+            card.CardMarketPriceDetails.GermanProLow = dto.Cardmarket.Prices.GermanProLow;
+            card.CardMarketPriceDetails.SuggestedPrice = dto.Cardmarket.Prices.SuggestedPrice;
+            card.CardMarketPriceDetails.ReverseHoloSell = dto.Cardmarket.Prices.ReverseHoloSell;
+            card.CardMarketPriceDetails.ReverseHoloLow = dto.Cardmarket.Prices.ReverseHoloLow;
+            card.CardMarketPriceDetails.ReverseHoloTrend = dto.Cardmarket.Prices.ReverseHoloTrend;
+            card.CardMarketPriceDetails.LowPriceExPlus = dto.Cardmarket.Prices.LowPriceExPlus;
+            card.CardMarketPriceDetails.Avg1 = dto.Cardmarket.Prices.Avg1;
+            card.CardMarketPriceDetails.Avg7 = dto.Cardmarket.Prices.Avg7;
+            card.CardMarketPriceDetails.Avg30 = dto.Cardmarket.Prices.Avg30;
+            card.CardMarketPriceDetails.ReverseHoloAvg1 = dto.Cardmarket.Prices.ReverseHoloAvg1;
+            card.CardMarketPriceDetails.ReverseHoloAvg7 = dto.Cardmarket.Prices.ReverseHoloAvg7;
+            card.CardMarketPriceDetails.ReverseHoloAvg30 = dto.Cardmarket.Prices.ReverseHoloAvg30;
+
+            // Gestione prezzi TCGPlayer
+            card.TcgPlayerPrices.Add(new PokemonTcgPlayerPrices
+            {
+                PokemonCardId = card.Id,
+                PokemonCard = card,
+                Url = dto.Tcgplayer.Url,
+                UpdatedAt = dto.Tcgplayer.UpdatedAt
+            });
+
+            // Prezzi Holofoil
+            card.TcgPlayerPrices.PriceDetails ??= new PokemonTcgPlayerPriceDetails
+            {
+                PokemonTcgPlayerPricesId = card.TcgPlayerPrices.id,
+                PokemonTcgPlayerPrices = card.TcgPlayerPrices,
+                FoilType = "Holofoil"
+            };
+
+            card.TcgPlayerPriceDetails.Low = dto.Tcgplayer.Prices.Holofoil.Low;
+            card.TcgPlayerPriceDetails.Mid = dto.Tcgplayer.Prices.Holofoil.Mid;
+            card.TcgPlayerPriceDetails.High = dto.Tcgplayer.Prices.Holofoil.High;
+            card.TcgPlayerPriceDetails.Market = dto.Tcgplayer.Prices.Holofoil.Market;
+            card.TcgPlayerPriceDetails.DirectLow = dto.Tcgplayer.Prices.Holofoil.DirectLow;
+
+            // Prezzi Reverse Holofoil
+            card.TcgPlayerReverseHoloPriceDetails ??= new PokemonTcgPlayerPriceDetails
+            {
+                PokemonTcgPlayerPricesId = card.TcgPlayerPrices.PokemonCardId,
+                PokemonTcgPlayerPrices = card.TcgPlayerPrices,
+                FoilType = "ReverseHolofoil"
+            };
+
+            card.TcgPlayerReverseHoloPriceDetails.Low = dto.Tcgplayer.Prices.ReverseHolofoil.Low;
+            card.TcgPlayerReverseHoloPriceDetails.Mid = dto.Tcgplayer.Prices.ReverseHolofoil.Mid;
+            card.TcgPlayerReverseHoloPriceDetails.High = dto.Tcgplayer.Prices.ReverseHolofoil.High;
+            card.TcgPlayerReverseHoloPriceDetails.Market = dto.Tcgplayer.Prices.ReverseHolofoil.Market;
+            card.TcgPlayerReverseHoloPriceDetails.DirectLow = dto.Tcgplayer.Prices.ReverseHolofoil.DirectLow;
         }
+
 
         private static PokemonCard MapDtoToEntity(PokemonCardDto dto)
         {

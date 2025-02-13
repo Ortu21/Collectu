@@ -104,49 +104,49 @@ public partial class Cardmarket
 public class CardmarketPrices
 {
     [JsonPropertyName("averageSellPrice")]
-    public double AverageSellPrice { get; set; }
+    public decimal AverageSellPrice { get; set; }
 
     [JsonPropertyName("lowPrice")]
-    public double LowPrice { get; set; }
+    public decimal LowPrice { get; set; }
 
     [JsonPropertyName("trendPrice")]
-    public double TrendPrice { get; set; }
+    public decimal TrendPrice { get; set; }
 
     [JsonPropertyName("germanProLow")]
-    public double GermanProLow { get; set; }
+    public decimal GermanProLow { get; set; }
 
     [JsonPropertyName("suggestedPrice")]
-    public double SuggestedPrice { get; set; }
+    public decimal SuggestedPrice { get; set; }
 
     [JsonPropertyName("reverseHoloSell")]
-    public double ReverseHoloSell { get; set; }
+    public decimal ReverseHoloSell { get; set; }
 
     [JsonPropertyName("reverseHoloLow")]
-    public double ReverseHoloLow { get; set; }
+    public decimal ReverseHoloLow { get; set; }
 
     [JsonPropertyName("reverseHoloTrend")]
-    public double ReverseHoloTrend { get; set; }
+    public decimal ReverseHoloTrend { get; set; }
 
     [JsonPropertyName("lowPriceExPlus")]
-    public double LowPriceExPlus { get; set; }
+    public decimal LowPriceExPlus { get; set; }
 
     [JsonPropertyName("avg1")]
-    public double Avg1 { get; set; }
+    public decimal Avg1 { get; set; }
 
     [JsonPropertyName("avg7")]
-    public double Avg7 { get; set; }
+    public decimal Avg7 { get; set; }
 
     [JsonPropertyName("avg30")]
-    public double Avg30 { get; set; }
+    public decimal Avg30 { get; set; }
 
     [JsonPropertyName("reverseHoloAvg1")]
-    public double ReverseHoloAvg1 { get; set; }
+    public decimal ReverseHoloAvg1 { get; set; }
 
     [JsonPropertyName("reverseHoloAvg7")]
-    public double ReverseHoloAvg7 { get; set; }
+    public decimal ReverseHoloAvg7 { get; set; }
 
     [JsonPropertyName("reverseHoloAvg30")]
-    public double ReverseHoloAvg30 { get; set; }
+    public decimal ReverseHoloAvg30 { get; set; }
 }
 
 public partial class DataImages
