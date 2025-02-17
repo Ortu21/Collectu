@@ -50,10 +50,10 @@ public partial class PokemonCardDto
     public required string Artist { get; set; }
 
     [JsonPropertyName("rarity")]
-    public required string Rarity { get; set; }
+    public string? Rarity { get; set; }
 
     [JsonPropertyName("flavorText")]
-    public required string FlavorText { get; set; }
+    public string? FlavorText { get; set; }
 
     [JsonPropertyName("nationalPokedexNumbers")]
     public required List<long> NationalPokedexNumbers { get; set; }
@@ -65,10 +65,10 @@ public partial class PokemonCardDto
     public required DataImages Images { get; set; }
 
     [JsonPropertyName("tcgplayer")]
-    public required Tcgplayer Tcgplayer { get; set; }
+    public Tcgplayer? Tcgplayer { get; set; }
 
     [JsonPropertyName("cardmarket")]
-    public required Cardmarket Cardmarket { get; set; }
+    public Cardmarket? Cardmarket { get; set; }
 }
 
 public partial class Attack
@@ -194,7 +194,7 @@ public partial class Set
     public required Legalities Legalities { get; set; }
 
     [JsonPropertyName("ptcgoCode")]
-    public required string PtcgoCode { get; set; }
+    public string? PtcgoCode { get; set; }
 
     [JsonPropertyName("releaseDate")]
     public required string ReleaseDate { get; set; }
