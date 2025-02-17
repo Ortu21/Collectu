@@ -190,123 +190,177 @@ namespace CardCollectionAPI.Services
                 UpdatedAt = DateTime.Parse(dto.Tcgplayer.UpdatedAt)
             };
 
-            // Prezzi Holofoil
-            card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
+            // Prezzi Holofoil, solo se esistono nel DTO
+            if (dto.Tcgplayer.TcgplayerPrices.Holofoil != null)
             {
-                PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                FoilType = "Holofoil"
-            });
-
-            card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.Holofoil.Low;
-            card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.Holofoil.Mid;
-            card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.Holofoil.High;
-            card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.Holofoil.Market;
-            card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.Holofoil.DirectLow;
-
-            // Prezzi Reverse Holofoil
-            card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
-            {
-                PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                FoilType = "ReverseHolofoil"
-            });
-
-            card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Low;
-            card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Mid;
-            card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.High;
-            card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Market;
-            card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.DirectLow;
-
-            // Prezzi Normal
-            card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
-            {
-                PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                FoilType = "Normal"
-            });
-
-            card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.Normal.Low;
-            card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.Normal.Mid;
-            card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.Normal.High;
-            card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.Normal.Market;
-            card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.Normal.DirectLow;
-
-            // Prezzi 1st Edition Holofoil
-            card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
-            {
-                PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                FoilType = "The1steditionholofoil"
-            });
-
-            card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Low;
-            card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Mid;
-            card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.High;
-            card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Market;
-            card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.DirectLow;
-
-        }
-        private static PokemonCard MapDtoToEntity(PokemonCardDto dto)
-        {
-            var card = new PokemonCard
-            {
-                Id = dto.Id,
-                Name = dto.Name,
-                Supertype = dto.Supertype,
-                // Converti l'Hp da stringa a int (gestisci errori se necessario)
-                Hp = dto.Hp,
-                EvolvesFrom = dto.EvolvesFrom ?? string.Empty,
-                Rarity = dto.Rarity,
-                ImageUrl = dto.Images.Large.ToString(),
-                Set = new PokemonSet
+                card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
                 {
-                    SetName = dto.Set.Name,
-                    Series = dto.Set.Series,
-                    ReleaseDate = DateTime.Parse(dto.Set.ReleaseDate),
-                    LogoUrl = dto.Set.Images.Logo.ToString(),
-                },
-                CardMarketPrices = null,
-                TcgPlayerPrices = null,
-            };
-            card.Attacks = dto.Attacks.Select(a => new PokemonAttack
+                    PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices,
+                    FoilType = "Holofoil"
+                });
+
+                card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.Holofoil.Low;
+                card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.Holofoil.Mid;
+                card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.Holofoil.High;
+                card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.Holofoil.Market;
+                card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.Holofoil.DirectLow;
+            }
+
+            // Prezzi Reverse Holofoil, solo se esistono nel DTO
+            if (dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil != null)
             {
-                PokemonCardId = dto.Id,
-                PokemonCard = card,
-                Name = a.Name,
-                Damage = a.Damage,
-                Text = a.Text,
-                Cost = string.Join(", ", a.Cost),
-                ConvertedEnergyCost = a.ConvertedEnergyCost.ToString(),
-            }).ToList();
-            card.Weaknesses = dto.Weaknesses.Select(w => new PokemonWeakness
+                card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
+                {
+                    PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices,
+                    FoilType = "ReverseHolofoil"
+                });
+
+                card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Low;
+                card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Mid;
+                card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.High;
+                card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Market;
+                card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.DirectLow;
+            }
+
+            // Prezzi Normal, solo se esistono nel DTO
+            if (dto.Tcgplayer.TcgplayerPrices.Normal != null)
             {
-                PokemonCardId = dto.Id,
-                PokemonCard = card,
-                Type = w.Type,
-                Value = w.Value,
-            }).ToList();
-            card.Resistances = dto.Resistances.Select(r => new PokemonResistance
+                card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
+                {
+                    PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices,
+                    FoilType = "Normal"
+                });
+
+                card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.Normal.Low;
+                card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.Normal.Mid;
+                card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.Normal.High;
+                card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.Normal.Market;
+                card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.Normal.DirectLow;
+            }
+
+            // Prezzi 1st Edition Holofoil, solo se esistono nel DTO
+            if (dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil != null)
             {
-                PokemonCardId = dto.Id,
-                PokemonCard = card,
-                Type = r.Type,
-                Value = r.Value,
-            }).ToList();
-            // Inizialmente i prezzi non vengono impostati
-            return card;
+                card.TcgPlayerPrices.PriceDetails.Add(new PokemonTcgPlayerPriceDetails
+                {
+                    PokemonTcgPlayerPricesId = card.TcgPlayerPrices.Id,
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices,
+                    FoilType = "The1steditionholofoil"
+                });
+
+                card.TcgPlayerPrices.PriceDetails.First().Low = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Low;
+                card.TcgPlayerPrices.PriceDetails.First().Mid = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Mid;
+                card.TcgPlayerPrices.PriceDetails.First().High = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.High;
+                card.TcgPlayerPrices.PriceDetails.First().Market = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Market;
+                card.TcgPlayerPrices.PriceDetails.First().DirectLow = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.DirectLow;
+            }
+        }
+
+        private PokemonCard MapDtoToEntity(PokemonCardDto dto)
+        {
+            try
+            {
+                _logger.LogInformation("Mapping PokemonCardDto to PokemonCard for card ID: {CardId}", dto.Id);
+
+                var card = new PokemonCard
+                {
+                    Id = dto.Id,
+                    Name = dto.Name,
+                    Supertype = dto.Supertype,
+                    Hp = dto.Hp,
+                    EvolvesFrom = dto.EvolvesFrom ?? string.Empty,
+                    Rarity = dto.Rarity,
+                    ImageUrl = dto.Images.Large.ToString(),
+                    Set = new PokemonSet
+                    {
+                        SetName = dto.Set.Name,
+                        Series = dto.Set.Series,
+                        ReleaseDate = DateOnly.Parse(dto.Set.ReleaseDate),
+                        LogoUrl = dto.Set.Images.Logo.ToString(),
+                    },
+                    CardMarketPrices = null,
+                    TcgPlayerPrices = null,
+                };
+
+                _logger.LogInformation("Mapping set details for PokemonCard ID: {CardId}, Set: {SetName}", dto.Id, dto.Set.Name);
+
+                try
+                {
+                    card.Attacks = dto.Attacks.Select(a => new PokemonAttack
+                    {
+                        PokemonCardId = dto.Id,
+                        PokemonCard = card,
+                        Name = a.Name,
+                        Damage = a.Damage,
+                        Text = a.Text,
+                        Cost = string.Join(", ", a.Cost),
+                        ConvertedEnergyCost = a.ConvertedEnergyCost.ToString(),
+                    }).ToList();
+                    _logger.LogInformation("Mapped {AttackCount} attacks for PokemonCard ID: {CardId}", card.Attacks.Count, dto.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error mapping attacks for PokemonCard ID: {CardId}", dto.Id);
+                }
+
+                try
+                {
+                    card.Weaknesses = dto.Weaknesses.Select(w => new PokemonWeakness
+                    {
+                        PokemonCardId = dto.Id,
+                        PokemonCard = card,
+                        Type = w.Type,
+                        Value = w.Value,
+                    }).ToList();
+                    _logger.LogInformation("Mapped {WeaknessCount} weaknesses for PokemonCard ID: {CardId}", card.Weaknesses.Count, dto.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error mapping weaknesses for PokemonCard ID: {CardId}", dto.Id);
+                }
+
+                try
+                {
+                    card.Resistances = dto.Resistances.Select(r => new PokemonResistance
+                    {
+                        PokemonCardId = dto.Id,
+                        PokemonCard = card,
+                        Type = r.Type,
+                        Value = r.Value,
+                    }).ToList();
+                    _logger.LogInformation("Mapped {ResistanceCount} resistances for PokemonCard ID: {CardId}", card.Resistances.Count, dto.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error mapping resistances for PokemonCard ID: {CardId}", dto.Id);
+                }
+
+                _logger.LogInformation("Successfully mapped PokemonCard for card ID: {CardId}", dto.Id);
+                return card;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error mapping PokemonCardDto to PokemonCard for card ID: {CardId}", dto.Id);
+                throw;
+            }
         }
 
 
-        private static PokemonCardMarketPrices MapCardMarketPrices(PokemonCardDto dto, PokemonCard card)
+
+        private PokemonCardMarketPrices MapCardMarketPrices(PokemonCardDto dto, PokemonCard card)
         {
-            var cmp = new PokemonCardMarketPrices
+            try
             {
-                PokemonCardId = dto.Id,
-                PokemonCard = card,
-                Url = dto.Cardmarket.Url.ToString(),
-                UpdatedAt = DateTime.Parse(dto.Cardmarket.UpdatedAt),
-                PriceDetails = new List<PokemonCardMarketPriceDetails>
+                var cmp = new PokemonCardMarketPrices
+                {
+                    PokemonCardId = dto.Id,
+                    PokemonCard = card,
+                    Url = dto.Cardmarket.Url.ToString(),
+                    UpdatedAt = DateTime.Parse(dto.Cardmarket.UpdatedAt),
+                    PriceDetails = new List<PokemonCardMarketPriceDetails>
         {
             new PokemonCardMarketPriceDetails
             {
@@ -328,26 +382,34 @@ namespace CardCollectionAPI.Services
                 ReverseHoloAvg30 = dto.Cardmarket.CardmarketPrices.ReverseHoloAvg30
             }
         }
-            };
+                };
 
-            // Imposta il riferimento per ogni dettaglio
-            foreach (var detail in cmp.PriceDetails)
-            {
-                detail.PokemonCardMarketPrices = cmp;
+                // Imposta il riferimento per ogni dettaglio
+                foreach (var detail in cmp.PriceDetails)
+                {
+                    detail.PokemonCardMarketPrices = cmp;
+                }
+
+                return cmp;
             }
-
-            return cmp;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error mapping TCGPlayer prices for card: {CardId}", dto.Id);
+                throw; // Rethrow or handle as needed
+            }
         }
 
-        private static PokemonTcgPlayerPrices MapTcgPlayerPrices(PokemonCardDto dto, PokemonCard card)
+        private PokemonTcgPlayerPrices MapTcgPlayerPrices(PokemonCardDto dto, PokemonCard card)
         {
-            var tp = new PokemonTcgPlayerPrices
+            try
             {
-                PokemonCardId = dto.Id,
-                PokemonCard = card,
-                Url = dto.Tcgplayer.Url.ToString(),
-                UpdatedAt = DateTime.Parse(dto.Tcgplayer.UpdatedAt),
-                PriceDetails = new List<PokemonTcgPlayerPriceDetails>
+                var tp = new PokemonTcgPlayerPrices
+                {
+                    PokemonCardId = dto.Id,
+                    PokemonCard = card,
+                    Url = dto.Tcgplayer.Url.ToString(),
+                    UpdatedAt = DateTime.Parse(dto.Tcgplayer.UpdatedAt),
+                    PriceDetails = new List<PokemonTcgPlayerPriceDetails>
         {
             // Holofoil prices
             new PokemonTcgPlayerPriceDetails
@@ -394,14 +456,20 @@ namespace CardCollectionAPI.Services
                 DirectLow = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.DirectLow
             }
         }
-            };
+                };
 
-            foreach (var detail in tp.PriceDetails)
-            {
-                detail.PokemonTcgPlayerPrices = tp;
+                foreach (var detail in tp.PriceDetails)
+                {
+                    detail.PokemonTcgPlayerPrices = tp;
+                }
+
+                return tp;
             }
-
-            return tp;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error mapping TCGPlayer prices for card: {CardId}", dto.Id);
+                throw; // Rethrow or handle as needed
+            }
         }
 
 

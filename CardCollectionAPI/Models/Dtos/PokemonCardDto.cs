@@ -230,16 +230,16 @@ public partial class Tcgplayer
 public partial class TcgplayerPrices
 {
     [JsonPropertyName("holofoil")]
-    public required Holofoil Holofoil { get; set; }
+    public Holofoil? Holofoil { get; set; }
 
     [JsonPropertyName("reverseHolofoil")]
-    public required ReverseHolofoil ReverseHolofoil { get; set; }
+    public ReverseHolofoil? ReverseHolofoil { get; set; }
 
     [JsonPropertyName("normal")]
-    public required Normal Normal { get; set; }
+    public Normal? Normal { get; set; }
 
     [JsonPropertyName("1stEditionHolofoil")]
-    public required The1stEditionHolofoil The1stEditionHolofoil { get; set; }
+    public The1stEditionHolofoil? The1stEditionHolofoil { get; set; }
 }
 
 public partial class Holofoil
