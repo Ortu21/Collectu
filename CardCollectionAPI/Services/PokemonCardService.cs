@@ -146,7 +146,7 @@ namespace CardCollectionAPI.Services
             card.Name = dto.Name;
             card.Supertype = dto.Supertype;
             card.Hp = dto.Hp;
-            card.EvolvesFrom = dto.EvolvesFrom;
+            card.EvolvesFrom = dto.EvolvesFrom ?? string.Empty;
             card.Rarity = dto.Rarity;
             card.ImageUrl = dto.Images.Large.ToString();
 
@@ -156,7 +156,7 @@ namespace CardCollectionAPI.Services
                 PokemonCardId = card.Id,
                 PokemonCard = card,
                 Url = dto.Cardmarket.Url.ToString(),
-                UpdatedAt = DateTime.Parse(dto.Cardmarket.UpdatedAt)
+                UpdatedAt = DateOnly.TryParse(dto.Cardmarket.UpdatedAt, out var updatedAt) ? updatedAt : DateOnly.MinValue,
             };
 
             card.CardMarketPrices.PriceDetails.Add(new PokemonCardMarketPriceDetails
@@ -187,7 +187,7 @@ namespace CardCollectionAPI.Services
                 PokemonCardId = card.Id,
                 PokemonCard = card,
                 Url = dto.Tcgplayer.Url.ToString(),
-                UpdatedAt = DateTime.Parse(dto.Tcgplayer.UpdatedAt)
+                UpdatedAt = DateOnly.Parse(dto.Tcgplayer.UpdatedAt)
             };
 
             // Prezzi Holofoil, solo se esistono nel DTO
@@ -289,7 +289,7 @@ namespace CardCollectionAPI.Services
 
                 try
                 {
-                    card.Attacks = dto.Attacks.Select(a => new PokemonAttack
+                    card.Attacks = dto.Attacks?.Select(a => new PokemonAttack
                     {
                         PokemonCardId = dto.Id,
                         PokemonCard = card,
@@ -298,7 +298,7 @@ namespace CardCollectionAPI.Services
                         Text = a.Text,
                         Cost = string.Join(", ", a.Cost),
                         ConvertedEnergyCost = a.ConvertedEnergyCost.ToString(),
-                    }).ToList();
+                    }).ToList() ?? new List<PokemonAttack>();
                     _logger.LogInformation("Mapped {AttackCount} attacks for PokemonCard ID: {CardId}", card.Attacks.Count, dto.Id);
                 }
                 catch (Exception ex)
@@ -308,13 +308,13 @@ namespace CardCollectionAPI.Services
 
                 try
                 {
-                    card.Weaknesses = dto.Weaknesses.Select(w => new PokemonWeakness
+                    card.Weaknesses = dto.Weaknesses?.Select(w => new PokemonWeakness
                     {
                         PokemonCardId = dto.Id,
                         PokemonCard = card,
                         Type = w.Type,
                         Value = w.Value,
-                    }).ToList();
+                    }).ToList() ?? new List<PokemonWeakness>();
                     _logger.LogInformation("Mapped {WeaknessCount} weaknesses for PokemonCard ID: {CardId}", card.Weaknesses.Count, dto.Id);
                 }
                 catch (Exception ex)
@@ -324,13 +324,13 @@ namespace CardCollectionAPI.Services
 
                 try
                 {
-                    card.Resistances = dto.Resistances.Select(r => new PokemonResistance
+                    card.Resistances = dto.Resistances?.Select(r => new PokemonResistance
                     {
                         PokemonCardId = dto.Id,
                         PokemonCard = card,
                         Type = r.Type,
                         Value = r.Value,
-                    }).ToList();
+                    }).ToList() ?? new List<PokemonResistance>();
                     _logger.LogInformation("Mapped {ResistanceCount} resistances for PokemonCard ID: {CardId}", card.Resistances.Count, dto.Id);
                 }
                 catch (Exception ex)
@@ -359,7 +359,7 @@ namespace CardCollectionAPI.Services
                     PokemonCardId = dto.Id,
                     PokemonCard = card,
                     Url = dto.Cardmarket.Url.ToString(),
-                    UpdatedAt = DateTime.Parse(dto.Cardmarket.UpdatedAt),
+                    UpdatedAt = DateOnly.TryParse(dto.Cardmarket.UpdatedAt, out var updatedAt)? updatedAt : DateOnly.MinValue,
                     PriceDetails = new List<PokemonCardMarketPriceDetails>
         {
             new PokemonCardMarketPriceDetails
@@ -407,57 +407,58 @@ namespace CardCollectionAPI.Services
                 {
                     PokemonCardId = dto.Id,
                     PokemonCard = card,
-                    Url = dto.Tcgplayer.Url.ToString(),
-                    UpdatedAt = DateTime.Parse(dto.Tcgplayer.UpdatedAt),
+                    Url = dto.Tcgplayer.Url?.ToString() ?? string.Empty,
+                    UpdatedAt = DateOnly.TryParse(dto.Tcgplayer.UpdatedAt, out var updatedAt) ? updatedAt : DateOnly.MinValue,
                     PriceDetails = new List<PokemonTcgPlayerPriceDetails>
-        {
-            // Holofoil prices
-            new PokemonTcgPlayerPriceDetails
             {
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
-                FoilType = "Holofoil",
-                Low = dto.Tcgplayer.TcgplayerPrices.Holofoil.Low,
-                Mid = dto.Tcgplayer.TcgplayerPrices.Holofoil.Mid,
-                High = dto.Tcgplayer.TcgplayerPrices.Holofoil.High,
-                Market = dto.Tcgplayer.TcgplayerPrices.Holofoil.Market,
-                DirectLow = dto.Tcgplayer.TcgplayerPrices.Holofoil.DirectLow
-            },
-            // Reverse Holofoil prices
-            new PokemonTcgPlayerPriceDetails
-            {
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
-                FoilType = "ReverseHolofoil",
-                Low = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Low,
-                Mid = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Mid,
-                High = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.High,
-                Market = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Market,
-                DirectLow = dto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.DirectLow
-            },
-            // Normal prices
-            new PokemonTcgPlayerPriceDetails
-            {
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
-                FoilType = "Normal",
-                Low = dto.Tcgplayer.TcgplayerPrices.Normal.Low,
-                Mid = dto.Tcgplayer.TcgplayerPrices.Normal.Mid,
-                High = dto.Tcgplayer.TcgplayerPrices.Normal.High,
-                Market = dto.Tcgplayer.TcgplayerPrices.Normal.Market,
-                DirectLow = dto.Tcgplayer.TcgplayerPrices.Normal.DirectLow
-            },
-            // 1st Edition Holofoil prices
-            new PokemonTcgPlayerPriceDetails
-            {
-                PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
-                FoilType = "1stEditionHolofoil",
-                Low = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Low,
-                Mid = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Mid,
-                High = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.High,
-                Market = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Market,
-                DirectLow = dto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.DirectLow
+                // Holofoil prices
+                new PokemonTcgPlayerPriceDetails
+                {
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    FoilType = "Holofoil",
+                    Low = dto.Tcgplayer.TcgplayerPrices?.Holofoil?.Low ?? 0,
+                    Mid = dto.Tcgplayer.TcgplayerPrices?.Holofoil?.Mid ?? 0,
+                    High = dto.Tcgplayer.TcgplayerPrices?.Holofoil?.High ?? 0,
+                    Market = dto.Tcgplayer.TcgplayerPrices?.Holofoil?.Market ?? 0,
+                    DirectLow = dto.Tcgplayer.TcgplayerPrices?.Holofoil?.DirectLow ?? 0
+                },
+                // Reverse Holofoil prices
+                new PokemonTcgPlayerPriceDetails
+                {
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    FoilType = "ReverseHolofoil",
+                    Low = dto.Tcgplayer.TcgplayerPrices?.ReverseHolofoil?.Low ?? 0,
+                    Mid = dto.Tcgplayer.TcgplayerPrices?.ReverseHolofoil?.Mid ?? 0,
+                    High = dto.Tcgplayer.TcgplayerPrices?.ReverseHolofoil?.High ?? 0,
+                    Market = dto.Tcgplayer.TcgplayerPrices?.ReverseHolofoil?.Market ?? 0,
+                    DirectLow = dto.Tcgplayer.TcgplayerPrices?.ReverseHolofoil?.DirectLow ?? 0
+                },
+                // Normal prices
+                new PokemonTcgPlayerPriceDetails
+                {
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    FoilType = "Normal",
+                    Low = dto.Tcgplayer.TcgplayerPrices?.Normal?.Low ?? 0,
+                    Mid = dto.Tcgplayer.TcgplayerPrices?.Normal?.Mid ?? 0,
+                    High = dto.Tcgplayer.TcgplayerPrices?.Normal?.High ?? 0,
+                    Market = dto.Tcgplayer.TcgplayerPrices?.Normal?.Market ?? 0,
+                    DirectLow = dto.Tcgplayer.TcgplayerPrices?.Normal?.DirectLow ?? 0
+                },
+                // 1st Edition Holofoil prices
+                new PokemonTcgPlayerPriceDetails
+                {
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    FoilType = "1stEditionHolofoil",
+                    Low = dto.Tcgplayer.TcgplayerPrices?.The1stEditionHolofoil?.Low ?? 0,
+                    Mid = dto.Tcgplayer.TcgplayerPrices?.The1stEditionHolofoil?.Mid ?? 0,
+                    High = dto.Tcgplayer.TcgplayerPrices?.The1stEditionHolofoil?.High ?? 0,
+                    Market = dto.Tcgplayer.TcgplayerPrices?.The1stEditionHolofoil?.Market ?? 0,
+                    DirectLow = dto.Tcgplayer.TcgplayerPrices?.The1stEditionHolofoil?.DirectLow ?? 0
+                }
             }
-        }
                 };
 
+                // Ensuring all PriceDetails have the correct reference
                 foreach (var detail in tp.PriceDetails)
                 {
                     detail.PokemonTcgPlayerPrices = tp;
@@ -471,6 +472,7 @@ namespace CardCollectionAPI.Services
                 throw; // Rethrow or handle as needed
             }
         }
+
 
 
         public class PokemonApiResponse

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250217204312_modificaDataSet_dateonly2")]
-    partial class modificaDataSet_dateonly2
+    [Migration("20250217215525_FixDateOnlyMapping")]
+    partial class FixDateOnlyMapping
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -176,8 +176,8 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("UpdatedAt")
+                        .HasColumnType("date");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -295,8 +295,8 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("UpdatedAt")
+                        .HasColumnType("date");
 
                     b.Property<string>("Url")
                         .IsRequired()

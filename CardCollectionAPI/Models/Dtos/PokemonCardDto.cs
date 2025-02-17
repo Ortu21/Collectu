@@ -23,19 +23,19 @@ public partial class PokemonCardDto
     public required List<string> Types { get; set; }
 
     [JsonPropertyName("evolvesFrom")]
-    public required string EvolvesFrom { get; set; }
+    public string? EvolvesFrom { get; set; }
 
     [JsonPropertyName("attacks")]
-    public required List<Attack> Attacks { get; set; }
+    public List<Attack>? Attacks { get; set; }
 
     [JsonPropertyName("weaknesses")]
-    public required List<Resistance> Weaknesses { get; set; }
+    public List<Resistance>? Weaknesses { get; set; }
 
     [JsonPropertyName("resistances")]
-    public required List<Resistance> Resistances { get; set; }
+    public List<Resistance>? Resistances { get; set; }
 
     [JsonPropertyName("retreatCost")]
-    public required List<string> RetreatCost { get; set; }
+    public List<string>? RetreatCost { get; set; }
 
     [JsonPropertyName("convertedRetreatCost")]
     public long ConvertedRetreatCost { get; set; }

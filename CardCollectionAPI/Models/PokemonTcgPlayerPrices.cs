@@ -13,7 +13,7 @@ namespace CardCollectionAPI.Models
         public required PokemonCard PokemonCard { get; set; }
 
         public required string Url { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateOnly UpdatedAt { get; set; }
 
         // Relazione uno-a-molti con i dettagli dei prezzi
         public List<PokemonTcgPlayerPriceDetails> PriceDetails { get; set; } = [];
