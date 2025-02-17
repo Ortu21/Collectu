@@ -234,6 +234,12 @@ public partial class TcgplayerPrices
 
     [JsonPropertyName("reverseHolofoil")]
     public required Holofoil ReverseHolofoil { get; set; }
+
+    [JsonPropertyName("normal")]
+    public required Holofoil Normal { get; set; }
+
+    [JsonPropertyName("1stEditionHolofoil")]
+    public required Holofoil The1stEditionHolofoil { get; set; }
 }
 
 public partial class Holofoil
@@ -251,5 +257,41 @@ public partial class Holofoil
     public decimal Market { get; set; }
 
     [JsonPropertyName("directLow")]
-    public required object DirectLow { get; set; }
+    public decimal DirectLow { get; set; }
+}
+
+public partial class Normal
+{
+    [JsonPropertyName("low")]
+    public decimal Low { get; set; }
+
+    [JsonPropertyName("mid")]
+    public decimal Mid { get; set; }
+
+    [JsonPropertyName("high")]
+    public decimal High { get; set; }
+
+    [JsonPropertyName("market")]
+    public decimal Market { get; set; }
+
+    [JsonPropertyName("directLow")]
+    public decimal DirectLow { get; set; }
+}
+
+public partial class The1stEditionHolofoil
+{
+    [JsonPropertyName("low")]
+    public decimal Low { get; set; }
+
+    [JsonPropertyName("mid")]
+    public decimal Mid { get; set; }
+
+    [JsonPropertyName("high")]
+    public decimal High { get; set; }
+
+    [JsonPropertyName("market")]
+    public decimal Market { get; set; }
+
+    [JsonPropertyName("directLow")]
+    public decimal DirectLow { get; set; }
 }

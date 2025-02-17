@@ -19,7 +19,7 @@ namespace CardCollectionAPI.Models
         public List<PokemonWeakness> Weaknesses { get; set; } = [];
         public List<PokemonResistance> Resistances { get; set; } = [];
 
-        public required PokemonCardMarketPrices CardMarketPrices { get; set; } 
-        public required PokemonTcgPlayerPrices TcgPlayerPrices { get; set; } 
+        public PokemonCardMarketPrices? CardMarketPrices { get; set; } 
+        public PokemonTcgPlayerPrices? TcgPlayerPrices { get; set; } 
     }
 }
