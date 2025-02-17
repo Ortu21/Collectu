@@ -110,12 +110,16 @@ namespace CardCollectionAPI.Services
                 .Include(c => c.TcgPlayerPrices)
                 .FirstOrDefaultAsync(c => c.Id == cardDto.Id);
 
+            _logger.LogInformation($"Starting to process card {cardDto.Id}");
+
             if (existingCard == null)
             {
+                _logger.LogInformation($"Card {cardDto.Id} not found, adding it to the database");
                 // Mappa e aggiungi la carta senza i prezzi
                 var newCard = MapDtoToEntity(cardDto);
                 _dbContext.PokemonCards.Add(newCard);
                 await _dbContext.SaveChangesAsync(); // Salva la carta
+                _logger.LogInformation($"Card {cardDto.Id} added to the database");
 
                 // Ora aggiorna separatamente i prezzi
                 newCard.CardMarketPrices = MapCardMarketPrices(cardDto, newCard);
@@ -124,6 +128,7 @@ namespace CardCollectionAPI.Services
             }
             else
             {
+                _logger.LogInformation($"Card {cardDto.Id} already exists, updating it");
                 // Aggiorna la carta esistente (escludendo i prezzi, se necessario)
                 UpdateExistingCard(existingCard, cardDto);
                 // Aggiorna i prezzi
@@ -131,6 +136,8 @@ namespace CardCollectionAPI.Services
                 existingCard.TcgPlayerPrices = MapTcgPlayerPrices(cardDto, existingCard);
                 _dbContext.PokemonCards.Update(existingCard);
             }
+
+            _logger.LogInformation($"Finished processing card {cardDto.Id}");
         }
 
 
@@ -303,7 +310,7 @@ namespace CardCollectionAPI.Services
         {
             new PokemonCardMarketPriceDetails
             {
-                PokemonCardMarketPrices = card.CardMarketPrices,
+                PokemonCardMarketPrices = card.CardMarketPrices!,
                 AverageSellPrice = dto.Cardmarket.CardmarketPrices.AverageSellPrice,
                 LowPrice = dto.Cardmarket.CardmarketPrices.LowPrice,
                 TrendPrice = dto.Cardmarket.CardmarketPrices.TrendPrice,

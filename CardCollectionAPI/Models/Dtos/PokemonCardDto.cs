@@ -17,7 +17,7 @@ public partial class PokemonCardDto
     public required List<string> Subtypes { get; set; }
 
     [JsonPropertyName("hp")]
-    public int Hp { get; set; }
+    public string? Hp { get; set; }
 
     [JsonPropertyName("types")]
     public required List<string> Types { get; set; }
@@ -44,7 +44,7 @@ public partial class PokemonCardDto
     public required Set Set { get; set; }
 
     [JsonPropertyName("number")]
-    public long Number { get; set; }
+    public string? Number { get; set; }
 
     [JsonPropertyName("artist")]
     public required string Artist { get; set; }
@@ -83,7 +83,7 @@ public partial class Attack
     public long ConvertedEnergyCost { get; set; }
 
     [JsonPropertyName("damage")]
-    public int Damage { get; set; }
+    public string? Damage { get; set; }
 
     [JsonPropertyName("text")]
     public required string Text { get; set; }
@@ -233,13 +233,13 @@ public partial class TcgplayerPrices
     public required Holofoil Holofoil { get; set; }
 
     [JsonPropertyName("reverseHolofoil")]
-    public required Holofoil ReverseHolofoil { get; set; }
+    public required ReverseHolofoil ReverseHolofoil { get; set; }
 
     [JsonPropertyName("normal")]
-    public required Holofoil Normal { get; set; }
+    public required Normal Normal { get; set; }
 
     [JsonPropertyName("1stEditionHolofoil")]
-    public required Holofoil The1stEditionHolofoil { get; set; }
+    public required The1stEditionHolofoil The1stEditionHolofoil { get; set; }
 }
 
 public partial class Holofoil
@@ -257,7 +257,25 @@ public partial class Holofoil
     public decimal Market { get; set; }
 
     [JsonPropertyName("directLow")]
-    public decimal DirectLow { get; set; }
+    public decimal? DirectLow { get; set; }
+}
+
+public class ReverseHolofoil
+{
+    [JsonPropertyName("low")]
+    public decimal Low { get; set; }
+
+    [JsonPropertyName("mid")]
+    public decimal Mid { get; set; }
+
+    [JsonPropertyName("high")]
+    public decimal High { get; set; }
+
+    [JsonPropertyName("market")]
+    public decimal Market { get; set; }
+
+    [JsonPropertyName("directLow")]
+    public decimal? DirectLow { get; set; } 
 }
 
 public partial class Normal
@@ -275,7 +293,7 @@ public partial class Normal
     public decimal Market { get; set; }
 
     [JsonPropertyName("directLow")]
-    public decimal DirectLow { get; set; }
+    public decimal? DirectLow { get; set; }
 }
 
 public partial class The1stEditionHolofoil
@@ -293,5 +311,5 @@ public partial class The1stEditionHolofoil
     public decimal Market { get; set; }
 
     [JsonPropertyName("directLow")]
-    public decimal DirectLow { get; set; }
+    public decimal? DirectLow { get; set; }
 }

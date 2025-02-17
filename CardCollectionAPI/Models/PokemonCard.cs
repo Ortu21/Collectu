@@ -8,7 +8,7 @@ namespace CardCollectionAPI.Models
         public required string Id { get; set; } // ID univoco della carta
         public required string Name { get; set; } // Nome della carta
         public required string Supertype { get; set; } // "Pokémon" o altro
-        public required int Hp { get; set; } // Punti vita
+        public string? Hp { get; set; } // Punti vita
         public required string EvolvesFrom { get; set; } // Da quale Pokémon evolve
         public required string Rarity { get; set; } // Rarità
         public required string ImageUrl { get; set; } // URL immagine
