@@ -104,49 +104,49 @@ public partial class Cardmarket
 public class CardmarketPrices
 {
     [JsonPropertyName("averageSellPrice")]
-    public decimal AverageSellPrice { get; set; }
+    public decimal? AverageSellPrice { get; set; }
 
     [JsonPropertyName("lowPrice")]
-    public decimal LowPrice { get; set; }
+    public decimal? LowPrice { get; set; }
 
     [JsonPropertyName("trendPrice")]
-    public decimal TrendPrice { get; set; }
+    public decimal? TrendPrice { get; set; }
 
     [JsonPropertyName("germanProLow")]
-    public decimal GermanProLow { get; set; }
+    public decimal? GermanProLow { get; set; }
 
     [JsonPropertyName("suggestedPrice")]
-    public decimal SuggestedPrice { get; set; }
+    public decimal? SuggestedPrice { get; set; }
 
     [JsonPropertyName("reverseHoloSell")]
-    public decimal ReverseHoloSell { get; set; }
+    public decimal? ReverseHoloSell { get; set; }
 
     [JsonPropertyName("reverseHoloLow")]
-    public decimal ReverseHoloLow { get; set; }
+    public decimal? ReverseHoloLow { get; set; }
 
     [JsonPropertyName("reverseHoloTrend")]
-    public decimal ReverseHoloTrend { get; set; }
+    public decimal? ReverseHoloTrend { get; set; }
 
     [JsonPropertyName("lowPriceExPlus")]
-    public decimal LowPriceExPlus { get; set; }
+    public decimal? LowPriceExPlus { get; set; }
 
     [JsonPropertyName("avg1")]
-    public decimal Avg1 { get; set; }
+    public decimal? Avg1 { get; set; }
 
     [JsonPropertyName("avg7")]
-    public decimal Avg7 { get; set; }
+    public decimal? Avg7 { get; set; }
 
     [JsonPropertyName("avg30")]
-    public decimal Avg30 { get; set; }
+    public decimal? Avg30 { get; set; }
 
     [JsonPropertyName("reverseHoloAvg1")]
-    public decimal ReverseHoloAvg1 { get; set; }
+    public decimal? ReverseHoloAvg1 { get; set; }
 
     [JsonPropertyName("reverseHoloAvg7")]
-    public decimal ReverseHoloAvg7 { get; set; }
+    public decimal? ReverseHoloAvg7 { get; set; }
 
     [JsonPropertyName("reverseHoloAvg30")]
-    public decimal ReverseHoloAvg30 { get; set; }
+    public decimal? ReverseHoloAvg30 { get; set; }
 }
 
 public partial class DataImages
@@ -224,7 +224,7 @@ public partial class Tcgplayer
     public required string UpdatedAt { get; set; }
 
     [JsonPropertyName("prices")]
-    public required TcgplayerPrices TcgplayerPrices { get; set; }
+    public  TcgplayerPrices? TcgplayerPrices { get; set; }
 }
 
 public partial class TcgplayerPrices
@@ -245,16 +245,16 @@ public partial class TcgplayerPrices
 public partial class Holofoil
 {
     [JsonPropertyName("low")]
-    public decimal Low { get; set; }
+    public decimal? Low { get; set; }
 
     [JsonPropertyName("mid")]
-    public decimal Mid { get; set; }
+    public decimal? Mid { get; set; }
 
     [JsonPropertyName("high")]
-    public decimal High { get; set; }
+    public decimal? High { get; set; }
 
     [JsonPropertyName("market")]
-    public decimal Market { get; set; }
+    public decimal? Market { get; set; }
 
     [JsonPropertyName("directLow")]
     public decimal? DirectLow { get; set; }
@@ -263,16 +263,16 @@ public partial class Holofoil
 public class ReverseHolofoil
 {
     [JsonPropertyName("low")]
-    public decimal Low { get; set; }
+    public decimal? Low { get; set; }
 
     [JsonPropertyName("mid")]
-    public decimal Mid { get; set; }
+    public decimal? Mid { get; set; }
 
     [JsonPropertyName("high")]
-    public decimal High { get; set; }
+    public decimal? High { get; set; }
 
     [JsonPropertyName("market")]
-    public decimal Market { get; set; }
+    public decimal? Market { get; set; }
 
     [JsonPropertyName("directLow")]
     public decimal? DirectLow { get; set; } 
@@ -281,16 +281,16 @@ public class ReverseHolofoil
 public partial class Normal
 {
     [JsonPropertyName("low")]
-    public decimal Low { get; set; }
+    public decimal? Low { get; set; }
 
     [JsonPropertyName("mid")]
-    public decimal Mid { get; set; }
+    public decimal? Mid { get; set; }
 
     [JsonPropertyName("high")]
-    public decimal High { get; set; }
+    public decimal? High { get; set; }
 
     [JsonPropertyName("market")]
-    public decimal Market { get; set; }
+    public decimal? Market { get; set; }
 
     [JsonPropertyName("directLow")]
     public decimal? DirectLow { get; set; }
@@ -299,16 +299,16 @@ public partial class Normal
 public partial class The1stEditionHolofoil
 {
     [JsonPropertyName("low")]
-    public decimal Low { get; set; }
+    public decimal? Low { get; set; }
 
     [JsonPropertyName("mid")]
-    public decimal Mid { get; set; }
+    public decimal? Mid { get; set; }
 
     [JsonPropertyName("high")]
-    public decimal High { get; set; }
+    public decimal? High { get; set; }
 
     [JsonPropertyName("market")]
-    public decimal Market { get; set; }
+    public decimal? Market { get; set; }
 
     [JsonPropertyName("directLow")]
     public decimal? DirectLow { get; set; }
