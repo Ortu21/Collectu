@@ -14,7 +14,7 @@ namespace CardCollectionAPI.Services
         private readonly AppDbContext _dbContext;
         private readonly ILogger<PokemonCardService> _logger;
         private const string ApiUrl = "https://api.pokemontcg.io/v2/cards";
-        private const string ApiKey = "3ddac7c9-24b0-4321-9ce3-658fbb16e27b";
+        private const string ApiKey = "";
 
         public PokemonCardService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonCardService> logger)
         {
