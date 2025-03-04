@@ -90,9 +90,44 @@ namespace CardCollectionAPI.Services
 
 
 
-        public Task ImportSingleCardAsync(string cardId)
+        public async Task ImportSingleCardAsync(string cardId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}/{cardId}");
+                request.Headers.Add("X-Api-Key", ApiKey);
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"TCG API request failed with status code: {response.StatusCode}");
+                    return;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var cardDto = JsonSerializer.Deserialize<SingleCardResponse>(content, _jsonSerializerOptions)?.Data;
+
+                if (cardDto == null)
+                {
+                    _logger.LogWarning($"No data received from TCG API for card {cardId}");
+                    return;
+                }
+
+                await ProcessCardAsync(cardDto);
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation($"Successfully imported card {cardId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred during import of card {cardId}");
+                throw;
+            }
+        }
+
+        public class SingleCardResponse
+        {
+            public PokemonCardDto Data { get; set; } = null!;
         }
 
         public class PokemonApiResponse
