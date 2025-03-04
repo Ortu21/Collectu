@@ -3,6 +3,7 @@ using System;
 using CardCollectionAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250218210030_AggiuntoSetId")]
+    partial class AggiuntoSetId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,8 +87,8 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("SetId")
-                        .HasColumnType("text");
+                    b.Property<int>("SetId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Supertype")
                         .IsRequired()
@@ -217,8 +220,11 @@ namespace CardCollectionAPI.Migrations
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonSet", b =>
                 {
-                    b.Property<string>("SetId")
-                        .HasColumnType("text");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("LogoUrl")
                         .IsRequired()
@@ -231,11 +237,15 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("SetId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("SetName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("SetId");
+                    b.HasKey("Id");
 
                     b.ToTable("PokemonSets");
                 });
@@ -346,7 +356,9 @@ namespace CardCollectionAPI.Migrations
                 {
                     b.HasOne("CardCollectionAPI.Models.PokemonSet", "Set")
                         .WithMany("Cards")
-                        .HasForeignKey("SetId");
+                        .HasForeignKey("SetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Set");
                 });

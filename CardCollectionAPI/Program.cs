@@ -14,10 +14,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 // Inizializza Firebase Admin SDK
-FirebaseApp.Create(new AppOptions()
+if (FirebaseApp.DefaultInstance == null)
 {
-    Credential = GoogleCredential.FromFile("firebase-config.json")
-});
+    FirebaseApp.Create(new AppOptions()
+    {
+        Credential = GoogleCredential.FromFile("firebase-config.json")
+    });
+}
 
 // Configura l'autenticazione JWT con Firebase
 builder.Services

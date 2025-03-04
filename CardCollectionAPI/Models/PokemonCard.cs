@@ -12,8 +12,8 @@ namespace CardCollectionAPI.Models
         public required string EvolvesFrom { get; set; } // Da quale Pokémon evolve
         public required string Rarity { get; set; } // Rarità
         public required string ImageUrl { get; set; } // URL immagine
-        public int SetId { get; set; } // Relazione con il Set
-        public required PokemonSet Set { get; set; }
+        public string? SetId { get; set; } // Relazione con il Set
+        public PokemonSet? Set { get; set; }
 
         public List<PokemonAttack> Attacks { get; set; } = [];
         public List<PokemonWeakness> Weaknesses { get; set; } = [];

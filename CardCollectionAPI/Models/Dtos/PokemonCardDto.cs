@@ -11,16 +11,16 @@ public partial class PokemonCardDto
     public required string Name { get; set; }
 
     [JsonPropertyName("supertype")]
-    public required string Supertype { get; set; }
+    public string? Supertype { get; set; }
 
     [JsonPropertyName("subtypes")]
-    public required List<string> Subtypes { get; set; }
+    public List<string>? Subtypes { get; set; }
 
     [JsonPropertyName("hp")]
     public string? Hp { get; set; }
 
     [JsonPropertyName("types")]
-    public required List<string> Types { get; set; }
+    public List<string>? Types { get; set; }
 
     [JsonPropertyName("evolvesFrom")]
     public string? EvolvesFrom { get; set; }
@@ -47,7 +47,7 @@ public partial class PokemonCardDto
     public string? Number { get; set; }
 
     [JsonPropertyName("artist")]
-    public required string Artist { get; set; }
+    public string?Artist { get; set; }
 
     [JsonPropertyName("rarity")]
     public string? Rarity { get; set; }
@@ -56,7 +56,7 @@ public partial class PokemonCardDto
     public string? FlavorText { get; set; }
 
     [JsonPropertyName("nationalPokedexNumbers")]
-    public required List<long> NationalPokedexNumbers { get; set; }
+    public List<long>? NationalPokedexNumbers { get; set; }
 
     [JsonPropertyName("legalities")]
     public required Legalities Legalities { get; set; }
@@ -98,7 +98,7 @@ public partial class Cardmarket
     public required string UpdatedAt { get; set; }
 
     [JsonPropertyName("prices")]
-    public required CardmarketPrices CardmarketPrices { get; set; }
+    public CardmarketPrices? CardmarketPrices { get; set; }
 }
 
 public class CardmarketPrices
