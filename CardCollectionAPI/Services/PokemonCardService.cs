@@ -1,34 +1,23 @@
 using System.Text.Json;
 using CardCollectionAPI.Data;
-using CardCollectionAPI.Models;
 using CardCollectionAPI.Models.Dtos;
 using CardCollectionAPI.Services.Interfaces;
 using CardCollectionAPI.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace CardCollectionAPI.Services
 {
-    public class PokemonCardService : IPokemonCardService
+    public class PokemonCardService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonCardService> logger, IConfiguration configuration) : IPokemonCardService
     {
-        private readonly HttpClient _httpClient;
-        private readonly AppDbContext _dbContext;
-        private readonly ILogger<PokemonCardService> _logger;
-        private readonly PokemonSetService _pokemonSetService;
+        private readonly HttpClient _httpClient = httpClient;
+        private readonly AppDbContext _dbContext = dbContext;
+        private readonly ILogger<PokemonCardService> _logger = logger;
+        private readonly PokemonSetService _pokemonSetService = new(dbContext);
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
         private const string ApiUrl = "https://api.pokemontcg.io/v2/cards";
-        private readonly string _apiKey;
+        private readonly string _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
         private int _currentPage = 1;
         private const int _pageSize = 250;
-
-        public PokemonCardService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonCardService> logger, IConfiguration configuration)
-        {
-            _httpClient = httpClient;
-            _dbContext = dbContext;
-            _logger = logger;
-            _pokemonSetService = new(dbContext);
-            _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
-        }
 
         public async Task ImportPokemonCardsAsync()
         {
@@ -98,8 +87,6 @@ namespace CardCollectionAPI.Services
             }
         }
 
-
-
         public async Task ImportSingleCardAsync(string cardId)
         {
             try
@@ -142,7 +129,7 @@ namespace CardCollectionAPI.Services
 
         public class PokemonApiResponse
         {
-            public List<PokemonCardDto> Data { get; set; } = new();
+            public List<PokemonCardDto> Data { get; set; } = [];
         }
     }
 }
