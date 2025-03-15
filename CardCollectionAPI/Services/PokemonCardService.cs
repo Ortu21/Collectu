@@ -30,7 +30,7 @@ namespace CardCollectionAPI.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError($"TCG API request failed with status code: {response.StatusCode}");
+                    _logger.LogError("TCG API request failed with status code: {StatusCode}", response.StatusCode);
                     return;
                 }
 
@@ -83,7 +83,7 @@ namespace CardCollectionAPI.Services
             }
             else
             {
-                _logger.LogWarning($"La carta {cardDto.Name} (ID: {cardDto.Id}) esiste già e non verrà reinserita.");
+_logger.LogWarning("La carta {Name} (ID: {Id}) esiste già e non verrà reinserita.", cardDto.Name, cardDto.Id);
             }
         }
 
@@ -98,7 +98,7 @@ namespace CardCollectionAPI.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError($"TCG API request failed with status code: {response.StatusCode}");
+                    _logger.LogError("TCG API request failed with status code: {StatusCode}", response.StatusCode);
                     return;
                 }
 
@@ -107,17 +107,17 @@ namespace CardCollectionAPI.Services
 
                 if (cardDto == null)
                 {
-                    _logger.LogWarning($"No data received from TCG API for card {cardId}");
+                    _logger.LogWarning("No data received from TCG API for card {CardId}", cardId);
                     return;
                 }
 
                 await ProcessCardAsync(cardDto);
                 await _dbContext.SaveChangesAsync();
-                _logger.LogInformation($"Successfully imported card {cardId}");
+                _logger.LogInformation("Successfully imported card {CardId}", cardId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occurred during import of card {cardId}");
+                _logger.LogError(ex, "Error occurred during import of card {CardId}", cardId);
                 throw;
             }
         }
