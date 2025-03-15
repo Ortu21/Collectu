@@ -5,27 +5,37 @@ using CardCollectionAPI.Models.Dtos;
 using CardCollectionAPI.Services.Interfaces;
 using CardCollectionAPI.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace CardCollectionAPI.Services
 {
-    public class PokemonCardService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonCardService> logger) : IPokemonCardService
+    public class PokemonCardService : IPokemonCardService
     {
-        private readonly HttpClient _httpClient = httpClient;
-        private readonly AppDbContext _dbContext = dbContext;
-        private readonly ILogger<PokemonCardService> _logger = logger;
-        private readonly PokemonSetService _pokemonSetService = new(dbContext);
+        private readonly HttpClient _httpClient;
+        private readonly AppDbContext _dbContext;
+        private readonly ILogger<PokemonCardService> _logger;
+        private readonly PokemonSetService _pokemonSetService;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
         private const string ApiUrl = "https://api.pokemontcg.io/v2/cards";
-        private const string ApiKey = "3ddac7c9-24b0-4321-9ce3-658fbb16e27b";
+        private readonly string _apiKey;
         private int _currentPage = 1;
         private const int _pageSize = 250;
+
+        public PokemonCardService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonCardService> logger, IConfiguration configuration)
+        {
+            _httpClient = httpClient;
+            _dbContext = dbContext;
+            _logger = logger;
+            _pokemonSetService = new(dbContext);
+            _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
+        }
 
         public async Task ImportPokemonCardsAsync()
         {
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}?page={_currentPage}&pageSize={_pageSize}");
-                request.Headers.Add("X-Api-Key", ApiKey);
+                request.Headers.Add("X-Api-Key", _apiKey);
 
                 var response = await _httpClient.SendAsync(request);
 
@@ -95,7 +105,7 @@ namespace CardCollectionAPI.Services
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}/{cardId}");
-                request.Headers.Add("X-Api-Key", ApiKey);
+                request.Headers.Add("X-Api-Key", _apiKey);
 
                 var response = await _httpClient.SendAsync(request);
 
