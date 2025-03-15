@@ -71,19 +71,31 @@ namespace CardCollectionAPI.Services
 
             // Controlla se la carta esiste già
             var existingCard = await _dbContext.PokemonCards
-                .AsNoTracking()
+                .Include(c => c.CardMarketPrices)
+                .Include(c => c.TcgPlayerPrices)
                 .FirstOrDefaultAsync(c => c.Id == cardDto.Id);
 
             if (existingCard == null)
             {
+                // Crea una nuova carta
                 var card = PokemonCardMapper.MapDtoToEntity(cardDto);
                 card.SetId = set.SetId; // Assegna l'ID del set corretto
 
+                // Aggiungi la carta al contesto
                 _dbContext.PokemonCards.Add(card);
+                await _dbContext.SaveChangesAsync();
+
+                // Aggiungi i prezzi per la nuova carta
+                PokemonPriceMapper.MapCardMarketPrices(cardDto, card);
+                PokemonPriceMapper.MapTcgPlayerPrices(cardDto, card);
             }
             else
             {
-_logger.LogWarning("La carta {Name} (ID: {Id}) esiste già e non verrà reinserita.", cardDto.Name, cardDto.Id);
+                _logger.LogInformation("La carta {Name} (ID: {Id}) esiste già. Aggiornamento prezzi...", cardDto.Name, cardDto.Id);
+                
+                // Aggiungi nuovi record di prezzi per la carta esistente
+                PokemonPriceMapper.MapCardMarketPrices(cardDto, existingCard);
+                PokemonPriceMapper.MapTcgPlayerPrices(cardDto, existingCard);
             }
         }
 

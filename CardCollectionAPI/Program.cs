@@ -44,7 +44,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<PokemonCardService>();
 builder.Logging.AddConsole(); // Mostra log sulla console
 builder.Logging.SetMinimumLevel(LogLevel.Information); // Raccogli tutti i log di livello 'Information' o superiore
-
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning); // Raccogli solo i log di Entity Framework Core
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Error); // Collect Entity Framework Core error logs
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
