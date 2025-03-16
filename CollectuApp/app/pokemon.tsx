@@ -201,7 +201,7 @@ export default function PokemonCards() {
             <FlatList
               data={cards}
               renderItem={renderCard}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item, index) => `${item.id}-${index}`}
               contentContainerStyle={styles.cardList}
               numColumns={2}
               onRefresh={handleRefresh}
