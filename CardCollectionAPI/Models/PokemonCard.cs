@@ -14,6 +14,7 @@ namespace CardCollectionAPI.Models
         public required string ImageUrl { get; set; } // URL immagine
         public string? SetId { get; set; } // Relazione con il Set
         public PokemonSet? Set { get; set; }
+        public string? Number { get; set; }
 
         public List<PokemonAttack> Attacks { get; set; } = [];
         public List<PokemonWeakness> Weaknesses { get; set; } = [];

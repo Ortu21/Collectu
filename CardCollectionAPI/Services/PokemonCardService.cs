@@ -16,47 +16,66 @@ namespace CardCollectionAPI.Services
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
         private const string ApiUrl = "https://api.pokemontcg.io/v2/cards";
         private readonly string _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
-        private int _currentPage = 1;
         private const int _pageSize = 250;
 
         public async Task ImportPokemonCardsAsync()
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}?page={_currentPage}&pageSize={_pageSize}");
-                request.Headers.Add("X-Api-Key", _apiKey);
+                int currentPage = 1;
+                bool hasMoreCards = true;
+                
+                _logger.LogInformation("Starting Pokemon card import with page size {PageSize}", _pageSize);
 
-                var response = await _httpClient.SendAsync(request);
-
-                if (!response.IsSuccessStatusCode)
+                while (hasMoreCards)
                 {
-                    _logger.LogError("TCG API request failed with status code: {StatusCode}", response.StatusCode);
-                    return;
+                    _logger.LogInformation("Processing page {CurrentPage}", currentPage);
+                    
+                    var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}?page={currentPage}&pageSize={_pageSize}");
+                    request.Headers.Add("X-Api-Key", _apiKey);
+
+                    var response = await _httpClient.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogError("TCG API request failed with status code: {StatusCode}", response.StatusCode);
+                        return;
+                    }
+
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiResponse = JsonSerializer.Deserialize<PokemonApiResponse>(content, _jsonSerializerOptions);
+
+                    if (apiResponse == null || apiResponse.Data == null || apiResponse.Data.Count == 0)
+                    {
+                        _logger.LogInformation("No cards found on page {CurrentPage}", currentPage);
+                        hasMoreCards = false;
+                        break;
+                    }
+
+                    _logger.LogInformation("Found {CardCount} cards on page {CurrentPage}", apiResponse.Data.Count, currentPage);
+
+                    foreach (var card in apiResponse.Data)
+                    {
+                        await ProcessCardAsync(card);
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+
+                    // Se abbiamo ricevuto meno carte del pageSize, significa che abbiamo raggiunto l'ultima pagina
+                    if (apiResponse.Data.Count < _pageSize)
+                    {
+                        _logger.LogInformation("Reached last page with {CardCount} cards", apiResponse.Data.Count);
+                        hasMoreCards = false;
+                    }
+                    else
+                    {
+                        // Passa alla pagina successiva
+                        currentPage++;
+                        _logger.LogInformation("Moving to page {NextPage}", currentPage);
+                    }
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<PokemonApiResponse>(content, _jsonSerializerOptions);
-
-                if (apiResponse == null || apiResponse.Data == null || apiResponse.Data.Count == 0)
-                {
-                    _logger.LogInformation("No cards found");
-                    return;
-                }
-
-                foreach (var card in apiResponse.Data)
-                {
-                    await ProcessCardAsync(card);
-                }
-
-                await _dbContext.SaveChangesAsync();
-
-                if (apiResponse.Data.Count < _pageSize)
-                {
-                    _logger.LogInformation("No more cards found");
-                    return;
-                }
-
-                _currentPage++;
+                _logger.LogInformation("Pokemon card import completed successfully");
             }
             catch (Exception ex)
             {

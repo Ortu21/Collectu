@@ -38,6 +38,16 @@ builder.Services
         };
     });
 
+// Configura CORS - spostato qui prima di app.Build()
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", 
+        builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -46,6 +56,7 @@ builder.Logging.AddConsole(); // Mostra log sulla console
 builder.Logging.SetMinimumLevel(LogLevel.Information); // Raccogli tutti i log di livello 'Information' o superiore
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning); // Raccogli solo i log di Entity Framework Core
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Error); // Collect Entity Framework Core error logs
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -54,7 +65,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Usa CORS prima di Authentication e Authorization
+app.UseCors("AllowAll");
+
 app.UseAuthentication(); // Attiva l'autenticazione
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();

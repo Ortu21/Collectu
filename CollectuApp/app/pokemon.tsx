@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,87 +14,125 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
-
-type PokemonCard = {
-  id: string;
-  name: string;
-  supertype: string;
-  hp?: string;
-  evolvesFrom: string;
-  rarity: string;
-  imageUrl: string;
-};
+import { fetchPokemonCards, searchPokemonCards } from "../services/api";
+import { PokemonCard } from "../types/pokemon";
 
 export default function PokemonCards() {
   const [cards, setCards] = useState<PokemonCard[]>([]);
-  const [filteredCards, setFilteredCards] = useState<PokemonCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMoreCards, setHasMoreCards] = useState(true);
   const { user } = useAuth();
   const router = useRouter();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const pageSize = 20;
 
+  // Primo useEffect solo per impostare isInitialized
   useEffect(() => {
-    fetchPokemonCards();
+    setIsInitialized(true);
   }, []);
 
+  // Secondo useEffect per la navigazione, ma solo dopo l'inizializzazione
   useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredCards(cards);
+    if (!isInitialized) return;
+    
+    if (!user) {
+      // Usa setTimeout per ritardare la navigazione
+      const timer = setTimeout(() => {
+        router.replace("/login");
+      }, 0);
+      
+      return () => clearTimeout(timer);
     } else {
-      const filtered = cards.filter((card) =>
-        card.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredCards(filtered);
+      loadPokemonCards(1, true);
     }
-  }, [searchQuery, cards]);
+  }, [user, router, isInitialized]);
 
-  const fetchPokemonCards = async () => {
-    setIsLoading(true);
+  // Effetto per gestire la ricerca con debounce
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (isInitialized && user) {
+        handleSearch();
+      }
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchQuery, isInitialized, user]);
+
+  const handleSearch = useCallback(() => {
+    // Reset dello stato e caricamento delle carte filtrate
+    setCurrentPage(1);
+    setCards([]);
+    setHasMoreCards(true);
+    loadPokemonCards(1, true);
+  }, [searchQuery]);
+
+  const loadPokemonCards = async (page: number, isNewSearch: boolean = false) => {
+    if (isNewSearch) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
     setError(null);
 
     try {
-      // Replace with your actual API endpoint
-      const response = await fetch("https://api.pokemontcg.io/v2/cards?pageSize=20");
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      let result;
+      if (searchQuery.trim() !== "") {
+        // Usa la ricerca avanzata
+        result = await searchPokemonCards(searchQuery, pageSize, page);
+      } else {
+        // Carica tutte le carte
+        result = await fetchPokemonCards(pageSize, page);
       }
+
+      setTotalCount(result.totalCount);
       
-      const data = await response.json();
-      
-      // Transform the data to match our PokemonCard type
-      const transformedCards: PokemonCard[] = data.data.map((card: any) => ({
-        id: card.id,
-        name: card.name,
-        supertype: card.supertype || "",
-        hp: card.hp || "",
-        evolvesFrom: card.evolvesFrom || "",
-        rarity: card.rarity || "",
-        imageUrl: card.images.small || "",
-      }));
-      
-      setCards(transformedCards);
-      setFilteredCards(transformedCards);
+      if (isNewSearch) {
+        setCards(result.data);
+      } else {
+        setCards(prevCards => [...prevCards, ...result.data]);
+      }
+
+      // Verifica se ci sono altre carte da caricare
+      setHasMoreCards(page * pageSize < result.totalCount);
+      setCurrentPage(page);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch Pokemon cards");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
+      );
       console.error("Error fetching Pokemon cards:", err);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMoreCards) {
+      loadPokemonCards(currentPage + 1);
     }
   };
 
   const renderCard = ({ item }: { item: PokemonCard }) => (
     <TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
-      <Image 
-        source={{ uri: item.imageUrl }} 
-        style={styles.cardImage} 
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={styles.cardImage}
         resizeMode="contain"
       />
       <View style={styles.cardInfo}>
         <Text style={styles.cardName}>{item.name}</Text>
         <Text style={styles.cardType}>{item.supertype}</Text>
-        {item.rarity && <Text style={styles.cardRarity}>Rarity: {item.rarity}</Text>}
+        {item.rarity && (
+          <Text style={styles.cardRarity}>Rarity: {item.rarity}</Text>
+        )}
+        {item.setName && (
+          <Text style={styles.cardSet}>Set: {item.setName}</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -105,58 +143,75 @@ export default function PokemonCards() {
   };
 
   const handleRefresh = () => {
-    fetchPokemonCards();
+    loadPokemonCards(1, true);
   };
 
-  if (!user) {
-    // Redirect to login if not authenticated
-    router.replace("/login");
-    return null;
-  }
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#007AFF" />
+        <Text style={styles.footerText}>Loading more cards...</Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-      <View style={styles.header}>
-        <Text style={styles.title}>Pokemon Cards</Text>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search cards..."
-          placeholderTextColor="#666"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
+      {!user ? null : (
+        <>
+          <StatusBar style="light" />
+          <View style={styles.header}>
+            <Text style={styles.title}>Pokemon Cards</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search cards..."
+              placeholderTextColor="#666"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {totalCount > 0 && !isLoading && (
+              <Text style={styles.resultCount}>
+                Found {totalCount} card{totalCount !== 1 ? 's' : ''}
+              </Text>
+            )}
+          </View>
 
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading cards...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      ) : filteredCards.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No Pokemon cards found</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
-            <Text style={styles.retryButtonText}>Refresh</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredCards}
-          renderItem={renderCard}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.cardList}
-          numColumns={2}
-          onRefresh={handleRefresh}
-          refreshing={isLoading}
-        />
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <Text style={styles.loadingText}>Loading cards...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : cards.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No Pokemon cards found</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+                <Text style={styles.retryButtonText}>Refresh</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={cards}
+              renderItem={renderCard}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.cardList}
+              numColumns={2}
+              onRefresh={handleRefresh}
+              refreshing={isLoading}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.3}
+              ListFooterComponent={renderFooter}
+            />
+          )}
+        </>
       )}
     </SafeAreaView>
   );
@@ -186,6 +241,12 @@ const styles = StyleSheet.create({
     padding: 12,
     color: "#fff",
     fontSize: 16,
+  },
+  resultCount: {
+    color: "#aaa",
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: "center",
   },
   cardList: {
     padding: 8,
@@ -221,6 +282,11 @@ const styles = StyleSheet.create({
   cardRarity: {
     fontSize: 12,
     color: "#007AFF",
+    marginBottom: 4,
+  },
+  cardSet: {
+    fontSize: 12,
+    color: "#6c757d",
   },
   loadingContainer: {
     flex: 1,
@@ -267,5 +333,16 @@ const styles = StyleSheet.create({
     color: "#aaa",
     textAlign: "center",
     marginBottom: 16,
+  },
+  footerLoader: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  footerText: {
+    color: "#aaa",
+    fontSize: 14,
+    marginLeft: 8,
   },
 });

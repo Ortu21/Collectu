@@ -16,7 +16,8 @@ namespace CardCollectionAPI.Services.Mappers
                 EvolvesFrom = dto.EvolvesFrom ?? string.Empty,
                 Rarity = dto.Rarity ?? string.Empty,
                 ImageUrl = dto.Images.Large.ToString(),
-                SetId = dto.Set.Id
+                SetId = dto.Set.Id,
+                Number = dto.Number,
             };
 
             card.Attacks = dto.Attacks?.Select(a => new PokemonAttack
