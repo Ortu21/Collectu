@@ -1,351 +1,111 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  TextInput,
-  SafeAreaView,
-  StatusBar as RNStatusBar,
-  Modal,
-  ScrollView,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, SafeAreaView, StatusBar as RNStatusBar } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
-import { fetchPokemonCards, searchPokemonCards, fetchPokemonSets, fetchPokemonCardsBySet } from "../services/api";
-import { PokemonCard, PokemonSet } from "../types/pokemon";
+import { PokemonCard } from "../types/pokemon";
+import { usePokemonCards } from "../hooks/usePokemonCards";
+import { usePokemonSets } from "../hooks/usePokemonSets";
+import { PokemonCardList } from "../components/pokemon/PokemonCardList";
+import { SearchFilterBar } from "../components/pokemon/SearchFilterBar";
+import { SetFilterModal } from "../components/pokemon/SetFilterModal";
 
 export default function PokemonCards() {
-  const [cards, setCards] = useState<PokemonCard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [hasMoreCards, setHasMoreCards] = useState(true);
   const { user } = useAuth();
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
-  const pageSize = 20;
   
-  // Set filter state
-  const [sets, setSets] = useState<PokemonSet[]>([]);
-  const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
-  const [isSetModalVisible, setIsSetModalVisible] = useState(false);
-  const [isLoadingSets, setIsLoadingSets] = useState(false);
-
-  // Primo useEffect solo per impostare isInitialized
+  // Initialize the app
   useEffect(() => {
     setIsInitialized(true);
   }, []);
   
-  // Carica i set Pokemon
-  useEffect(() => {
-    if (isInitialized && user) {
-      loadPokemonSets();
-    }
-  }, [isInitialized, user]);
-  
-  const loadPokemonSets = async () => {
-    setIsLoadingSets(true);
-    try {
-      const setsData = await fetchPokemonSets();
-      setSets(setsData);
-    } catch (err) {
-      console.error("Error loading Pokemon sets:", err);
-    } finally {
-      setIsLoadingSets(false);
-    }
-  };
-
-  // Secondo useEffect per la navigazione, ma solo dopo l'inizializzazione
+  // Handle authentication redirect
   useEffect(() => {
     if (!isInitialized) return;
 
     if (!user) {
-      // Usa setTimeout per ritardare la navigazione
       const timer = setTimeout(() => {
         router.replace("/login");
       }, 0);
 
       return () => clearTimeout(timer);
-    } else {
-      loadPokemonCards(1, true);
     }
   }, [user, router, isInitialized]);
-
-  // Effetto per gestire la ricerca con debounce
-  useEffect(() => {
-    const delaySearch = setTimeout(() => {
-      if (isInitialized && user) {
-        handleSearch();
-      }
-    }, 500);
-
-    return () => clearTimeout(delaySearch);
-  }, [searchQuery, isInitialized, user]);
-
-  const handleSearch = useCallback(() => {
-    // Reset dello stato e caricamento delle carte filtrate
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    loadPokemonCards(1, true);
-  }, [searchQuery, selectedSet]);
   
-  const handleSetSelect = (set: PokemonSet) => {
-    setSelectedSet(set);
-    setIsSetModalVisible(false);
-    setSearchQuery(""); // Reset search query when selecting a set
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    loadPokemonCards(1, true);
-  };
+  // Use custom hooks for Pokemon cards and sets
+  const {
+    cards,
+    isLoading,
+    isLoadingMore,
+    error,
+    searchQuery,
+    setSearchQuery,
+    totalCount,
+    hasMoreCards,
+    selectedSet,
+    handleSetSelect,
+    clearSetFilter,
+    handleLoadMore,
+    handleRefresh
+  } = usePokemonCards({
+    initialPageSize: 20,
+    user,
+    isInitialized
+  });
   
-  const clearSetFilter = () => {
-    setSelectedSet(null);
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    loadPokemonCards(1, true);
-  };
-
-  const loadPokemonCards = async (
-    page: number,
-    isNewSearch: boolean = false
-  ) => {
-    if (isNewSearch) {
-      setIsLoading(true);
-    } else {
-      setIsLoadingMore(true);
-    }
-    setError(null);
-
-    try {
-      let result;
-      if (selectedSet) {
-        // Filtra per set
-        result = await fetchPokemonCardsBySet(selectedSet.setId, pageSize, page);
-      } else if (searchQuery.trim() !== "") {
-        // Usa la ricerca avanzata
-        result = await searchPokemonCards(searchQuery, pageSize, page);
-      } else {
-        // Carica tutte le carte
-        result = await fetchPokemonCards(pageSize, page);
-      }
-
-      setTotalCount(result.totalCount);
-
-      if (isNewSearch) {
-        setCards(result.data);
-      } else {
-        setCards((prevCards) => [...prevCards, ...result.data]);
-      }
-
-      // Verifica se ci sono altre carte da caricare
-      setHasMoreCards(page * pageSize < result.totalCount);
-      setCurrentPage(page);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
-      );
-      console.error("Error fetching Pokemon cards:", err);
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    }
-  };
-
-  const handleLoadMore = () => {
-    if (!isLoadingMore && hasMoreCards) {
-      loadPokemonCards(currentPage + 1);
-    }
-  };
-
-  const renderCard = ({ item }: { item: PokemonCard }) => (
-    <TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
-      <Image
-        source={{ uri: item.imageUrl }}
-        style={styles.cardImage}
-        resizeMode="contain"
-      />
-      <View style={styles.cardInfo}>
-        <Text style={styles.cardName}>{item.name}</Text>
-        <Text style={styles.cardType}>{item.supertype}</Text>
-        {item.rarity && (
-          <Text style={styles.cardRarity}>Rarity: {item.rarity}</Text>
-        )}
-        {item.setName && (
-          <Text style={styles.cardSet}>Set: {item.setName}</Text>
-        )}
-        {item.number && (
-          <Text style={styles.cardNumber}>Number: {item.number}</Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-
+  const {
+    sets,
+    isLoadingSets,
+    isSetModalVisible,
+    setIsSetModalVisible
+  } = usePokemonSets({
+    user,
+    isInitialized
+  });
+  
   const handleCardPress = (card: PokemonCard) => {
     // Future implementation: Navigate to card detail view
     console.log("Card pressed:", card.id);
   };
-
-  const handleRefresh = () => {
-    loadPokemonCards(1, true);
-  };
-
-  const renderFooter = () => {
-    if (!isLoadingMore) return null;
-
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#007AFF" />
-        <Text style={styles.footerText}>Loading more cards...</Text>
-      </View>
-    );
-  };
+  
+  // If user is not authenticated, don't render anything
+  if (!user) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      {!user ? null : (
-        <>
-          <StatusBar style="light" />
-          <View style={styles.header}>
-            <Text style={styles.title}>Pokemon Cards</Text>
-            
-            <View style={styles.filterContainer}>
-              <TextInput
-                style={[styles.searchInput, { flex: 1 }]}
-                placeholder="Search cards..."
-                placeholderTextColor="#666"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              <TouchableOpacity 
-                style={styles.filterButton}
-                onPress={() => setIsSetModalVisible(true)}
-              >
-                <Text style={styles.filterButtonText}>Filter</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {selectedSet && (
-              <View style={styles.selectedSetContainer}>
-                <View style={styles.selectedSetInfo}>
-                  <Image 
-                    source={{ uri: selectedSet.logoUrl }} 
-                    style={styles.selectedSetLogo} 
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.selectedSetName}>{selectedSet.setName}</Text>
-                </View>
-                <TouchableOpacity onPress={clearSetFilter} style={styles.clearFilterButton}>
-                  <Text style={styles.clearFilterText}>Clear</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            
-            {totalCount > 0 && !isLoading && (
-              <Text style={styles.resultCount}>
-                Found {totalCount} card{totalCount !== 1 ? "s" : ""}
-              </Text>
-            )}
-          </View>
-          
-          {/* Set Filter Modal */}
-          <Modal
-            visible={isSetModalVisible}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setIsSetModalVisible(false)}
-          >
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Select a Set</Text>
-                  <TouchableOpacity onPress={() => setIsSetModalVisible(false)}>
-                    <Text style={styles.closeButton}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-                
-                {isLoadingSets ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#007AFF" />
-                    <Text style={styles.loadingText}>Loading sets...</Text>
-                  </View>
-                ) : (
-                  <ScrollView style={styles.setsList}>
-                    {sets.map((set) => (
-                      <TouchableOpacity 
-                        key={set.setId} 
-                        style={styles.setItem}
-                        onPress={() => handleSetSelect(set)}
-                      >
-                        <Image 
-                          source={{ uri: set.logoUrl }} 
-                          style={styles.setLogo} 
-                          resizeMode="contain"
-                        />
-                        <View style={styles.setInfo}>
-                          <Text style={styles.setName}>{set.setName}</Text>
-                          <Text style={styles.setSeries}>{set.series}</Text>
-                          <Text style={styles.setDate}>{set.releaseDate}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                )}
-              </View>
-            </View>
-          </Modal>
-
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#007AFF" />
-              <Text style={styles.loadingText}>Loading cards...</Text>
-            </View>
-          ) : error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-              <TouchableOpacity
-                style={styles.retryButton}
-                onPress={handleRefresh}
-              >
-                <Text style={styles.retryButtonText}>Retry</Text>
-              </TouchableOpacity>
-            </View>
-          ) : cards.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No Pokemon cards found</Text>
-              <TouchableOpacity
-                style={styles.retryButton}
-                onPress={handleRefresh}
-              >
-                <Text style={styles.retryButtonText}>Refresh</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <FlatList
-              data={cards}
-              renderItem={renderCard}
-              keyExtractor={(item, index) => `${item.id}-${index}`}
-              contentContainerStyle={styles.cardList}
-              numColumns={2}
-              onRefresh={handleRefresh}
-              refreshing={isLoading}
-              onEndReached={handleLoadMore}
-              onEndReachedThreshold={0.3}
-              ListFooterComponent={renderFooter}
-            />
-          )}
-        </>
-      )}
+      <StatusBar style="light" />
+      
+      <SearchFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onFilterPress={() => setIsSetModalVisible(true)}
+        selectedSet={selectedSet}
+        onClearFilter={clearSetFilter}
+        totalCount={totalCount}
+        isLoading={isLoading}
+      />
+      
+      <SetFilterModal
+        isVisible={isSetModalVisible}
+        onClose={() => setIsSetModalVisible(false)}
+        sets={sets}
+        isLoading={isLoadingSets}
+        onSelectSet={handleSetSelect}
+      />
+      
+      <PokemonCardList
+        cards={cards}
+        isLoading={isLoading}
+        isLoadingMore={isLoadingMore}
+        error={error}
+        totalCount={totalCount}
+        onRefresh={handleRefresh}
+        onLoadMore={handleLoadMore}
+        onCardPress={handleCardPress}
+      />
     </SafeAreaView>
   );
 }

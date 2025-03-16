@@ -22,14 +22,19 @@ namespace CardCollectionAPI.Controllers
 
         // GET: api/public/cards
         [HttpGet("cards")]
-        public async Task<IActionResult> GetCards([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null)
+        public async Task<IActionResult> GetCards([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null, [FromQuery] string? setId = null)
         {
             var query = _dbContext.PokemonCards
                 .Include(c => c.Set)
                 .AsQueryable();
 
+            // Filtra per setId se specificato
+            if (!string.IsNullOrEmpty(setId))
+            {
+                query = query.Where(c => c.Set != null && c.Set.SetId == setId);
+            }
             // Applica filtro di ricerca avanzata se specificato
-            if (!string.IsNullOrEmpty(search))
+            else if (!string.IsNullOrEmpty(search))
             {
                 // Normalizza la stringa di ricerca
                 search = search.Trim().ToLower();

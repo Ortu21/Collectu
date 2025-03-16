@@ -1,9 +1,6 @@
 import { PokemonCard, PokemonCardResponse , PokemonSet} from '../types/pokemon';
 
-// Modifica qui: sostituisci localhost con l'indirizzo IP del tuo computer
-// Puoi trovare il tuo indirizzo IP eseguendo 'ipconfig' nel prompt dei comandi di Windows
-const API_BASE_URL = 'http://192.168.1.10:5193/api/public';
-// Nota: sostituisci 192.168.1.100 con il tuo indirizzo IP effettivo
+export const API_BASE_URL = 'http://192.168.1.10:5193/api/public';
 
 export const fetchPokemonCards = async (
   pageSize: number = 20,
@@ -147,7 +144,7 @@ export const fetchPokemonCardsBySet = async (
   page: number = 1
 ): Promise<PokemonCardResponse> => {
   try {
-    const url = `${API_BASE_URL}/cards?search=${encodeURIComponent(setId)}&pageSize=${pageSize}&page=${page}`;
+    const url = `${API_BASE_URL}/cards?setId=${encodeURIComponent(setId)}&pageSize=${pageSize}&page=${page}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -166,7 +163,7 @@ export const fetchPokemonCardsBySet = async (
       rarity: card.rarity || "",
       imageUrl: card.imageUrl,
       setName: card.setName || "",
-      number : card.number || ""
+      number: card.number || ""
     }));
 
     return {
