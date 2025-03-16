@@ -119,7 +119,7 @@ namespace CardCollectionAPI.Controllers
                     c.Hp,
                     c.EvolvesFrom,
                     c.Rarity,
-                    ImageUrl = c.ImageUrl,
+                    c.ImageUrl,
                     SetName = c.Set != null ? c.Set.SetName : null,
                     Relevance = keywords.Count(k => c.Name.ToLower().Contains(k))
                 })
@@ -149,15 +149,15 @@ namespace CardCollectionAPI.Controllers
                 .Include(c => c.Weaknesses)
                 .Include(c => c.Resistances)
                 .Include(c => c.CardMarketPrices)
+                .ThenInclude(p => p!.PriceDetails)
                 .Include(c => c.TcgPlayerPrices)
-                .ThenInclude(p => p.PriceDetails)
+                .ThenInclude(p => p!.PriceDetails)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (card == null)
             {
                 return NotFound();
             }
-
             return Ok(card);
         }
     }
