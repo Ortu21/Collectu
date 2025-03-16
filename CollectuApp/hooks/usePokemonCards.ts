@@ -75,10 +75,49 @@ export const usePokemonCards = ({
     setCurrentPage(1);
     setCards([]);
     setHasMoreCards(true);
-    // Update selectedSet last to ensure the correct API call is made
+    // Update selectedSet immediately
     setSelectedSet(set);
-    // Load cards with the new set
-    loadPokemonCards(1, true);
+    
+    // Call the API directly with the set ID
+    try {
+      console.log("Filtering by set (direct):", set.setId);
+      fetchPokemonCardsBySet(set.setId, pageSize, 1).then(result => {
+        setTotalCount(result.totalCount);
+        setCards(result.data);
+        setHasMoreCards(1 * pageSize < result.totalCount);
+        setCurrentPage(1);
+        setIsLoading(false);
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
+      );
+      console.error("Error fetching Pokemon cards by set:", err);
+      setIsLoading(false);
+    }
+  };
+  
+  // Helper function to load cards by set without relying on selectedSet state
+  const loadPokemonCardsBySet = async (set: PokemonSet, page: number) => {
+    try {
+      console.log("Filtering by set (direct):", set.setId);
+      const result = await fetchPokemonCardsBySet(set.setId, pageSize, page);
+      
+      setTotalCount(result.totalCount);
+      setCards(result.data);
+      setHasMoreCards(page * pageSize < result.totalCount);
+      setCurrentPage(page);
+      // Update selectedSet after the API call is complete
+      setSelectedSet(set);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
+      );
+      console.error("Error fetching Pokemon cards by set:", err);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
   };
   
   const clearSetFilter = () => {
@@ -88,10 +127,25 @@ export const usePokemonCards = ({
     setCurrentPage(1);
     setCards([]);
     setHasMoreCards(true);
-    // Update selectedSet last to ensure the correct API call is made
+    // Update selectedSet immediately
     setSelectedSet(null);
-    // Load cards without filter
-    loadPokemonCards(1, true);
+    
+    try {
+      // Load cards without filter directly
+      fetchPokemonCards(pageSize, 1).then(result => {
+        setTotalCount(result.totalCount);
+        setCards(result.data);
+        setHasMoreCards(1 * pageSize < result.totalCount);
+        setCurrentPage(1);
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
+      );
+      console.error("Error fetching Pokemon cards:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const loadPokemonCards = async (
