@@ -60,8 +60,9 @@ namespace CardCollectionAPI.Controllers
                     c.Hp,
                     c.EvolvesFrom,
                     c.Rarity,
-                    ImageUrl = c.ImageUrl,
-                    SetName = c.Set != null ? c.Set.SetName : null
+                    c.ImageUrl,
+                    SetName = c.Set != null ? c.Set.SetName : null,
+                    c.Number // Aggiunto il campo Number alla risposta
                 })
                 .ToListAsync();
 
@@ -121,6 +122,7 @@ namespace CardCollectionAPI.Controllers
                     c.Rarity,
                     c.ImageUrl,
                     SetName = c.Set != null ? c.Set.SetName : null,
+                    c.Number, // Aggiunto il campo Number alla risposta
                     Relevance = keywords.Count(k => c.Name.ToLower().Contains(k))
                 })
                 .OrderByDescending(c => c.Relevance) // Ordina per rilevanza
@@ -159,6 +161,25 @@ namespace CardCollectionAPI.Controllers
                 return NotFound();
             }
             return Ok(card);
+        }
+        
+        // GET: api/public/sets
+        [HttpGet("sets")]
+        public async Task<IActionResult> GetSets()
+        {
+            var sets = await _dbContext.PokemonSets
+                .OrderByDescending(s => s.ReleaseDate)
+                .Select(s => new
+                {
+                    setId = s.SetId,
+                    setName = s.SetName,
+                    series = s.Series,
+                    releaseDate = s.ReleaseDate.ToString("yyyy-MM-dd"),
+                    logoUrl = s.LogoUrl
+                })
+                .ToListAsync();
+
+            return Ok(sets);
         }
     }
 }

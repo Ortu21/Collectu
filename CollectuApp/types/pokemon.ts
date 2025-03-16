@@ -8,6 +8,7 @@ export type PokemonCard = {
   imageUrl: string;
   setName?: string;
   relevance?: number;
+  number?: string;
 };
 
 export type PokemonCardResponse = {
@@ -16,4 +17,12 @@ export type PokemonCardResponse = {
   page: number;
   pageSize: number;
   query?: string;
+};
+
+export type PokemonSet = {
+  setId: string;
+  setName: string;
+  series: string;
+  releaseDate: string;
+  logoUrl: string;
 };

@@ -10,12 +10,14 @@ import {
   TextInput,
   SafeAreaView,
   StatusBar as RNStatusBar,
+  Modal,
+  ScrollView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
-import { fetchPokemonCards, searchPokemonCards } from "../services/api";
-import { PokemonCard } from "../types/pokemon";
+import { fetchPokemonCards, searchPokemonCards, fetchPokemonSets, fetchPokemonCardsBySet } from "../services/api";
+import { PokemonCard, PokemonSet } from "../types/pokemon";
 
 export default function PokemonCards() {
   const [cards, setCards] = useState<PokemonCard[]>([]);
@@ -30,22 +32,47 @@ export default function PokemonCards() {
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
   const pageSize = 20;
+  
+  // Set filter state
+  const [sets, setSets] = useState<PokemonSet[]>([]);
+  const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
+  const [isSetModalVisible, setIsSetModalVisible] = useState(false);
+  const [isLoadingSets, setIsLoadingSets] = useState(false);
 
   // Primo useEffect solo per impostare isInitialized
   useEffect(() => {
     setIsInitialized(true);
   }, []);
+  
+  // Carica i set Pokemon
+  useEffect(() => {
+    if (isInitialized && user) {
+      loadPokemonSets();
+    }
+  }, [isInitialized, user]);
+  
+  const loadPokemonSets = async () => {
+    setIsLoadingSets(true);
+    try {
+      const setsData = await fetchPokemonSets();
+      setSets(setsData);
+    } catch (err) {
+      console.error("Error loading Pokemon sets:", err);
+    } finally {
+      setIsLoadingSets(false);
+    }
+  };
 
   // Secondo useEffect per la navigazione, ma solo dopo l'inizializzazione
   useEffect(() => {
     if (!isInitialized) return;
-    
+
     if (!user) {
       // Usa setTimeout per ritardare la navigazione
       const timer = setTimeout(() => {
         router.replace("/login");
       }, 0);
-      
+
       return () => clearTimeout(timer);
     } else {
       loadPokemonCards(1, true);
@@ -69,9 +96,30 @@ export default function PokemonCards() {
     setCards([]);
     setHasMoreCards(true);
     loadPokemonCards(1, true);
-  }, [searchQuery]);
+  }, [searchQuery, selectedSet]);
+  
+  const handleSetSelect = (set: PokemonSet) => {
+    setSelectedSet(set);
+    setIsSetModalVisible(false);
+    setSearchQuery(""); // Reset search query when selecting a set
+    setCurrentPage(1);
+    setCards([]);
+    setHasMoreCards(true);
+    loadPokemonCards(1, true);
+  };
+  
+  const clearSetFilter = () => {
+    setSelectedSet(null);
+    setCurrentPage(1);
+    setCards([]);
+    setHasMoreCards(true);
+    loadPokemonCards(1, true);
+  };
 
-  const loadPokemonCards = async (page: number, isNewSearch: boolean = false) => {
+  const loadPokemonCards = async (
+    page: number,
+    isNewSearch: boolean = false
+  ) => {
     if (isNewSearch) {
       setIsLoading(true);
     } else {
@@ -81,7 +129,10 @@ export default function PokemonCards() {
 
     try {
       let result;
-      if (searchQuery.trim() !== "") {
+      if (selectedSet) {
+        // Filtra per set
+        result = await fetchPokemonCardsBySet(selectedSet.setId, pageSize, page);
+      } else if (searchQuery.trim() !== "") {
         // Usa la ricerca avanzata
         result = await searchPokemonCards(searchQuery, pageSize, page);
       } else {
@@ -90,11 +141,11 @@ export default function PokemonCards() {
       }
 
       setTotalCount(result.totalCount);
-      
+
       if (isNewSearch) {
         setCards(result.data);
       } else {
-        setCards(prevCards => [...prevCards, ...result.data]);
+        setCards((prevCards) => [...prevCards, ...result.data]);
       }
 
       // Verifica se ci sono altre carte da caricare
@@ -133,6 +184,9 @@ export default function PokemonCards() {
         {item.setName && (
           <Text style={styles.cardSet}>Set: {item.setName}</Text>
         )}
+        {item.number && (
+          <Text style={styles.cardNumber}>Number: {item.number}</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -148,7 +202,7 @@ export default function PokemonCards() {
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
-    
+
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color="#007AFF" />
@@ -164,19 +218,92 @@ export default function PokemonCards() {
           <StatusBar style="light" />
           <View style={styles.header}>
             <Text style={styles.title}>Pokemon Cards</Text>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search cards..."
-              placeholderTextColor="#666"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
+            
+            <View style={styles.filterContainer}>
+              <TextInput
+                style={[styles.searchInput, { flex: 1 }]}
+                placeholder="Search cards..."
+                placeholderTextColor="#666"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              <TouchableOpacity 
+                style={styles.filterButton}
+                onPress={() => setIsSetModalVisible(true)}
+              >
+                <Text style={styles.filterButtonText}>Filter</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {selectedSet && (
+              <View style={styles.selectedSetContainer}>
+                <View style={styles.selectedSetInfo}>
+                  <Image 
+                    source={{ uri: selectedSet.logoUrl }} 
+                    style={styles.selectedSetLogo} 
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.selectedSetName}>{selectedSet.setName}</Text>
+                </View>
+                <TouchableOpacity onPress={clearSetFilter} style={styles.clearFilterButton}>
+                  <Text style={styles.clearFilterText}>Clear</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
             {totalCount > 0 && !isLoading && (
               <Text style={styles.resultCount}>
-                Found {totalCount} card{totalCount !== 1 ? 's' : ''}
+                Found {totalCount} card{totalCount !== 1 ? "s" : ""}
               </Text>
             )}
           </View>
+          
+          {/* Set Filter Modal */}
+          <Modal
+            visible={isSetModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setIsSetModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Select a Set</Text>
+                  <TouchableOpacity onPress={() => setIsSetModalVisible(false)}>
+                    <Text style={styles.closeButton}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {isLoadingSets ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#007AFF" />
+                    <Text style={styles.loadingText}>Loading sets...</Text>
+                  </View>
+                ) : (
+                  <ScrollView style={styles.setsList}>
+                    {sets.map((set) => (
+                      <TouchableOpacity 
+                        key={set.setId} 
+                        style={styles.setItem}
+                        onPress={() => handleSetSelect(set)}
+                      >
+                        <Image 
+                          source={{ uri: set.logoUrl }} 
+                          style={styles.setLogo} 
+                          resizeMode="contain"
+                        />
+                        <View style={styles.setInfo}>
+                          <Text style={styles.setName}>{set.setName}</Text>
+                          <Text style={styles.setSeries}>{set.series}</Text>
+                          <Text style={styles.setDate}>{set.releaseDate}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            </View>
+          </Modal>
 
           {isLoading ? (
             <View style={styles.loadingContainer}>
@@ -186,14 +313,20 @@ export default function PokemonCards() {
           ) : error ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
-              <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={handleRefresh}
+              >
                 <Text style={styles.retryButtonText}>Retry</Text>
               </TouchableOpacity>
             </View>
           ) : cards.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No Pokemon cards found</Text>
-              <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={handleRefresh}
+              >
                 <Text style={styles.retryButtonText}>Refresh</Text>
               </TouchableOpacity>
             </View>
@@ -235,6 +368,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
+  filterContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    gap: 10,
+  },
   searchInput: {
     backgroundColor: "#333",
     borderRadius: 8,
@@ -242,11 +381,119 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
+  filterButton: {
+    backgroundColor: "#007AFF",
+    borderRadius: 8,
+    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 80,
+  },
+  filterButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  selectedSetContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#333",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+  },
+  selectedSetInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  selectedSetLogo: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
+  },
+  selectedSetName: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  clearFilterButton: {
+    backgroundColor: "#444",
+    borderRadius: 4,
+    padding: 6,
+  },
+  clearFilterText: {
+    color: "#fff",
+    fontSize: 12,
+  },
   resultCount: {
     color: "#aaa",
     fontSize: 14,
     marginTop: 8,
     textAlign: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#25292e",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    height: "70%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  closeButton: {
+    fontSize: 20,
+    color: "#fff",
+    padding: 5,
+  },
+  setsList: {
+    flex: 1,
+  },
+  setItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#333",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+  },
+  setLogo: {
+    width: 60,
+    height: 60,
+    marginRight: 12,
+  },
+  setInfo: {
+    flex: 1,
+  },
+  setName: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  setSeries: {
+    color: "#aaa",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  setDate: {
+    color: "#777",
+    fontSize: 12,
   },
   cardList: {
     padding: 8,
@@ -285,6 +532,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   cardSet: {
+    fontSize: 12,
+    color: "#6c757d",
+  },
+  cardNumber: {
     fontSize: 12,
     color: "#6c757d",
   },

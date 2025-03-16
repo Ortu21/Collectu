@@ -1,4 +1,4 @@
-import { PokemonCard, PokemonCardResponse } from '../types/pokemon';
+import { PokemonCard, PokemonCardResponse , PokemonSet} from '../types/pokemon';
 
 // Modifica qui: sostituisci localhost con l'indirizzo IP del tuo computer
 // Puoi trovare il tuo indirizzo IP eseguendo 'ipconfig' nel prompt dei comandi di Windows
@@ -35,6 +35,7 @@ export const fetchPokemonCards = async (
       rarity: card.rarity || "",
       imageUrl: card.imageUrl,
       setName: card.setName || "",
+      number : card.number || ""
     }));
 
     return {
@@ -80,7 +81,8 @@ export const searchPokemonCards = async (
       rarity: card.rarity || "",
       imageUrl: card.imageUrl,
       setName: card.setName || "",
-      relevance: card.relevance
+      relevance: card.relevance ,
+      number : card.number || ""
     }));
 
     return {
@@ -115,9 +117,66 @@ export const fetchPokemonCardById = async (id: string): Promise<PokemonCard> => 
       rarity: card.rarity || "",
       imageUrl: card.imageUrl,
       setName: card.set?.setName || "",
+      number : card.number || ""
     };
   } catch (error) {
     console.error(`Error fetching Pokemon card with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const fetchPokemonSets = async (): Promise<PokemonSet[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/sets`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const sets = await response.json();
+    return sets;
+  } catch (error) {
+    console.error("Error fetching Pokemon sets:", error);
+    throw error;
+  }
+};
+
+export const fetchPokemonCardsBySet = async (
+  setId: string,
+  pageSize: number = 20,
+  page: number = 1
+): Promise<PokemonCardResponse> => {
+  try {
+    const url = `${API_BASE_URL}/cards?search=${encodeURIComponent(setId)}&pageSize=${pageSize}&page=${page}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // Trasforma i dati per adattarli al tipo PokemonCard
+    const transformedCards: PokemonCard[] = result.data.map((card: any) => ({
+      id: card.id,
+      name: card.name,
+      supertype: card.supertype || "",
+      hp: card.hp || "",
+      evolvesFrom: card.evolvesFrom || "",
+      rarity: card.rarity || "",
+      imageUrl: card.imageUrl,
+      setName: card.setName || "",
+      number : card.number || ""
+    }));
+
+    return {
+      data: transformedCards,
+      totalCount: result.totalCount,
+      page: result.page,
+      pageSize: result.pageSize
+    };
+  } catch (error) {
+    console.error("Error fetching Pokemon cards by set:", error);
     throw error;
   }
 };
