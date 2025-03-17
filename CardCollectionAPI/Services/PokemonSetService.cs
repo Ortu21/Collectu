@@ -12,7 +12,7 @@ namespace CardCollectionAPI.Services
         public async Task<PokemonSet> GetOrCreateSetAsync(Set setDto)
         {
             var existingSet = await _dbContext.PokemonSets
-                .FirstOrDefaultAsync(s => s.SetName == setDto.Name);
+                .FirstOrDefaultAsync(s => s.SetName == (setDto?.Name ?? string.Empty));
 
             if (existingSet == null)
             {
