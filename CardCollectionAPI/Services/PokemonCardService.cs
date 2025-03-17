@@ -4,67 +4,163 @@ using CardCollectionAPI.Models.Dtos;
 using CardCollectionAPI.Services.Interfaces;
 using CardCollectionAPI.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
-using static CardCollectionAPI.Services.PokemonCardService;
 
 namespace CardCollectionAPI.Services
 {
-    public class PokemonCardService : IPokemonCardService
+    public class PokemonCardService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonCardService> logger, IConfiguration configuration) : IPokemonCardService
     {
-        private readonly HttpClient _httpClient;
-        private readonly AppDbContext _dbContext;
-        private readonly ILogger<PokemonCardService> _logger;
+        private readonly HttpClient _httpClient = httpClient;
+        private readonly AppDbContext _dbContext = dbContext;
+        private readonly ILogger<PokemonCardService> _logger = logger;
+        private readonly PokemonSetService _pokemonSetService = new(dbContext);
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
         private const string ApiUrl = "https://api.pokemontcg.io/v2/cards";
-        private const string ApiKey = "";
-
-        public PokemonCardService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonCardService> logger)
-        {
-            _httpClient = httpClient;
-            _dbContext = dbContext;
-            _logger = logger;
-        }
+        private readonly string _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
+        private const int _pageSize = 250;
 
         public async Task ImportPokemonCardsAsync()
         {
             try
             {
-                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
-                var response = await _httpClient.GetAsync(ApiUrl);
-                if (!response.IsSuccessStatusCode) return;
+                int currentPage = 1;
+                bool hasMoreCards = true;
+                
+                _logger.LogInformation("Starting Pokemon card import with page size {PageSize}", _pageSize);
 
-                var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<PokemonApiResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                if (apiResponse?.Data == null) return;
-
-                foreach (var cardDto in apiResponse.Data)
+                while (hasMoreCards)
                 {
-                    await ProcessCardAsync(cardDto);
+                    _logger.LogInformation("Processing page {CurrentPage}", currentPage);
+                    
+                    var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}?page={currentPage}&pageSize={_pageSize}");
+                    request.Headers.Add("X-Api-Key", _apiKey);
+
+                    var response = await _httpClient.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogError("TCG API request failed with status code: {StatusCode}", response.StatusCode);
+                        return;
+                    }
+
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiResponse = JsonSerializer.Deserialize<PokemonApiResponse>(content, _jsonSerializerOptions);
+
+                    if (apiResponse == null || apiResponse.Data == null || apiResponse.Data.Count == 0)
+                    {
+                        _logger.LogInformation("No cards found on page {CurrentPage}", currentPage);
+                        hasMoreCards = false;
+                        break;
+                    }
+
+                    _logger.LogInformation("Found {CardCount} cards on page {CurrentPage}", apiResponse.Data.Count, currentPage);
+
+                    foreach (var card in apiResponse.Data)
+                    {
+                        await ProcessCardAsync(card);
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+
+                    // Se abbiamo ricevuto meno carte del pageSize, significa che abbiamo raggiunto l'ultima pagina
+                    if (apiResponse.Data.Count < _pageSize)
+                    {
+                        _logger.LogInformation("Reached last page with {CardCount} cards", apiResponse.Data.Count);
+                        hasMoreCards = false;
+                    }
+                    else
+                    {
+                        // Passa alla pagina successiva
+                        currentPage++;
+                        _logger.LogInformation("Moving to page {NextPage}", currentPage);
+                    }
                 }
 
-                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation("Pokemon card import completed successfully");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during Pokémon card import");
+                _logger.LogError(ex, "Error occurred during Pokémon card import");
             }
         }
 
-        private async Task ProcessCardAsync(PokemonCardDto cardDto)
+        public async Task ProcessCardAsync(PokemonCardDto cardDto)
         {
-            var card = PokemonCardMapper.MapDtoToEntity(cardDto);
-            card.CardMarketPrices = PokemonPriceMapper.MapCardMarketPrices(cardDto, card);
-            card.TcgPlayerPrices = PokemonPriceMapper.MapTcgPlayerPrices(cardDto, card);
+            // Recupera o crea il set della carta
+            var set = await _pokemonSetService.GetOrCreateSetAsync(cardDto.Set);
 
-            await _dbContext.SaveChangesAsync();
+            // Controlla se la carta esiste già
+            var existingCard = await _dbContext.PokemonCards
+                .Include(c => c.CardMarketPrices)
+                .Include(c => c.TcgPlayerPrices)
+                .FirstOrDefaultAsync(c => c.Id == cardDto.Id);
+
+            if (existingCard == null)
+            {
+                // Crea una nuova carta
+                var card = PokemonCardMapper.MapDtoToEntity(cardDto);
+                card.SetId = set.SetId; // Assegna l'ID del set corretto
+
+                // Aggiungi la carta al contesto
+                _dbContext.PokemonCards.Add(card);
+                await _dbContext.SaveChangesAsync();
+
+                // Aggiungi i prezzi per la nuova carta
+                PokemonPriceMapper.MapCardMarketPrices(cardDto, card);
+                PokemonPriceMapper.MapTcgPlayerPrices(cardDto, card);
+            }
+            else
+            {
+                _logger.LogInformation("La carta {Name} (ID: {Id}) esiste già. Aggiornamento prezzi...", cardDto.Name, cardDto.Id);
+                
+                // Aggiungi nuovi record di prezzi per la carta esistente
+                PokemonPriceMapper.MapCardMarketPrices(cardDto, existingCard);
+                PokemonPriceMapper.MapTcgPlayerPrices(cardDto, existingCard);
+            }
         }
 
-        public Task ImportSingleCardAsync(string cardId)
+        public async Task ImportSingleCardAsync(string cardId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}/{cardId}");
+                request.Headers.Add("X-Api-Key", _apiKey);
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("TCG API request failed with status code: {StatusCode}", response.StatusCode);
+                    return;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var cardDto = JsonSerializer.Deserialize<SingleCardResponse>(content, _jsonSerializerOptions)?.Data;
+
+                if (cardDto == null)
+                {
+                    _logger.LogWarning("No data received from TCG API for card {CardId}", cardId);
+                    return;
+                }
+
+                await ProcessCardAsync(cardDto);
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation("Successfully imported card {CardId}", cardId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during import of card {CardId}", cardId);
+                throw;
+            }
+        }
+
+        public class SingleCardResponse
+        {
+            public PokemonCardDto Data { get; set; } = null!;
         }
 
         public class PokemonApiResponse
         {
-            public List<PokemonCardDto> Data { get; set; } = new();
+            public List<PokemonCardDto> Data { get; set; } = [];
         }
     }
 }

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250217215555_FixDateOnlyMapping2")]
-    partial class FixDateOnlyMapping2
+    [Migration("20250316121749_AggiuntaNumeroCard")]
+    partial class AggiuntaNumeroCard
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,12 +83,15 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Rarity")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("SetId")
-                        .HasColumnType("integer");
+                    b.Property<string>("SetId")
+                        .HasColumnType("text");
 
                     b.Property<string>("Supertype")
                         .IsRequired()
@@ -220,11 +223,8 @@ namespace CardCollectionAPI.Migrations
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonSet", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("SetId")
+                        .HasColumnType("text");
 
                     b.Property<string>("LogoUrl")
                         .IsRequired()
@@ -241,7 +241,7 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("SetId");
 
                     b.ToTable("PokemonSets");
                 });
@@ -352,9 +352,7 @@ namespace CardCollectionAPI.Migrations
                 {
                     b.HasOne("CardCollectionAPI.Models.PokemonSet", "Set")
                         .WithMany("Cards")
-                        .HasForeignKey("SetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SetId");
 
                     b.Navigation("Set");
                 });

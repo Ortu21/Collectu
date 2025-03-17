@@ -1,5 +1,3 @@
-using CardCollectionAPI.Models.Dtos;
-
 namespace CardCollectionAPI.Services.Interfaces
 {
     public interface IPokemonCardService

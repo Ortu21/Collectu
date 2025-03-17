@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250217215525_FixDateOnlyMapping")]
-    partial class FixDateOnlyMapping
+    [Migration("20250315135021_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -87,8 +87,8 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("SetId")
-                        .HasColumnType("integer");
+                    b.Property<string>("SetId")
+                        .HasColumnType("text");
 
                     b.Property<string>("Supertype")
                         .IsRequired()
@@ -220,11 +220,8 @@ namespace CardCollectionAPI.Migrations
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonSet", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("SetId")
+                        .HasColumnType("text");
 
                     b.Property<string>("LogoUrl")
                         .IsRequired()
@@ -241,7 +238,7 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("SetId");
 
                     b.ToTable("PokemonSets");
                 });
@@ -352,9 +349,7 @@ namespace CardCollectionAPI.Migrations
                 {
                     b.HasOne("CardCollectionAPI.Models.PokemonSet", "Set")
                         .WithMany("Cards")
-                        .HasForeignKey("SetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SetId");
 
                     b.Navigation("Set");
                 });

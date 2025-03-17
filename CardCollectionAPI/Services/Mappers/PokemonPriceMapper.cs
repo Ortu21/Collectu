@@ -20,21 +20,21 @@ namespace CardCollectionAPI.Services.Mappers
                     new PokemonCardMarketPriceDetails
                     {
                         PokemonCardMarketPrices = card.CardMarketPrices!,
-                        AverageSellPrice = dto.Cardmarket?.CardmarketPrices.AverageSellPrice,
-                        LowPrice = dto.Cardmarket?.CardmarketPrices.LowPrice,
-                        TrendPrice = dto.Cardmarket?.CardmarketPrices.TrendPrice,
-                        GermanProLow = dto.Cardmarket?.CardmarketPrices.GermanProLow,
-                        SuggestedPrice = dto.Cardmarket?.CardmarketPrices.SuggestedPrice,
-                        ReverseHoloSell = dto.Cardmarket?.CardmarketPrices.ReverseHoloSell,
-                        ReverseHoloLow = dto.Cardmarket?.CardmarketPrices.ReverseHoloLow,
-                        ReverseHoloTrend = dto.Cardmarket?.CardmarketPrices.ReverseHoloTrend,
-                        LowPriceExPlus = dto.Cardmarket?.CardmarketPrices.LowPriceExPlus,
-                        Avg1 = dto.Cardmarket?.CardmarketPrices.Avg1,
-                        Avg7 = dto.Cardmarket?.CardmarketPrices.Avg7,
-                        Avg30 = dto.Cardmarket?.CardmarketPrices.Avg30,
-                        ReverseHoloAvg1 = dto.Cardmarket?.CardmarketPrices.ReverseHoloAvg1,
-                        ReverseHoloAvg7 = dto.Cardmarket?.CardmarketPrices.ReverseHoloAvg7,
-                        ReverseHoloAvg30 = dto.Cardmarket?.CardmarketPrices.ReverseHoloAvg30
+                        AverageSellPrice = dto.Cardmarket?.CardmarketPrices?.AverageSellPrice,
+                        LowPrice = dto.Cardmarket?.CardmarketPrices?.LowPrice,
+                        TrendPrice = dto.Cardmarket?.CardmarketPrices?.TrendPrice,
+                        GermanProLow = dto.Cardmarket?.CardmarketPrices?.GermanProLow,
+                        SuggestedPrice = dto.Cardmarket?.CardmarketPrices?.SuggestedPrice,
+                        ReverseHoloSell = dto.Cardmarket?.CardmarketPrices?.ReverseHoloSell,
+                        ReverseHoloLow = dto.Cardmarket?.CardmarketPrices?.ReverseHoloLow,
+                        ReverseHoloTrend = dto.Cardmarket?.CardmarketPrices?.ReverseHoloTrend,
+                        LowPriceExPlus = dto.Cardmarket?.CardmarketPrices?.LowPriceExPlus,
+                        Avg1 = dto.Cardmarket?.CardmarketPrices?.Avg1,
+                        Avg7 = dto.Cardmarket?.CardmarketPrices?.Avg7,
+                        Avg30 = dto.Cardmarket?.CardmarketPrices?.Avg30,
+                        ReverseHoloAvg1 = dto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg1,
+                        ReverseHoloAvg7 = dto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg7,
+                        ReverseHoloAvg30 = dto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg30
                     }
                 ]
             };

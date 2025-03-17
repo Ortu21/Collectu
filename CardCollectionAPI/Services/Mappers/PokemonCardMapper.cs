@@ -11,18 +11,13 @@ namespace CardCollectionAPI.Services.Mappers
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Supertype = dto.Supertype,
+                Supertype = dto.Supertype ?? string.Empty,
                 Hp = dto.Hp,
                 EvolvesFrom = dto.EvolvesFrom ?? string.Empty,
                 Rarity = dto.Rarity ?? string.Empty,
                 ImageUrl = dto.Images.Large.ToString(),
-                Set = new PokemonSet
-                {
-                    SetName = dto.Set.Name,
-                    Series = dto.Set.Series,
-                    ReleaseDate = DateOnly.Parse(dto.Set.ReleaseDate),
-                    LogoUrl = dto.Set.Images.Logo.ToString(),
-                }
+                SetId = dto.Set?.Id ?? string.Empty,
+                Number = dto.Number ?? string.Empty,
             };
 
             card.Attacks = dto.Attacks?.Select(a => new PokemonAttack

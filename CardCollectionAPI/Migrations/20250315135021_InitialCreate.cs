@@ -7,37 +7,72 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class UltimeModificheAlleTabelle : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "PokemonPrices");
+            migrationBuilder.CreateTable(
+                name: "PokemonSets",
+                columns: table => new
+                {
+                    SetId = table.Column<string>(type: "text", nullable: false),
+                    SetName = table.Column<string>(type: "text", nullable: false),
+                    Series = table.Column<string>(type: "text", nullable: false),
+                    ReleaseDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    LogoUrl = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PokemonSets", x => x.SetId);
+                });
 
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "ReleaseDate",
-                table: "PokemonSets",
-                type: "timestamp with time zone",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
+            migrationBuilder.CreateTable(
+                name: "PokemonCards",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Supertype = table.Column<string>(type: "text", nullable: false),
+                    Hp = table.Column<string>(type: "text", nullable: true),
+                    EvolvesFrom = table.Column<string>(type: "text", nullable: false),
+                    Rarity = table.Column<string>(type: "text", nullable: false),
+                    ImageUrl = table.Column<string>(type: "text", nullable: false),
+                    SetId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PokemonCards", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PokemonCards_PokemonSets_SetId",
+                        column: x => x.SetId,
+                        principalTable: "PokemonSets",
+                        principalColumn: "SetId");
+                });
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Hp",
-                table: "PokemonCards",
-                type: "text",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Damage",
-                table: "PokemonAttacks",
-                type: "text",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text");
+            migrationBuilder.CreateTable(
+                name: "PokemonAttacks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Damage = table.Column<string>(type: "text", nullable: true),
+                    Text = table.Column<string>(type: "text", nullable: false),
+                    Cost = table.Column<string>(type: "text", nullable: false),
+                    ConvertedEnergyCost = table.Column<string>(type: "text", nullable: false),
+                    PokemonCardId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PokemonAttacks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PokemonAttacks_PokemonCards_PokemonCardId",
+                        column: x => x.PokemonCardId,
+                        principalTable: "PokemonCards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateTable(
                 name: "PokemonCardMarketPrices",
@@ -47,7 +82,7 @@ namespace CardCollectionAPI.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PokemonCardId = table.Column<string>(type: "text", nullable: false),
                     Url = table.Column<string>(type: "text", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateOnly>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,13 +103,55 @@ namespace CardCollectionAPI.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PokemonCardId = table.Column<string>(type: "text", nullable: false),
                     Url = table.Column<string>(type: "text", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateOnly>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PokemonCardTcgPrices", x => x.Id);
                     table.ForeignKey(
                         name: "FK_PokemonCardTcgPrices_PokemonCards_PokemonCardId",
+                        column: x => x.PokemonCardId,
+                        principalTable: "PokemonCards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PokemonResistances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false),
+                    PokemonCardId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PokemonResistances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PokemonResistances_PokemonCards_PokemonCardId",
+                        column: x => x.PokemonCardId,
+                        principalTable: "PokemonCards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PokemonWeaknesses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false),
+                    PokemonCardId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PokemonWeaknesses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PokemonWeaknesses_PokemonCards_PokemonCardId",
                         column: x => x.PokemonCardId,
                         principalTable: "PokemonCards",
                         principalColumn: "Id",
@@ -141,6 +218,11 @@ namespace CardCollectionAPI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_PokemonAttacks_PokemonCardId",
+                table: "PokemonAttacks",
+                column: "PokemonCardId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PokemonCardMarketPriceDetails_PokemonCardMarketPricesId",
                 table: "PokemonCardMarketPriceDetails",
                 column: "PokemonCardMarketPricesId");
@@ -152,6 +234,11 @@ namespace CardCollectionAPI.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_PokemonCards_SetId",
+                table: "PokemonCards",
+                column: "SetId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PokemonCardTcgPriceDetails_PokemonTcgPlayerPricesId",
                 table: "PokemonCardTcgPriceDetails",
                 column: "PokemonTcgPlayerPricesId");
@@ -161,11 +248,24 @@ namespace CardCollectionAPI.Migrations
                 table: "PokemonCardTcgPrices",
                 column: "PokemonCardId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PokemonResistances_PokemonCardId",
+                table: "PokemonResistances",
+                column: "PokemonCardId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PokemonWeaknesses_PokemonCardId",
+                table: "PokemonWeaknesses",
+                column: "PokemonCardId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "PokemonAttacks");
+
             migrationBuilder.DropTable(
                 name: "PokemonCardMarketPriceDetails");
 
@@ -173,62 +273,22 @@ namespace CardCollectionAPI.Migrations
                 name: "PokemonCardTcgPriceDetails");
 
             migrationBuilder.DropTable(
+                name: "PokemonResistances");
+
+            migrationBuilder.DropTable(
+                name: "PokemonWeaknesses");
+
+            migrationBuilder.DropTable(
                 name: "PokemonCardMarketPrices");
 
             migrationBuilder.DropTable(
                 name: "PokemonCardTcgPrices");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "ReleaseDate",
-                table: "PokemonSets",
-                type: "text",
-                nullable: false,
-                oldClrType: typeof(DateTime),
-                oldType: "timestamp with time zone");
+            migrationBuilder.DropTable(
+                name: "PokemonCards");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Hp",
-                table: "PokemonCards",
-                type: "text",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Damage",
-                table: "PokemonAttacks",
-                type: "text",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
-
-            migrationBuilder.CreateTable(
-                name: "PokemonPrices",
-                columns: table => new
-                {
-                    PokemonCardId = table.Column<string>(type: "text", nullable: false),
-                    CardmarketLow = table.Column<decimal>(type: "numeric", nullable: true),
-                    CardmarketReverseHolo = table.Column<decimal>(type: "numeric", nullable: true),
-                    CardmarketTrend = table.Column<decimal>(type: "numeric", nullable: true),
-                    TcgHigh = table.Column<decimal>(type: "numeric", nullable: true),
-                    TcgLow = table.Column<decimal>(type: "numeric", nullable: true),
-                    TcgMarket = table.Column<decimal>(type: "numeric", nullable: true),
-                    TcgMid = table.Column<decimal>(type: "numeric", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PokemonPrices", x => x.PokemonCardId);
-                    table.ForeignKey(
-                        name: "FK_PokemonPrices_PokemonCards_PokemonCardId",
-                        column: x => x.PokemonCardId,
-                        principalTable: "PokemonCards",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.DropTable(
+                name: "PokemonSets");
         }
     }
 }
