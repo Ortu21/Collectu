@@ -47,7 +47,7 @@ public partial class PokemonCardDto
     public string? Number { get; set; }
 
     [JsonPropertyName("artist")]
-    public string?Artist { get; set; }
+    public string? Artist { get; set; }
 
     [JsonPropertyName("rarity")]
     public string? Rarity { get; set; }
