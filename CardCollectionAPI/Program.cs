@@ -42,11 +42,23 @@ builder.Services
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", 
-        builder => builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+        corsBuilder =>  
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                corsBuilder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+            }
+            else
+            {
+                corsBuilder.WithOrigins("https://app.collectu.com", "https://collectu.com")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+            }
+        });
 });
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
