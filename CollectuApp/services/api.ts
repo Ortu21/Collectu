@@ -141,10 +141,18 @@ export const fetchPokemonSets = async (): Promise<PokemonSet[]> => {
 export const fetchPokemonCardsBySet = async (
   setId: string,
   pageSize: number = 20,
-  page: number = 1
+  page: number = 1,
+  search?: string
 ): Promise<PokemonCardResponse> => {
   try {
-    const url = `${API_BASE_URL}/cards?setId=${encodeURIComponent(setId)}&pageSize=${pageSize}&page=${page}`;
+    let url = `${API_BASE_URL}/cards?setId=${encodeURIComponent(setId)}&pageSize=${pageSize}&page=${page}`;
+    
+    // Aggiungi il parametro di ricerca se presente
+    if (search && search.trim() !== '') {
+      url += `&search=${encodeURIComponent(search.trim())}`;
+    }
+    
+    console.log("Fetching cards with URL:", url); // Log per debug
     const response = await fetch(url);
 
     if (!response.ok) {

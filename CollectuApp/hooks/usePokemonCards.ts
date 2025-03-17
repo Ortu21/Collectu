@@ -48,16 +48,12 @@ export const usePokemonCards = ({
   useEffect(() => {
     const delaySearch = setTimeout(() => {
       if (isInitialized && user) {
-        // Only trigger search when searchQuery changes, not when selectedSet changes
-        // This prevents double loading when setting or clearing filters
-        if (searchQuery.trim() !== "") {
-          handleSearch();
-        }
+        handleSearch();
       }
     }, 500);
 
     return () => clearTimeout(delaySearch);
-  }, [searchQuery, isInitialized, user]); // Removed selectedSet dependency
+  }, [searchQuery, isInitialized, user]);
 
   const handleSearch = useCallback(() => {
     // Reset dello stato e caricamento delle carte filtrate
@@ -71,17 +67,22 @@ export const usePokemonCards = ({
     // First set loading state to prevent flickering
     setIsLoading(true);
     // Then update the state
-    setSearchQuery(""); // Reset search query when selecting a set
+    // Don't reset search query to allow combined filtering
     setCurrentPage(1);
     setCards([]);
     setHasMoreCards(true);
     // Update selectedSet immediately
     setSelectedSet(set);
     
-    // Call the API directly with the set ID
+    // Call the API directly with the set ID and search query if present
     try {
-      console.log("Filtering by set (direct):", set.setId);
-      fetchPokemonCardsBySet(set.setId, pageSize, 1).then(result => {
+      console.log("Filtering by set (direct):", set.setId, "search:", searchQuery.trim());
+      fetchPokemonCardsBySet(
+        set.setId, 
+        pageSize, 
+        1, 
+        searchQuery.trim() !== "" ? searchQuery : undefined
+      ).then(result => {
         setTotalCount(result.totalCount);
         setCards(result.data);
         setHasMoreCards(1 * pageSize < result.totalCount);
@@ -98,27 +99,6 @@ export const usePokemonCards = ({
   };
   
   // Helper function to load cards by set without relying on selectedSet state
-  const loadPokemonCardsBySet = async (set: PokemonSet, page: number) => {
-    try {
-      console.log("Filtering by set (direct):", set.setId);
-      const result = await fetchPokemonCardsBySet(set.setId, pageSize, page);
-      
-      setTotalCount(result.totalCount);
-      setCards(result.data);
-      setHasMoreCards(page * pageSize < result.totalCount);
-      setCurrentPage(page);
-      // Update selectedSet after the API call is complete
-      setSelectedSet(set);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
-      );
-      console.error("Error fetching Pokemon cards by set:", err);
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    }
-  };
   
   const clearSetFilter = () => {
     // First set loading state to prevent flickering
@@ -162,9 +142,11 @@ export const usePokemonCards = ({
     try {
       let result;
       if (selectedSet) {
-        // Filtra per set
-        console.log("Filtering by set:", selectedSet.setId);
-        result = await fetchPokemonCardsBySet(selectedSet.setId, pageSize, page);
+        // Filtra per set, e opzionalmente anche per nome/numero
+        console.log("Filtering by set:", selectedSet.setId, "search:", searchQuery.trim());
+        // Always pass the search query parameter, even if it's empty
+        const searchParam = searchQuery.trim() !== "" ? searchQuery : undefined;
+        result = await fetchPokemonCardsBySet(selectedSet.setId, pageSize, page, searchParam);
       } else if (searchQuery.trim() !== "") {
         // Usa la ricerca avanzata
         result = await searchPokemonCards(searchQuery, pageSize, page);
@@ -210,7 +192,7 @@ export const usePokemonCards = ({
     if (isInitialized && user) {
       loadPokemonCards(1, true);
     }
-  }, [isInitialized, user]);
+  }, [isInitialized, user, loadPokemonCards]);
 
   return {
     cards,
