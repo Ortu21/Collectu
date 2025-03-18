@@ -15,12 +15,10 @@ export default function PokemonCards() {
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
   
-  // Initialize the app only once
+  // Initialize the app
   useEffect(() => {
-    if (!isInitialized) {
-      setIsInitialized(true);
-    }
-  }, [isInitialized]);
+    setIsInitialized(true);
+  }, []);
   
   // Handle authentication redirect
   useEffect(() => {
