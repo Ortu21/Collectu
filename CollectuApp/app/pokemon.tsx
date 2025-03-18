@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { StyleSheet, SafeAreaView, StatusBar as RNStatusBar } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -15,10 +15,12 @@ export default function PokemonCards() {
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
   
-  // Initialize the app
+  // Initialize the app only once
   useEffect(() => {
-    setIsInitialized(true);
-  }, []);
+    if (!isInitialized) {
+      setIsInitialized(true);
+    }
+  }, [isInitialized]);
   
   // Handle authentication redirect
   useEffect(() => {

@@ -1,6 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { fetchPokemonCards, searchPokemonCards, fetchPokemonCardsBySet } from '../services/api';
-import { PokemonCard, PokemonSet } from '../types/pokemon';
+import { useState, useEffect, useCallback } from "react";
+import {
+  fetchPokemonCards,
+  searchPokemonCards,
+  fetchPokemonCardsBySet,
+} from "../services/api";
+import { PokemonCard, PokemonSet } from "../types/pokemon";
 
 interface UsePokemonCardsProps {
   initialPageSize?: number;
@@ -31,7 +35,7 @@ interface UsePokemonCardsReturn {
 export const usePokemonCards = ({
   initialPageSize = 20,
   user,
-  isInitialized
+  isInitialized,
 }: UsePokemonCardsProps): UsePokemonCardsReturn => {
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,90 +49,7 @@ export const usePokemonCards = ({
   const pageSize = initialPageSize;
 
   // Effetto per gestire la ricerca con debounce
-  useEffect(() => {
-    const delaySearch = setTimeout(() => {
-      if (isInitialized && user) {
-        handleSearch();
-      }
-    }, 500);
-
-    return () => clearTimeout(delaySearch);
-  }, [searchQuery, isInitialized, user]);
-
-  const handleSearch = useCallback(() => {
-    // Reset dello stato e caricamento delle carte filtrate
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    loadPokemonCards(1, true);
-  }, [searchQuery, selectedSet]);
-  
-  const handleSetSelect = (set: PokemonSet) => {
-    // First set loading state to prevent flickering
-    setIsLoading(true);
-    // Then update the state
-    // Don't reset search query to allow combined filtering
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    // Update selectedSet immediately
-    setSelectedSet(set);
-    
-    // Call the API directly with the set ID and search query if present
-    try {
-      console.log("Filtering by set (direct):", set.setId, "search:", searchQuery.trim());
-      fetchPokemonCardsBySet(
-        set.setId, 
-        pageSize, 
-        1, 
-        searchQuery.trim() !== "" ? searchQuery : undefined
-      ).then(result => {
-        setTotalCount(result.totalCount);
-        setCards(result.data);
-        setHasMoreCards(1 * pageSize < result.totalCount);
-        setCurrentPage(1);
-        setIsLoading(false);
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
-      );
-      console.error("Error fetching Pokemon cards by set:", err);
-      setIsLoading(false);
-    }
-  };
-  
-  // Helper function to load cards by set without relying on selectedSet state
-  
-  const clearSetFilter = () => {
-    // First set loading state to prevent flickering
-    setIsLoading(true);
-    // Then update the state
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    // Update selectedSet immediately
-    setSelectedSet(null);
-    
-    try {
-      // Load cards without filter directly
-      fetchPokemonCards(pageSize, 1).then(result => {
-        setTotalCount(result.totalCount);
-        setCards(result.data);
-        setHasMoreCards(1 * pageSize < result.totalCount);
-        setCurrentPage(1);
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
-      );
-      console.error("Error fetching Pokemon cards:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadPokemonCards = async (
+  const loadPokemonCards = useCallback(async (
     page: number,
     isNewSearch: boolean = false
   ) => {
@@ -143,10 +64,20 @@ export const usePokemonCards = ({
       let result;
       if (selectedSet) {
         // Filtra per set, e opzionalmente anche per nome/numero
-        console.log("Filtering by set:", selectedSet.setId, "search:", searchQuery.trim());
+        console.log(
+          "Filtering by set:",
+          selectedSet.setId,
+          "search:",
+          searchQuery.trim()
+        );
         // Always pass the search query parameter, even if it's empty
         const searchParam = searchQuery.trim() !== "" ? searchQuery : undefined;
-        result = await fetchPokemonCardsBySet(selectedSet.setId, pageSize, page, searchParam);
+        result = await fetchPokemonCardsBySet(
+          selectedSet.setId,
+          pageSize,
+          page,
+          searchParam
+        );
       } else if (searchQuery.trim() !== "") {
         // Usa la ricerca avanzata
         result = await searchPokemonCards(searchQuery, pageSize, page);
@@ -175,7 +106,53 @@ export const usePokemonCards = ({
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  };
+  }, [pageSize, searchQuery, selectedSet]);
+
+  const handleSearch = useCallback(() => {
+    // Reset dello stato e caricamento delle carte filtrate
+    setCurrentPage(1);
+    setCards([]);
+    setHasMoreCards(true);
+    loadPokemonCards(1, true);
+  }, [searchQuery, selectedSet]); // Rimosso loadPokemonCards dalle dipendenze
+
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (isInitialized && user) {
+        handleSearch();
+      }
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchQuery, isInitialized, user, handleSearch]);
+
+  const handleSetSelect = useCallback((set: PokemonSet) => {
+    // First set loading state to prevent flickering
+    setIsLoading(true);
+    // Then update the state
+    setCurrentPage(1);
+    setCards([]);
+    setHasMoreCards(true);
+    // Update selectedSet immediately
+    setSelectedSet(set);
+
+    // No need to call API directly here, the useEffect will handle it
+    // when selectedSet changes
+  }, []);
+
+  const clearSetFilter = useCallback(() => {
+    // First set loading state to prevent flickering
+    setIsLoading(true);
+    // Then update the state
+    setCurrentPage(1);
+    setCards([]);
+    setHasMoreCards(true);
+    // Update selectedSet immediately
+    setSelectedSet(null);
+
+    // No need to call API directly here, the useEffect will handle it
+    // when selectedSet changes
+  }, []);
 
   const handleLoadMore = () => {
     if (!isLoadingMore && hasMoreCards) {
@@ -190,9 +167,20 @@ export const usePokemonCards = ({
   // Initial load effect
   useEffect(() => {
     if (isInitialized && user) {
+      const timer = setTimeout(() => {
+        loadPokemonCards(1, true);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialized, user, selectedSet, searchQuery, loadPokemonCards]);
+
+  // Remove the separate search effect since we've combined it above
+  useEffect(() => {
+    if (isInitialized && user) {
       loadPokemonCards(1, true);
     }
-  }, [isInitialized, user, loadPokemonCards]);
+  }, [isInitialized, user]); // Removed loadPokemonCards from dependencies
 
   return {
     cards,
@@ -211,6 +199,6 @@ export const usePokemonCards = ({
     clearSetFilter,
     loadPokemonCards,
     handleLoadMore,
-    handleRefresh
+    handleRefresh,
   };
 };
