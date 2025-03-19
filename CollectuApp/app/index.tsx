@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Index() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
 
   console.log('User:', user);
@@ -27,11 +27,19 @@ export default function Index() {
           <Text style={styles.buttonText}>Go to Pokemon</Text>
         </Pressable>
       </Link>
-      <Link href="/login" asChild>
-        <Pressable style={styles.logoutButton}>
-          <Text style={styles.buttonText}>Logout</Text>
-        </Pressable>
-      </Link>
+      <Pressable 
+        style={styles.logoutButton}
+        onPress={async () => {
+          try {
+            await signOut();
+            router.replace('/login');
+          } catch (error) {
+            console.error('Logout error:', error);
+          }
+        }}
+      >
+        <Text style={styles.buttonText}>Logout</Text>
+      </Pressable>
     </View>
   );
 }
