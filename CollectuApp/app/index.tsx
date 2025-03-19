@@ -7,14 +7,14 @@ export default function Index() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  console.log('User:', user);
+
   useEffect(() => {
     if (!loading && !user) {
-      // User is not logged in, redirect to login page
       router.replace('/login');
     }
   }, [user, loading, router]);
 
-  // If still loading or user is not logged in, don't render the main content
   if (loading || !user) {
     return null;
   }
@@ -27,9 +27,16 @@ export default function Index() {
           <Text style={styles.buttonText}>Go to Pokemon</Text>
         </Pressable>
       </Link>
+      <Link href="/login" asChild>
+        <Pressable style={styles.logoutButton}>
+          <Text style={styles.buttonText}>Logout</Text>
+        </Pressable>
+      </Link>
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -50,5 +57,10 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  logoutButton: {
+    backgroundColor: '#FF0000',
+    padding: 10,
+    borderRadius: 8,
   },
 });
