@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -19,8 +19,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
-  const { signIn, error } = useAuth();
+  const { signIn, error, user } = useAuth();
   const router = useRouter();
+
+  // Aggiungiamo un effetto per reindirizzare l'utente se è già autenticato
+  useEffect(() => {
+    if (user) {
+      router.replace("/");
+    }
+  }, [user, router]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -32,8 +39,11 @@ export default function Login() {
     setLoginError("");
 
     try {
-      await signIn(email, password);
-      router.replace("/");
+      const success = await signIn(email, password);
+      if (success) {
+        // Non facciamo il redirect qui, lasciamo che l'useEffect lo faccia
+        // quando lo stato user viene aggiornato
+      }
     } catch (error) {
       // Error is already handled in AuthContext
     } finally {
@@ -97,7 +107,7 @@ export default function Login() {
 
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>Don't have an account? </Text>
-            <Link href="/register">
+            <Link href="/register" asChild>
               <TouchableOpacity>
                 <Text style={styles.registerLink}>Sign Up</Text>
               </TouchableOpacity>
