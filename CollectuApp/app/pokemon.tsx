@@ -10,6 +10,20 @@ import { PokemonCardList } from "../components/pokemon/PokemonCardList";
 import { SearchFilterBar } from "../components/pokemon/SearchFilterBar";
 import { SetFilterModal } from "../components/pokemon/SetFilterModal";
 
+/**
+ * Renderizza le carte Pokémon.
+ *
+ * Questo componente React Native visualizza una lista di carte Pokémon con funzionalità di ricerca e filtro basate sugli insiemi.
+ * Il layout si adatta dinamicamente calcolando il numero di colonne in base alla larghezza dello schermo:
+ * - 5 colonne per larghezza >= 1200px
+ * - 4 colonne per larghezza >= 900px
+ * - 3 colonne per larghezza >= 600px
+ * - 2 colonne per larghezza inferiore a 600px
+ *
+ * Se l'utente non è autenticato, il componente non viene renderizzato e l'utente viene reindirizzato alla pagina di login.
+ *
+ * @returns Il componente React che integra la barra di ricerca e filtro, il modal per la selezione dei set e la lista delle carte Pokémon.
+ */
 export default function PokemonCards() {
   const { user } = useAuth();
   const router = useRouter();

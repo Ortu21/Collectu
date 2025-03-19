@@ -14,6 +14,16 @@ import { useAuth } from "../context/AuthContext";
 import { Link, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
+/**
+ * Componente per la schermata di login.
+ *
+ * Gestisce l'autenticazione degli utenti tramite inserimento di email e password. Durante il login,
+ * viene mostrato un indicatore di caricamento e, in caso di errore, viene visualizzato un messaggio appropriato.
+ * Se l'utente risulta già autenticato, il componente effettua automaticamente il redirect alla home page.
+ *
+ * @example
+ * <Login />
+ */
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
