@@ -31,6 +31,14 @@ jobs:
         run: |
           cd CardCollectionAPI
           dotnet format --verify-no-changes --report issues.json || true
+          # Verifica che il file esista e non sia vuoto
+          if [ -s issues.json ]; then
+            echo "File issues.json creato con successo"
+            cat issues.json | head -20  # Mostra le prime 20 righe per debug
+          else
+            echo "File issues.json non creato o vuoto"
+            echo '[]' > issues.json  # Crea un array vuoto per evitare errori
+          fi
       
       - name: Create issues from analysis
         uses: actions/github-script@v6
@@ -40,37 +48,74 @@ jobs:
             const fs = require('fs');
             try {
               const issuesData = fs.readFileSync('./CardCollectionAPI/issues.json', 'utf8');
+              console.log('Content of issues.json:', issuesData.substring(0, 500) + '...');
+              
               const issues = JSON.parse(issuesData);
               
-              if (issues && issues.length > 0) {
-                for (const issue of issues) {
-                  // Determina il tipo di issue
-                  let issueType = 'enhancement';
-                  if (issue.severity === 'error' || issue.severity === 'warning') {
-                    issueType = 'bug';
-                  }
+              // Verifica che issues sia un array e che contenga elementi
+              if (!Array.isArray(issues)) {
+                console.log('Il file issues.json non contiene un array:', typeof issues);
+                return;
+              }
+              
+              if (issues.length === 0) {
+                console.log('Nessun problema trovato dall\'analisi del codice');
+                return;
+              }
+              
+              console.log(`Trovati ${issues.length} problemi da analizzare`);
+              
+              // Verifica la struttura del primo elemento per debug
+              console.log('Struttura del primo elemento:', JSON.stringify(issues[0], null, 2));
+              
+              for (const issue of issues) {
+                // Verifica che l'issue abbia i campi necessari
+                if (!issue || typeof issue !== 'object') {
+                  console.log('Issue non valida:', issue);
+                  continue;
+                }
+                
+                // Adatta la struttura in base al formato effettivo di dotnet format
+                // Questo è un esempio, potrebbe essere necessario adattarlo al formato reale
+                const filePath = issue.filePath || issue.FilePath || issue.file || '';
+                const line = issue.line || issue.Line || 0;
+                const column = issue.column || issue.Column || 0;
+                const severity = issue.severity || issue.Severity || 'info';
+                const message = issue.message || issue.Message || 'Problema di formattazione del codice';
+                const suggestion = issue.suggestion || issue.Suggestion || '';
+                
+                // Determina il tipo di issue
+                let issueType = 'enhancement';
+                if (severity === 'error' || severity === 'warning') {
+                  issueType = 'bug';
+                }
+                
+                // Crea l'issue solo se abbiamo almeno un messaggio e un percorso file
+                if (message && filePath) {
+                  console.log(`Creazione issue per: ${filePath}:${line}`);
                   
-                  // Crea l'issue
                   await github.rest.issues.create({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    title: `[${issueType.toUpperCase()}] ${issue.message}`,
+                    title: `[${issueType.toUpperCase()}] ${message}`,
                     body: `
                     ## Problema rilevato dall'analisi del codice
                     
-                    **File**: ${issue.filePath}
-                    **Linea**: ${issue.line}
-                    **Colonna**: ${issue.column}
-                    **Severità**: ${issue.severity}
+                    **File**: ${filePath}
+                    **Linea**: ${line}
+                    **Colonna**: ${column}
+                    **Severità**: ${severity}
                     
                     ### Descrizione
-                    ${issue.message}
+                    ${message}
                     
                     ### Suggerimento
-                    ${issue.suggestion || 'Nessun suggerimento automatico disponibile.'}
+                    ${suggestion || 'Nessun suggerimento automatico disponibile.'}
                     `,
                     labels: [issueType, 'backend', 'code-analysis']
                   });
+                } else {
+                  console.log('Issue incompleta, manca il messaggio o il percorso del file');
                 }
               }
             } catch (error) {
