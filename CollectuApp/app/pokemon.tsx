@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { StyleSheet, SafeAreaView, StatusBar as RNStatusBar } from "react-native";
+import { StyleSheet, SafeAreaView, StatusBar as RNStatusBar, Dimensions, useWindowDimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
@@ -14,6 +14,17 @@ export default function PokemonCards() {
   const { user } = useAuth();
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
+  const { width } = useWindowDimensions();
+  
+  // Determine number of columns based on screen width
+  const getNumColumns = () => {
+    if (width >= 1200) return 5;
+    if (width >= 900) return 4;
+    if (width >= 600) return 3;
+    return 2;
+  };
+  
+  const numColumns = getNumColumns();
   
   // Initialize the app
   useEffect(() => {
@@ -105,6 +116,7 @@ export default function PokemonCards() {
         onRefresh={handleRefresh}
         onLoadMore={handleLoadMore}
         onCardPress={handleCardPress}
+        numColumns={numColumns}
       />
     </SafeAreaView>
   );
