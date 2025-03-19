@@ -57,9 +57,14 @@ export const searchPokemonCards = async (
       return await fetchPokemonCards(pageSize, page);
     }
     
-    // Assicuriamoci che la query sia normalizzata prima di inviarla
+    // Normalize the query and prepare for elastic search
     const normalizedQuery = query.trim().toLowerCase();
-    const url = `${API_BASE_URL}/cards?search=${encodeURIComponent(normalizedQuery)}&pageSize=${pageSize}&page=${page}`;
+    
+    // Enhanced URL with elastic search capabilities
+    // The backend will handle searching across name, set, and card number
+    const url = `${API_BASE_URL}/cards?search=${encodeURIComponent(normalizedQuery)}&pageSize=${pageSize}&page=${page}&elasticSearch=true`;
+    
+    console.log("Elastic search query:", normalizedQuery);
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -68,7 +73,7 @@ export const searchPokemonCards = async (
 
     const result = await response.json();
     
-    // Trasforma i dati per adattarli al tipo PokemonCard
+    // Transform the data to match the PokemonCard type
     const transformedCards: PokemonCard[] = result.data.map((card: any) => ({
       id: card.id,
       name: card.name,
@@ -78,8 +83,8 @@ export const searchPokemonCards = async (
       rarity: card.rarity || "",
       imageUrl: card.imageUrl,
       setName: card.setName || "",
-      relevance: card.relevance ,
-      number : card.number || ""
+      number: card.number || "",
+      relevance: card.relevance
     }));
 
     return {
@@ -87,7 +92,7 @@ export const searchPokemonCards = async (
       totalCount: result.totalCount,
       page: result.page,
       pageSize: result.pageSize,
-      query: result.query
+      query: normalizedQuery
     };
   } catch (error) {
     console.error("Error searching Pokemon cards:", error);
@@ -145,14 +150,15 @@ export const fetchPokemonCardsBySet = async (
   search?: string
 ): Promise<PokemonCardResponse> => {
   try {
+    // Base URL with set ID filter
     let url = `${API_BASE_URL}/cards?setId=${encodeURIComponent(setId)}&pageSize=${pageSize}&page=${page}`;
     
-    // Aggiungi il parametro di ricerca se presente
+    // Add search parameter if present and enable elastic search
     if (search && search.trim() !== '') {
-      url += `&search=${encodeURIComponent(search.trim())}`;
+      url += `&search=${encodeURIComponent(search.trim())}&elasticSearch=true`;
     }
     
-    console.log("Fetching cards with URL:", url); // Log per debug
+    console.log("Fetching cards with URL:", url);
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -161,7 +167,7 @@ export const fetchPokemonCardsBySet = async (
 
     const result = await response.json();
     
-    // Trasforma i dati per adattarli al tipo PokemonCard
+    // Transform the data to match the PokemonCard type
     const transformedCards: PokemonCard[] = result.data.map((card: any) => ({
       id: card.id,
       name: card.name,
@@ -171,14 +177,16 @@ export const fetchPokemonCardsBySet = async (
       rarity: card.rarity || "",
       imageUrl: card.imageUrl,
       setName: card.setName || "",
-      number: card.number || ""
+      number: card.number || "",
+      relevance: card.relevance
     }));
 
     return {
       data: transformedCards,
       totalCount: result.totalCount,
       page: result.page,
-      pageSize: result.pageSize
+      pageSize: result.pageSize,
+      query: result.query
     };
   } catch (error) {
     console.error("Error fetching Pokemon cards by set:", error);

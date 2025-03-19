@@ -1,6 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { fetchPokemonCards, searchPokemonCards, fetchPokemonCardsBySet } from '../services/api';
-import { PokemonCard, PokemonSet } from '../types/pokemon';
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  fetchPokemonCards,
+  searchPokemonCards,
+  fetchPokemonCardsBySet,
+
+} from "../services/api";
+import { PokemonCard, PokemonSet } from "../types/pokemon";
 
 interface UsePokemonCardsProps {
   initialPageSize?: number;
@@ -31,7 +36,7 @@ interface UsePokemonCardsReturn {
 export const usePokemonCards = ({
   initialPageSize = 20,
   user,
-  isInitialized
+  isInitialized,
 }: UsePokemonCardsProps): UsePokemonCardsReturn => {
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,115 +48,64 @@ export const usePokemonCards = ({
   const [hasMoreCards, setHasMoreCards] = useState(true);
   const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
   const pageSize = initialPageSize;
-
-  // Effetto per gestire la ricerca con debounce
-  useEffect(() => {
-    const delaySearch = setTimeout(() => {
-      if (isInitialized && user) {
-        handleSearch();
-      }
-    }, 500);
-
-    return () => clearTimeout(delaySearch);
-  }, [searchQuery, isInitialized, user]);
-
-  const handleSearch = useCallback(() => {
-    // Reset dello stato e caricamento delle carte filtrate
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    loadPokemonCards(1, true);
-  }, [searchQuery, selectedSet]);
   
-  const handleSetSelect = (set: PokemonSet) => {
-    // First set loading state to prevent flickering
-    setIsLoading(true);
-    // Then update the state
-    // Don't reset search query to allow combined filtering
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    // Update selectedSet immediately
-    setSelectedSet(set);
-    
-    // Call the API directly with the set ID and search query if present
-    try {
-      console.log("Filtering by set (direct):", set.setId, "search:", searchQuery.trim());
-      fetchPokemonCardsBySet(
-        set.setId, 
-        pageSize, 
-        1, 
-        searchQuery.trim() !== "" ? searchQuery : undefined
-      ).then(result => {
-        setTotalCount(result.totalCount);
-        setCards(result.data);
-        setHasMoreCards(1 * pageSize < result.totalCount);
-        setCurrentPage(1);
-        setIsLoading(false);
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
-      );
-      console.error("Error fetching Pokemon cards by set:", err);
-      setIsLoading(false);
-    }
-  };
-  
-  // Helper function to load cards by set without relying on selectedSet state
-  
-  const clearSetFilter = () => {
-    // First set loading state to prevent flickering
-    setIsLoading(true);
-    // Then update the state
-    setCurrentPage(1);
-    setCards([]);
-    setHasMoreCards(true);
-    // Update selectedSet immediately
-    setSelectedSet(null);
-    
-    try {
-      // Load cards without filter directly
-      fetchPokemonCards(pageSize, 1).then(result => {
-        setTotalCount(result.totalCount);
-        setCards(result.data);
-        setHasMoreCards(1 * pageSize < result.totalCount);
-        setCurrentPage(1);
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch Pokemon cards"
-      );
-      console.error("Error fetching Pokemon cards:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Add missing refs
+  const isLoadingRef = useRef<boolean>(false);
+  const lastRequestParamsRef = useRef<string>("");
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const loadPokemonCards = async (
+  const loadPokemonCards = useCallback(async (
     page: number,
     isNewSearch: boolean = false
   ) => {
+    // Create a request signature to detect duplicate requests
+    const requestSignature = JSON.stringify({
+      page,
+      searchQuery: searchQuery.trim(),
+      setId: selectedSet?.setId || null,
+      isNewSearch
+    });
+    
+    // Enhanced duplicate request detection
+    // Skip if this exact request is already in progress OR
+    // if we're trying to load the same page again (prevents double loading)
+    if ((isLoadingRef.current && lastRequestParamsRef.current === requestSignature) ||
+        (!isNewSearch && page === currentPage)) {
+      console.log("Skipping duplicate request:", requestSignature);
+      return;
+    }
+    
+    // Update loading state and request tracking
     if (isNewSearch) {
       setIsLoading(true);
     } else {
       setIsLoadingMore(true);
     }
     setError(null);
+    isLoadingRef.current = true;
+    lastRequestParamsRef.current = requestSignature;
 
     try {
+      console.log(`Fetching cards: page=${page}, isNewSearch=${isNewSearch}`);
       let result;
+      
       if (selectedSet) {
-        // Filtra per set, e opzionalmente anche per nome/numero
-        console.log("Filtering by set:", selectedSet.setId, "search:", searchQuery.trim());
-        // Always pass the search query parameter, even if it's empty
+        console.log(
+          "Filtering by set:",
+          selectedSet.setId,
+          "search:",
+          searchQuery.trim()
+        );
         const searchParam = searchQuery.trim() !== "" ? searchQuery : undefined;
-        result = await fetchPokemonCardsBySet(selectedSet.setId, pageSize, page, searchParam);
+        result = await fetchPokemonCardsBySet(
+          selectedSet.setId,
+          pageSize,
+          page,
+          searchParam
+        );
       } else if (searchQuery.trim() !== "") {
-        // Usa la ricerca avanzata
         result = await searchPokemonCards(searchQuery, pageSize, page);
       } else {
-        // Carica tutte le carte
         result = await fetchPokemonCards(pageSize, page);
       }
 
@@ -163,7 +117,6 @@ export const usePokemonCards = ({
         setCards((prevCards) => [...prevCards, ...result.data]);
       }
 
-      // Verifica se ci sono altre carte da caricare
       setHasMoreCards(page * pageSize < result.totalCount);
       setCurrentPage(page);
     } catch (err) {
@@ -174,25 +127,127 @@ export const usePokemonCards = ({
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
+      isLoadingRef.current = false;
     }
-  };
+  }, [pageSize, searchQuery, selectedSet]);
 
-  const handleLoadMore = () => {
-    if (!isLoadingMore && hasMoreCards) {
+  // Unified search handler with debounce built-in
+  const handleSearch = useCallback(() => {
+    // Clear any existing search timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = null;
+    }
+    
+    setCurrentPage(1);
+    // Non svuotiamo le carte durante la digitazione per evitare la pagina vuota
+    // setCards([]);
+    setHasMoreCards(true);
+    
+    // Use the timeout ref to track and cancel pending searches
+    // Increased debounce time to 800ms to reduce API calls while typing
+    searchTimeoutRef.current = setTimeout(() => {
+      loadPokemonCards(1, true);
+      searchTimeoutRef.current = null;
+    }, 800); // Increased debounce for better typing experience
+  }, [loadPokemonCards]);
+
+  // Handler for set selection
+  const handleSetSelect = useCallback((set: PokemonSet) => {
+    // Clear any existing search timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = null;
+    }
+    
+    setCurrentPage(1);
+    setIsLoading(true); // Impostiamo lo stato di caricamento immediatamente
+    setHasMoreCards(true);
+    setSelectedSet(set);
+    
+    // Delay the API call slightly to ensure state updates are processed
+    // Using a longer timeout to prevent race conditions
+    searchTimeoutRef.current = setTimeout(() => {
+      loadPokemonCards(1, true);
+      searchTimeoutRef.current = null;
+    }, 100);
+  }, [loadPokemonCards]);
+
+  // Handler for clearing set filter
+  const clearSetFilter = useCallback(() => {
+    // Clear any existing search timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = null;
+    }
+    
+    setCurrentPage(1);
+    setIsLoading(true); // Impostiamo lo stato di caricamento immediatamente
+    setHasMoreCards(true);
+    setSelectedSet(null);
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      loadPokemonCards(1, true);
+      searchTimeoutRef.current = null;
+    }, 100);
+  }, [loadPokemonCards]);
+
+  // Handler for loading more cards
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore && hasMoreCards && !isLoadingRef.current) {
       loadPokemonCards(currentPage + 1);
     }
-  };
+  }, [currentPage, hasMoreCards, isLoadingMore, loadPokemonCards]);
 
-  const handleRefresh = () => {
-    loadPokemonCards(1, true);
-  };
-
-  // Initial load effect
-  useEffect(() => {
-    if (isInitialized && user) {
+  // Handler for refreshing the card list
+  const handleRefresh = useCallback(() => {
+    if (!isLoadingRef.current) {
       loadPokemonCards(1, true);
     }
+  }, [loadPokemonCards]);
+
+  // Single unified effect for search query changes
+  useEffect(() => {
+    if (isInitialized && user) {
+      // Only trigger search when query changes, not on initial mount
+      // This prevents duplicate API calls
+      handleSearch();
+    }
+    
+    // Cleanup function to clear any pending timeouts
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = null;
+      }
+    };
+  }, [searchQuery, isInitialized, user, handleSearch]);
+  
+  // Create a ref to track initial mount
+  const isInitialMount = useRef(true);
+  
+  // Effect for initial load and authentication changes
+  useEffect(() => {
+    if (isInitialized && user && !isLoadingRef.current) {
+      // Only load cards on initial mount or when auth changes
+      // This prevents duplicate API calls
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        const timer = setTimeout(() => {
+          loadPokemonCards(1, true);
+        }, 100);
+        
+        return () => clearTimeout(timer);
+      }
+    }
   }, [isInitialized, user, loadPokemonCards]);
+  
+  // Effect for set selection changes
+  useEffect(() => {
+    // This effect will run when selectedSet changes, but we handle the API call
+    // directly in the handleSetSelect and clearSetFilter functions
+    // This is intentionally empty to avoid duplicate API calls
+  }, [selectedSet]);
 
   return {
     cards,
@@ -211,6 +266,6 @@ export const usePokemonCards = ({
     clearSetFilter,
     loadPokemonCards,
     handleLoadMore,
-    handleRefresh
+    handleRefresh,
   };
 };
