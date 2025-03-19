@@ -1,0 +1,107 @@
+name: Auto Issue Creator
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main ]
+
+jobs:
+  analyze-and-create-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Extract PR information
+        id: pr-info
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const prTitle = context.payload.pull_request.title;
+            const prBody = context.payload.pull_request.body || '';
+            const prFiles = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            
+            // Analisi del titolo e del corpo della PR per determinare il tipo
+            let issueType = 'enhancement';
+            const bugKeywords = ['fix', 'bug', 'error', 'crash', 'resolve', 'problem'];
+            const securityKeywords = ['security', 'vulnerability', 'secure', 'auth', 'authentication', 'authorization'];
+            
+            if (bugKeywords.some(keyword => prTitle.toLowerCase().includes(keyword))) {
+              issueType = 'bug';
+            } else if (securityKeywords.some(keyword => prTitle.toLowerCase().includes(keyword))) {
+              issueType = 'security';
+            }
+            
+            // Estrai i file modificati
+            const changedFiles = prFiles.data.map(file => file.filename);
+            
+            // Determina l'area del progetto
+            let area = 'general';
+            if (changedFiles.some(file => file.startsWith('CardCollectionAPI/'))) {
+              area = 'backend';
+            } else if (changedFiles.some(file => file.startsWith('CollectuApp/'))) {
+              area = 'frontend';
+            }
+            
+            return {
+              prNumber,
+              prTitle,
+              prBody,
+              issueType,
+              area,
+              changedFiles: changedFiles.join('\n')
+            };
+      
+      - name: Create issue
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prInfo = ${{ steps.pr-info.outputs.result }};
+            
+            // Crea un titolo per l'issue
+            const issueTitle = `[${prInfo.issueType.toUpperCase()}][${prInfo.area}] ${prInfo.prTitle}`;
+            
+            // Prepara il corpo dell'issue
+            const issueBody = `
+            ## Descrizione
+            Issue generata automaticamente dalla PR #${prInfo.prNumber}
+            
+            ${prInfo.prBody}
+            
+            ## File modificati
+            \`\`\`
+            ${prInfo.changedFiles}
+            \`\`\`
+            
+            ## Tipo di modifica
+            - Tipo: ${prInfo.issueType}
+            - Area: ${prInfo.area}
+            
+            ## Link alla PR
+            [PR #${prInfo.prNumber}](${context.payload.pull_request.html_url})
+            `;
+            
+            // Determina le etichette appropriate
+            const labels = [prInfo.issueType, prInfo.area, 'auto-generated'];
+            
+            // Crea l'issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: labels
+            });

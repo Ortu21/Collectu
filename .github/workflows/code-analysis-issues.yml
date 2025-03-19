@@ -1,0 +1,78 @@
+name: Code Analysis and Issue Creation
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 1'  # Esegui ogni lunedì a mezzanotte
+  workflow_dispatch:  # Consente l'esecuzione manuale
+
+jobs:
+  analyze-dotnet:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+      
+      - name: Install .NET analyzers
+        run: |
+          dotnet tool install --global dotnet-format
+          dotnet tool install --global dotnet-sonarscanner
+      
+      - name: Run code analysis
+        run: |
+          cd CardCollectionAPI
+          dotnet format --verify-no-changes --report issues.json || true
+      
+      - name: Create issues from analysis
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            try {
+              const issuesData = fs.readFileSync('./CardCollectionAPI/issues.json', 'utf8');
+              const issues = JSON.parse(issuesData);
+              
+              if (issues && issues.length > 0) {
+                for (const issue of issues) {
+                  // Determina il tipo di issue
+                  let issueType = 'enhancement';
+                  if (issue.severity === 'error' || issue.severity === 'warning') {
+                    issueType = 'bug';
+                  }
+                  
+                  // Crea l'issue
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: `[${issueType.toUpperCase()}] ${issue.message}`,
+                    body: `
+                    ## Problema rilevato dall'analisi del codice
+                    
+                    **File**: ${issue.filePath}
+                    **Linea**: ${issue.line}
+                    **Colonna**: ${issue.column}
+                    **Severità**: ${issue.severity}
+                    
+                    ### Descrizione
+                    ${issue.message}
+                    
+                    ### Suggerimento
+                    ${issue.suggestion || 'Nessun suggerimento automatico disponibile.'}
+                    `,
+                    labels: [issueType, 'backend', 'code-analysis']
+                  });
+                }
+              }
+            } catch (error) {
+              console.error('Errore nella creazione delle issue:', error);
+            }
