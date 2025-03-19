@@ -1,4 +1,3 @@
-S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\appsettings.Development.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.staticwebassets.endpoints.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.exe
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.deps.json
