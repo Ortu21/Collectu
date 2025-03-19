@@ -2,7 +2,7 @@ name: Code Analysis and Issue Creation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   schedule:
     - cron: '0 0 * * 1'  # Esegui ogni lunedì a mezzanotte
   workflow_dispatch:  # Consente l'esecuzione manuale

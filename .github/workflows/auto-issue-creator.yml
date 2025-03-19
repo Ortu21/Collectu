@@ -3,7 +3,7 @@ name: Auto Issue Creator
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   analyze-and-create-issues:
