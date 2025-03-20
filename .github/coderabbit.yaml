@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./schema.v2.json
+ # yaml-language-server: $schema=./schema.v2.json
 
 # Configurazione generale
 language: "it-IT"
