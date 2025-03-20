@@ -2,7 +2,7 @@ name: Generate API Documentation
 
 on:
   push:
-    branches: [ main , develop ]
+    branches: [ main ]
     paths:
       - 'CardCollectionAPI/**'
   workflow_dispatch:
@@ -25,7 +25,8 @@ jobs:
       - name: Create DocFX project
         run: |
           mkdir -p docs
-          docfx init -q -o docs
+          # Remove the -q flag that's causing the error
+          docfx init -o docs
           
       - name: Update DocFX configuration
         shell: powershell
