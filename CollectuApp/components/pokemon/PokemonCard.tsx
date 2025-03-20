@@ -1,77 +1,87 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { PokemonCard as PokemonCardType } from '../../types/pokemon';
+import { PokemonCard } from '../../types/pokemon';
 
-interface PokemonCardProps {
-  card: PokemonCardType;
-  onPress: (card: PokemonCardType) => void;
+interface PokemonCardItemProps {
+  card: PokemonCard;
+  onPress: (card: PokemonCard) => void;
+  cardDimensions?: {
+    width: number;
+    height: number;
+  };
 }
 
-export const PokemonCardItem = ({ card, onPress }: PokemonCardProps) => {
+export const PokemonCardItem = ({ card, onPress, cardDimensions }: PokemonCardItemProps) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(card)}>
+    <View style={styles.container}>
       <Image
         source={{ uri: card.imageUrl }}
-        style={styles.cardImage}
+        style={[
+          styles.cardImage,
+          cardDimensions ? { height: cardDimensions.height * 0.6 } : null
+        ]}
         resizeMode="contain"
       />
       <View style={styles.cardInfo}>
-        <Text style={styles.cardName}>{card.name}</Text>
-        <Text style={styles.cardType}>{card.supertype}</Text>
-        {card.rarity && (
-          <Text style={styles.cardRarity}>Rarity: {card.rarity}</Text>
-        )}
-        {card.setName && (
-          <Text style={styles.cardSet}>Set: {card.setName}</Text>
-        )}
-        {card.number && (
-          <Text style={styles.cardNumber}>Number: {card.number}</Text>
-        )}
+        <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">
+          {card.name}
+        </Text>
+        <Text style={styles.cardRarity} numberOfLines={1} ellipsizeMode="tail">
+          {card.rarity || 'Common'}
+        </Text>
+        <View style={styles.cardDetails}>
+          <Text style={styles.cardSet} numberOfLines={1} ellipsizeMode="tail">
+            {card.setName || 'Unknown Set'}
+          </Text>
+          <Text style={styles.cardNumber}>
+            {card.number || '?'}
+          </Text>
+        </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     flex: 1,
-    margin: 8,
-    backgroundColor: "#333",
-    borderRadius: 10,
-    overflow: "hidden",
-    elevation: 3,
-    maxWidth: "47%",
   },
   cardImage: {
-    width: "100%",
+    width: '100%',
     height: 180,
-    backgroundColor: "#444",
+    backgroundColor: '#444',
   },
   cardInfo: {
     padding: 12,
   },
   cardName: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 4,
   },
   cardType: {
     fontSize: 14,
-    color: "#aaa",
+    color: '#aaa',
     marginBottom: 4,
   },
   cardRarity: {
     fontSize: 12,
-    color: "#007AFF",
+    color: '#007AFF',
     marginBottom: 4,
+  },
+  cardDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardSet: {
     fontSize: 12,
-    color: "#6c757d",
+    color: '#6c757d',
+    flex: 1,
   },
   cardNumber: {
     fontSize: 12,
-    color: "#6c757d",
+    color: '#6c757d',
   },
 });
