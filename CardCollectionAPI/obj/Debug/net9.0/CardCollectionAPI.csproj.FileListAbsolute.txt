@@ -1,5 +1,3 @@
-S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\appsettings.Development.json
-S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\appsettings.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.staticwebassets.endpoints.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.exe
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.deps.json
@@ -150,7 +148,6 @@ S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.pdb
 S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.genruntimeconfig.cache
 S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\ref\CardCollectionAPI.dll
 S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.sourcelink.json
-S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\firebase-config.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\package-lock.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\package.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
@@ -159,3 +156,7 @@ S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\Microsoft.Extensions.Dia
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\Microsoft.Extensions.Http.dll
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
+S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\firebase-config.json
+S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\appsettings.json
+S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.xml
+S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.xml

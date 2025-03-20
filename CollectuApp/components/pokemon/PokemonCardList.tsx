@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { PokemonCard } from '../../types/pokemon';
 import { PokemonCardItem } from './PokemonCard';
 
@@ -12,6 +12,7 @@ interface PokemonCardListProps {
   onRefresh: () => void;
   onLoadMore: () => void;
   onCardPress: (card: PokemonCard) => void;
+  numColumns?: number;
 }
 
 export const PokemonCardList = ({
@@ -22,73 +23,82 @@ export const PokemonCardList = ({
   totalCount,
   onRefresh,
   onLoadMore,
-  onCardPress
+  onCardPress,
+  numColumns = 2,
 }: PokemonCardListProps) => {
-  const renderFooter = () => {
-    if (!isLoadingMore) return null;
-
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#007AFF" />
-        <Text style={styles.footerText}>Loading more cards...</Text>
-      </View>
-    );
+  const { width } = useWindowDimensions();
+  
+  // Calcola le dimensioni ottimali per le carte in base alla larghezza dello schermo
+  const getCardDimensions = () => {
+    const padding = 16; // Padding totale orizzontale
+    const gap = 16; // Spazio tra le carte
+    const availableWidth = width - padding;
+    const cardWidth = (availableWidth - (gap * (numColumns - 1))) / numColumns;
+    
+    // Altezza proporzionale per mantenere il rapporto della carta
+    const cardHeight = cardWidth * 1.4;
+    
+    return {
+      width: cardWidth,
+      height: cardHeight,
+      // Modifica qui: rimuoviamo maxWidth come stringa percentuale
+    };
   };
-
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading cards...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity
-          style={styles.retryButton}
-          onPress={onRefresh}
-        >
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (cards.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No Pokemon cards found</Text>
-        <TouchableOpacity
-          style={styles.retryButton}
-          onPress={onRefresh}
-        >
-          <Text style={styles.retryButtonText}>Refresh</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  
+  const cardDimensions = getCardDimensions();
 
   return (
     <FlatList
       data={cards}
-      renderItem={({ item }) => <PokemonCardItem card={item} onPress={onCardPress} />}
+      numColumns={numColumns}
+      key={`list-${numColumns}`}
+      renderItem={({ item }) => (
+        <TouchableOpacity 
+          style={[
+            styles.card, 
+            { 
+              // Modifica qui: usiamo una percentuale valida per React Native
+              width: cardDimensions.width,
+              margin: 8,
+            }
+          ]} 
+          onPress={() => onCardPress(item)}
+        >
+          <PokemonCardItem 
+            card={item} 
+            onPress={onCardPress} 
+            cardDimensions={cardDimensions}
+          />
+        </TouchableOpacity>
+      )}
       keyExtractor={(item, index) => `${item.id}-${index}`}
       contentContainerStyle={styles.cardList}
-      numColumns={2}
       onRefresh={onRefresh}
       refreshing={isLoading}
       onEndReached={onLoadMore}
       onEndReachedThreshold={0.3}
-      ListFooterComponent={renderFooter}
+      ListFooterComponent={() => (
+        <View style={styles.footerLoader}>
+          {isLoadingMore && (
+            <>
+              <ActivityIndicator size="small" color="#aaa" />
+              <Text style={styles.footerText}>Loading more cards...</Text>
+            </>
+          )}
+        </View>
+      )}
     />
   );
 };
 
 const styles = StyleSheet.create({
+  card: {
+    flex: 1,
+    backgroundColor: "#333",
+    borderRadius: 10,
+    overflow: "hidden",
+    elevation: 3,
+  },
   cardList: {
     padding: 8,
   },

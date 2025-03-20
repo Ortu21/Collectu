@@ -5,6 +5,8 @@ using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,7 +64,26 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Aggiungi questo nella sezione di configurazione dei servizi
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { 
+        Title = "Collectu API", 
+        Version = "v1",
+        Description = "API per la gestione delle collezioni di carte",
+        Contact = new OpenApiContact
+        {
+            Name = "Collectu Team",
+            Email = "info@collectu.app",
+            Url = new Uri("https://github.com/Ortu21/Collectu")
+        }
+    });
+    
+    // Configura Swagger per utilizzare i file XML di documentazione
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 builder.Services.AddHttpClient<PokemonCardService>();
 builder.Logging.AddConsole(); // Mostra log sulla console
 builder.Logging.SetMinimumLevel(LogLevel.Information); // Raccogli tutti i log di livello 'Information' o superiore
@@ -71,10 +92,11 @@ builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogL
 
 var app = builder.Build();
 
+// Aggiungi questo nella sezione di configurazione dell'app
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Collectu API v1"));
 }
 
 // Usa CORS prima di Authentication e Authorization
