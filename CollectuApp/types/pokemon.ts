@@ -5,7 +5,8 @@ export type PokemonCard = {
   hp?: string;
   evolvesFrom: string;
   rarity: string;
-  imageUrl: string;
+  largeImageUrl: string;
+  smallImageUrl : string;
   setName?: string;
   relevance?: number;
   number?: string;

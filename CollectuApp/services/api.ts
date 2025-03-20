@@ -30,7 +30,8 @@ export const fetchPokemonCards = async (
       hp: card.hp || "",
       evolvesFrom: card.evolvesFrom || "",
       rarity: card.rarity || "",
-      imageUrl: card.imageUrl,
+      largeImageUrl: card.largeImageUrl,
+      smallImageUrl: card.smallImageUrl,
       setName: card.setName || "",
       number : card.number || ""
     }));
@@ -81,7 +82,8 @@ export const searchPokemonCards = async (
       hp: card.hp || "",
       evolvesFrom: card.evolvesFrom || "",
       rarity: card.rarity || "",
-      imageUrl: card.imageUrl,
+      largeImageUrl: card.largeImageUrl,
+      smallImageUrl: card.smallImageUrl,
       setName: card.setName || "",
       number: card.number || "",
       relevance: card.relevance
@@ -117,7 +119,8 @@ export const fetchPokemonCardById = async (id: string): Promise<PokemonCard> => 
       hp: card.hp || "",
       evolvesFrom: card.evolvesFrom || "",
       rarity: card.rarity || "",
-      imageUrl: card.imageUrl,
+      largeImageUrl: card.largeImageUrl,
+      smallImageUrl: card.smallImageUrl,
       setName: card.set?.setName || "",
       number : card.number || ""
     };
@@ -175,7 +178,8 @@ export const fetchPokemonCardsBySet = async (
       hp: card.hp || "",
       evolvesFrom: card.evolvesFrom || "",
       rarity: card.rarity || "",
-      imageUrl: card.imageUrl,
+      largeImageUrl: card.largeImageUrl,
+      smallImageUrl: card.smallImageUrl,
       setName: card.setName || "",
       number: card.number || "",
       relevance: card.relevance

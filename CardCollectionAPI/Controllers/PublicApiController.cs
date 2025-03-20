@@ -123,6 +123,7 @@ namespace CardCollectionAPI.Controllers
                     c.EvolvesFrom,
                     c.Rarity,
                     c.LargeImageUrl,
+                    c.SmallImageUrl, // Aggiunto il campo SmallImageUrl per le anteprime
                     SetName = c.Set != null ? c.Set.SetName : null,
                     c.Number, // Aggiunto il campo Number alla risposta
                     // Aggiungi campo di rilevanza se è stata usata la ricerca elastica
@@ -212,6 +213,7 @@ namespace CardCollectionAPI.Controllers
                 c.EvolvesFrom,
                 c.Rarity,
                 c.LargeImageUrl,
+                c.SmallImageUrl, // Aggiunto il campo SmallImageUrl per le anteprime
                 SetName = c.Set != null ? c.Set.SetName : null,
                 c.Number,
                 Relevance = keywords.Count(k => c.Name.ToLower().Contains(k.ToLower()))
