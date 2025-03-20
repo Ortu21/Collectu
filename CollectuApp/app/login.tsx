@@ -39,13 +39,8 @@ export default function Login() {
     setLoginError("");
 
     try {
-      const success = await signIn(email, password);
-      if (success) {
-        // Non facciamo il redirect qui, lasciamo che l'useEffect lo faccia
-        // quando lo stato user viene aggiornato
-      }
-    } catch (error) {
-      // Error is already handled in AuthContext
+      await signIn(email, password);
+      // Auth state changes will trigger the useEffect for redirection
     } finally {
       setIsLoading(false);
     }
