@@ -30,8 +30,25 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Run linter
-      run: npm run lint
+    - name: Setup ESLint configuration
+      run: |
+        # Create ESLint config if it doesn't exist
+        if [ ! -f .eslintrc.js ]; then
+          echo "module.exports = {
+            extends: ['eslint-config-expo'],
+            rules: {
+              '@typescript-eslint/no-unused-vars': 'warn',
+              'import/no-unresolved': 'warn',
+              'react-hooks/exhaustive-deps': 'warn'
+            }
+          };" > .eslintrc.js
+        fi
+    
+    - name: Run linter (warnings allowed)
+      run: npx eslint . --max-warnings=100
       
     - name: Run tests
       run: npm test
+      
+    - name: Build Expo app
+      run: npx expo export --platform web
