@@ -4,10 +4,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <PropertyGroup>
-      <GenerateDocumentationFile>true</GenerateDocumentationFile>
-      <NoWarn>$(NoWarn);1591</NoWarn>
-    </PropertyGroup>
+    <!-- Add this for XML documentation -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

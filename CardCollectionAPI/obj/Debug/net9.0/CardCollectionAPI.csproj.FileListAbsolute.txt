@@ -158,3 +158,5 @@ S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\Microsoft.Extensions.Htt
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\firebase-config.json
 S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\appsettings.json
+S:\Progetti\Collectu\CardCollectionAPI\bin\Debug\net9.0\CardCollectionAPI.xml
+S:\Progetti\Collectu\CardCollectionAPI\obj\Debug\net9.0\CardCollectionAPI.xml

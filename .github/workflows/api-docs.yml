@@ -2,7 +2,7 @@ name: Generate API Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main , develop ]
     paths:
       - 'CardCollectionAPI/**'
   workflow_dispatch:

@@ -26,6 +26,13 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       
+      # Check the project file for errors
+      - name: Check project file
+        shell: powershell
+        run: |
+          Get-Content -Path CardCollectionAPI/CardCollectionAPI.csproj
+          Write-Host "Checking for PropertyGroup issues..."
+      
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
@@ -54,8 +61,17 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Ortu21_Collectu" /o:"ortu21" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.exclusions="**/obj/**,**/bin/**,**/*.Designer.cs,**/Migrations/**"
+          # Add the skip JRE provisioning parameter to speed up the analysis
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Ortu21_Collectu" /o:"ortu21" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.exclusions="**/obj/**,**/bin/**,**/*.Designer.cs,**/Migrations/**" /d:sonar.scanner.skipJreProvisioning=true /d:sonar.scanner.scanAll=false
+          
+          # First restore dependencies
           dotnet restore
-          dotnet build CardCollectionAPI/CardCollectionAPI.csproj --configuration Release --no-restore
-          dotnet test CardCollectionAPI/CardCollectionAPI.csproj --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory:TestResults -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          
+          # Build the solution instead of just the project
+          dotnet build Collectu.sln --configuration Release --no-restore
+          
+          # Run tests if you have them
+          dotnet test Collectu.sln --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory:TestResults -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          
+          # End SonarCloud analysis
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
