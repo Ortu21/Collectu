@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=./schema.v2.json
 
 # Configurazione generale
-language: "it"
+language: "it-IT"
 auto_resolve_threads: true
 tone_instructions: "Sii professionale ma amichevole. Fornisci spiegazioni chiare e concise."
 
@@ -31,3 +31,12 @@ reviews:
     - "!**/.git/**"
     - "!**/.vs/**"
     - "!**/node_modules/**"
+chat:
+  auto_reply: true
+  create_issues: true
+knowledge_base:
+  issues:
+    scope: auto
+code_generation:
+  docstrings:
+    language: en
