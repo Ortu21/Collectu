@@ -32,20 +32,34 @@ jobs:
     
     - name: Setup ESLint configuration
       run: |
-        # Create ESLint config if it doesn't exist
-        if [ ! -f .eslintrc.js ]; then
-          echo "module.exports = {
-            extends: ['eslint-config-expo'],
+        # Create ESLint config in the new format for ESLint 9.x
+        echo "import globals from 'globals';
+        import js from '@eslint/js';
+        import tseslint from 'typescript-eslint';
+
+        export default [
+          js.configs.recommended,
+          ...tseslint.configs.recommended,
+          {
+            languageOptions: {
+              globals: {
+                ...globals.browser,
+                ...globals.node
+              },
+            },
             rules: {
               '@typescript-eslint/no-unused-vars': 'warn',
               'import/no-unresolved': 'warn',
               'react-hooks/exhaustive-deps': 'warn'
             }
-          };" > .eslintrc.js
-        fi
+          }
+        ];" > eslint.config.js
+    
+    - name: Install ESLint dependencies
+      run: npm install --save-dev eslint@8.57.0 @eslint/js globals typescript-eslint
     
     - name: Run linter (warnings allowed)
-      run: npx eslint . --max-warnings=100
+      run: npx eslint@8.57.0 . --max-warnings=100
       
     - name: Run tests
       run: npm test
