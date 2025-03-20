@@ -1,10 +1,6 @@
 # Collectu
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Ortu21/Collectu?utm_source=oss&utm_medium=github&utm_campaign=Ortu21%2FCollectu&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Ortu21_Collectu&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Ortu21_Collectu)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Ortu21_Collectu&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Ortu21_Collectu)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Ortu21_Collectu&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Ortu21_Collectu)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Ortu21_Collectu&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Ortu21_Collectu)
 
 ## Descrizione
 Collectu è un'applicazione per la gestione di collezioni di carte, con un backend .NET e un frontend React Native.
