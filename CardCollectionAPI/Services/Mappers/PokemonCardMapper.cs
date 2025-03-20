@@ -15,7 +15,8 @@ namespace CardCollectionAPI.Services.Mappers
                 Hp = dto.Hp,
                 EvolvesFrom = dto.EvolvesFrom ?? string.Empty,
                 Rarity = dto.Rarity ?? string.Empty,
-                ImageUrl = dto.Images.Large.ToString(),
+                LargeImageUrl = dto.Images.Large.ToString(),
+                SmallImageUrl = dto.Images.Small.ToString(),
                 SetId = dto.Set?.Id ?? string.Empty,
                 Number = dto.Number ?? string.Empty,
             };
