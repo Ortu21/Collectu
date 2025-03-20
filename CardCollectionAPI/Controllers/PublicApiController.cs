@@ -4,13 +4,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CardCollectionAPI.Controllers
 {
+    /// <summary>
+    /// Controller per le API pubbliche dell'applicazione
+    /// </summary>
     [Route("api/public")]
     [ApiController]
     public class PublicApiController(AppDbContext dbContext) : ControllerBase
     {
         private readonly AppDbContext _dbContext = dbContext;
 
-        // GET: api/public/cards
+        /// <summary>
+        /// Ottiene un elenco paginato di carte Pokémon con opzioni di filtro e ordinamento
+        /// </summary>
+        /// <param name="page">Numero di pagina (inizia da 1)</param>
+        /// <param name="pageSize">Numero di elementi per pagina</param>
+        /// <param name="search">Testo di ricerca opzionale</param>
+        /// <param name="setId">ID del set per filtrare le carte</param>
+        /// <param name="elasticSearch">Se true, utilizza la ricerca elastica che divide la query in parole chiave</param>
+        /// <param name="sortBy">Campo per l'ordinamento (name, number, rarity, set, hp)</param>
+        /// <param name="sortOrder">Direzione dell'ordinamento (asc, desc)</param>
+        /// <returns>Elenco paginato di carte Pokémon</returns>
         [HttpGet("cards")]
         public async Task<IActionResult> GetCards(
             [FromQuery] int page = 1, 
@@ -133,7 +146,16 @@ namespace CardCollectionAPI.Controllers
             });
         }
 
-        // GET: api/public/search
+        /// <summary>
+        /// Esegue una ricerca avanzata di carte Pokémon utilizzando parole chiave
+        /// </summary>
+        /// <param name="query">Testo di ricerca (obbligatorio)</param>
+        /// <param name="page">Numero di pagina (inizia da 1)</param>
+        /// <param name="pageSize">Numero di elementi per pagina</param>
+        /// <param name="setId">ID del set per filtrare le carte</param>
+        /// <param name="sortBy">Campo per l'ordinamento</param>
+        /// <param name="sortOrder">Direzione dell'ordinamento (asc, desc)</param>
+        /// <returns>Risultati della ricerca paginati con punteggio di rilevanza</returns>
         [HttpGet("search")]
         public async Task<IActionResult> SearchCards(
             [FromQuery] string query, 
@@ -221,6 +243,14 @@ namespace CardCollectionAPI.Controllers
         }
         
         // Metodo helper per applicare ordinamento dinamico
+        /// <summary>
+        /// Applica un ordinamento dinamico a una query in base ai parametri specificati
+        /// </summary>
+        /// <typeparam name="T">Tipo di oggetto nella query</typeparam>
+        /// <param name="query">Query da ordinare</param>
+        /// <param name="sortBy">Campo per l'ordinamento</param>
+        /// <param name="sortOrder">Direzione dell'ordinamento (asc, desc)</param>
+        /// <returns>Query ordinata</returns>
         private static IOrderedQueryable<T> ApplyDynamicOrdering<T>(IQueryable<T> query, string sortBy, string? sortOrder)
         {
             // Converti sortBy in minuscolo per case-insensitive matching
@@ -264,6 +294,13 @@ namespace CardCollectionAPI.Controllers
             return (IOrderedQueryable<T>)result!;
         }
         // GET: api/public/cards/{id}
+        /// <summary>
+        /// Ottiene i dettagli completi di una carta Pokémon tramite il suo ID
+        /// </summary>
+        /// <param name="id">ID univoco della carta</param>
+        /// <returns>Dettagli completi della carta, inclusi attacchi, debolezze, resistenze e prezzi</returns>
+        /// <response code="200">Restituisce i dettagli della carta</response>
+        /// <response code="404">Se la carta non viene trovata</response>
         [HttpGet("cards/{id}")]
         public async Task<IActionResult> GetCardById(string id)
         {
@@ -286,6 +323,10 @@ namespace CardCollectionAPI.Controllers
         }
         
         // GET: api/public/sets
+        /// <summary>
+        /// Ottiene l'elenco di tutti i set Pokémon disponibili
+        /// </summary>
+        /// <returns>Elenco di set Pokémon ordinati per data di rilascio decrescente</returns>
         [HttpGet("sets")]
         public async Task<IActionResult> GetSets()
         {
