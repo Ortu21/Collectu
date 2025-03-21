@@ -33,9 +33,13 @@ export const usePokemonSets = ({
   const loadPokemonSets = async () => {
     setIsLoadingSets(true);
     try {
+      console.log('Loading Pokemon sets...');
       const setsData = await fetchPokemonSets();
+      console.log('Sets data received:', setsData);
+      
       // Ensure sets is always an array, even if API returns unexpected data
       if (Array.isArray(setsData)) {
+        console.log('Sets data is an array with length:', setsData.length);
         setSets(setsData);
       } else {
         console.error("Unexpected data format for sets:", setsData);

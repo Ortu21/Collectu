@@ -22,8 +22,37 @@ export const fetchPokemonCards = async (
 
     const result = await response.json();
     
+    // Log the structure of the result to debug
+    console.log("API Response structure:", JSON.stringify(result).substring(0, 200));
+    
+    // Check if result.data exists and handle different response structures
+    if (!result.data) {
+      console.error("Missing data in API response:", result);
+      return {
+        data: [],
+        totalCount: result.totalCount || 0,
+        page: result.page || 1,
+        pageSize: result.pageSize || 20
+      };
+    }
+    
+    // Handle the case where data is an object with $values property (from .NET serialization)
+    let cardData = result.data;
+    if (!Array.isArray(result.data) && result.data.$values && Array.isArray(result.data.$values)) {
+      console.log("Detected $values array structure, extracting data");
+      cardData = result.data.$values;
+    } else if (!Array.isArray(result.data)) {
+      console.error("Invalid API response structure:", result);
+      return {
+        data: [],
+        totalCount: result.totalCount || 0,
+        page: result.page || 1,
+        pageSize: result.pageSize || 20
+      };
+    }
+    
     // Trasforma i dati per adattarli al tipo PokemonCard
-    const transformedCards: PokemonCard[] = result.data.map((card: any) => ({
+    const transformedCards: PokemonCard[] = cardData.map((card: any) => ({
       id: card.id,
       name: card.name,
       supertype: card.supertype || "",
@@ -74,8 +103,24 @@ export const searchPokemonCards = async (
 
     const result = await response.json();
     
+    // Handle the case where data is an object with $values property (from .NET serialization)
+    let cardData = result.data;
+    if (!Array.isArray(result.data) && result.data.$values && Array.isArray(result.data.$values)) {
+      console.log("Detected $values array structure in search results, extracting data");
+      cardData = result.data.$values;
+    } else if (!Array.isArray(result.data)) {
+      console.error("Invalid API response structure in search results:", result);
+      return {
+        data: [],
+        totalCount: result.totalCount || 0,
+        page: result.page || 1,
+        pageSize: result.pageSize || 20,
+        query: normalizedQuery
+      };
+    }
+    
     // Transform the data to match the PokemonCard type
-    const transformedCards: PokemonCard[] = result.data.map((card: any) => ({
+    const transformedCards: PokemonCard[] = cardData.map((card: any) => ({
       id: card.id,
       name: card.name,
       supertype: card.supertype || "",
@@ -195,13 +240,38 @@ export const fetchPokemonCardById = async (id: string): Promise<PokemonCard> => 
 
 export const fetchPokemonSets = async (): Promise<PokemonSet[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/sets`);
+    console.log('Fetching Pokemon sets from:', `${API_BASE_URL}/sets`);
+    const response = await fetch(`${API_BASE_URL}/sets`, {
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
 
     if (!response.ok) {
+      console.error(`HTTP error fetching sets! Status: ${response.status}`);
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const data = await response.json();
+    // Log response headers for debugging
+    const headers: Record<string, string> = {};
+    response.headers.forEach((value: string, key: string) => {
+      headers[key] = value;
+    });
+    console.log('Response headers:', headers);
+
+    const responseText = await response.text();
+    console.log('Raw response text:', responseText.substring(0, 200) + '...');
+    
+    // Parse the response text manually to handle potential JSON issues
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log('Pokemon sets response type:', typeof data);
+    } catch (parseError) {
+      console.error('Error parsing JSON response:', parseError);
+      return [];
+    }
     
     // Ensure we're returning an array of PokemonSet objects
     // Handle different possible response structures
@@ -209,25 +279,42 @@ export const fetchPokemonSets = async (): Promise<PokemonSet[]> => {
     
     if (Array.isArray(data)) {
       // If the response is already an array
+      console.log('Response is an array with length:', data.length);
       sets = data;
     } else if (data && typeof data === 'object') {
       // If the response is an object with a data property that's an array
       if (Array.isArray(data.data)) {
+        console.log('Response has data array with length:', data.data.length);
         sets = data.data;
       } else if (data.$values && Array.isArray(data.$values)) {
         // Handle potential circular reference format
+        console.log('Response has $values array with length:', data.$values.length);
         sets = data.$values;
+      } else {
+        // If we can't find an array, log the structure and return an empty array
+        console.error('Unexpected data structure for sets:', JSON.stringify(data).substring(0, 500));
+        return [];
       }
+    } else {
+      console.error('Unexpected data type for sets:', typeof data);
+      return [];
     }
     
     // Map the data to ensure it matches the PokemonSet type
-    return sets.map((set: any) => ({
-      setId: set.setId || set.id || '',
-      setName: set.setName || set.name || '',
-      series: set.series || '',
-      releaseDate: set.releaseDate || '',
-      logoUrl: set.logoUrl || set.images?.logo || ''
-    }));
+    const mappedSets = sets.map((set: any) => {
+      const mappedSet = {
+        setId: set.setId || set.id || '',
+        setName: set.setName || set.name || '',
+        series: set.series || '',
+        releaseDate: set.releaseDate || '',
+        logoUrl: set.logoUrl || set.images?.logo || ''
+      };
+      console.log('Mapped set:', mappedSet.setId, mappedSet.setName);
+      return mappedSet;
+    });
+    
+    console.log('Mapped sets count:', mappedSets.length);
+    return mappedSets;
   } catch (error) {
     console.error("Error fetching Pokemon sets:", error);
     throw error;
@@ -258,8 +345,24 @@ export const fetchPokemonCardsBySet = async (
 
     const result = await response.json();
     
+    // Handle the case where data is an object with $values property (from .NET serialization)
+    let cardData = result.data;
+    if (!Array.isArray(result.data) && result.data.$values && Array.isArray(result.data.$values)) {
+      console.log("Detected $values array structure in search results, extracting data");
+      cardData = result.data.$values;
+    } else if (!Array.isArray(result.data)) {
+      console.error("Invalid API response structure in search results:", result);
+      return {
+        data: [],
+        totalCount: result.totalCount || 0,
+        page: result.page || 1,
+        pageSize: result.pageSize || 20,
+        query: search ? search.trim() : undefined
+      };
+    }
+    
     // Transform the data to match the PokemonCard type
-    const transformedCards: PokemonCard[] = result.data.map((card: any) => ({
+    const transformedCards: PokemonCard[] = cardData.map((card: any) => ({
       id: card.id,
       name: card.name,
       supertype: card.supertype || "",
