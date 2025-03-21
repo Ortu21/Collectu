@@ -76,8 +76,8 @@ export default function PokemonCards() {
   });
   
   const handleCardPress = (card: PokemonCard) => {
-    // Future implementation: Navigate to card detail view
-    console.log("Card pressed:", card.id);
+    // Navigate to card detail view
+    router.push(`/card/${card.id}`);
   };
   
   // If user is not authenticated, don't render anything
