@@ -327,7 +327,7 @@ namespace CardCollectionAPI.Controllers
             var options = new System.Text.Json.JsonSerializerOptions
             {
                 ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
-                MaxDepth = 64 // Aumentiamo la profondità massima per gestire oggetti complessi
+                MaxDepth = 8 // Aumentiamo la profondità massima per gestire oggetti complessi
             };
             
             // Utilizziamo JsonResult per applicare le opzioni di serializzazione personalizzate
