@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router';
 
-export default function CardLayout() {
-  return <Stack />;
+export default function Layout() {
+  return (
+    <Stack screenOptions={{ headerShown: false }} />
+  );
 }
