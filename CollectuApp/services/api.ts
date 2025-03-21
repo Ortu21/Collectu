@@ -110,7 +110,65 @@ export const fetchPokemonCardById = async (id: string): Promise<PokemonCard> => 
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const card = await response.json();
+    // Gestione della risposta con ReferenceHandler.Preserve
+    const rawData = await response.json();
+    // Estrai la carta principale, ignorando i riferimenti circolari
+    const card = rawData.$values ? rawData.$values[0] : rawData;
+    
+    // Map attacks if they exist, gestendo la struttura con $values per i riferimenti circolari
+    const attacksArray = card.attacks?.$values || card.attacks || [];
+    const attacks = attacksArray.map((attack: any) => ({
+      name: attack.name,
+      damage: attack.damage,
+      text: attack.text,
+      cost: attack.cost,
+      convertedEnergyCost: attack.convertedEnergyCost
+    }));
+
+    // Map weaknesses if they exist, gestendo la struttura con $values
+    const weaknessesArray = card.weaknesses?.$values || card.weaknesses || [];
+    const weaknesses = weaknessesArray.map((weakness: any) => ({
+      type: weakness.type,
+      value: weakness.value
+    }));
+
+    // Map resistances if they exist, gestendo la struttura con $values
+    const resistancesArray = card.resistances?.$values || card.resistances || [];
+    const resistances = resistancesArray.map((resistance: any) => ({
+      type: resistance.type,
+      value: resistance.value
+    }));
+
+    // Map CardMarket prices if they exist, gestendo la struttura con $values
+    const cardMarketPrices = card.cardMarketPrices ? {
+      url: card.cardMarketPrices.url,
+      updatedAt: card.cardMarketPrices.updatedAt,
+      priceDetails: (card.cardMarketPrices.priceDetails?.$values || card.cardMarketPrices.priceDetails || []).map((detail: any) => ({
+        averageSellPrice: detail.averageSellPrice,
+        trendPrice: detail.trendPrice,
+        suggestedPrice: detail.suggestedPrice,
+        low: detail.lowPrice,
+        mid: null,
+        high: null
+      }))
+    } : undefined;
+
+    // Map TCGPlayer prices if they exist, gestendo la struttura con $values
+    const tcgPlayerPrices = card.tcgPlayerPrices ? {
+      url: card.tcgPlayerPrices.url,
+      updatedAt: card.tcgPlayerPrices.updatedAt,
+      priceDetails: (card.tcgPlayerPrices.priceDetails?.$values || card.tcgPlayerPrices.priceDetails || []).map((detail: any) => ({
+        foilType: detail.foilType,
+        low: detail.low,
+        mid: detail.mid,
+        high: detail.high,
+        market: detail.market,
+        directLow: detail.directLow
+      }))
+    } : undefined;
+    
+    // Gestisci il set che potrebbe avere riferimenti circolari
+    const setData = card.set?.$ref ? null : card.set;
     
     return {
       id: card.id,
@@ -121,8 +179,13 @@ export const fetchPokemonCardById = async (id: string): Promise<PokemonCard> => 
       rarity: card.rarity || "",
       largeImageUrl: card.largeImageUrl,
       smallImageUrl: card.smallImageUrl,
-      setName: card.set?.setName || "",
-      number : card.number || ""
+      setName: setData?.setName || "",
+      number: card.number || "",
+      attacks: attacks.length > 0 ? attacks : undefined,
+      weaknesses: weaknesses.length > 0 ? weaknesses : undefined,
+      resistances: resistances.length > 0 ? resistances : undefined,
+      cardMarketPrices,
+      tcgPlayerPrices
     };
   } catch (error) {
     console.error(`Error fetching Pokemon card with ID ${id}:`, error);
@@ -138,8 +201,33 @@ export const fetchPokemonSets = async (): Promise<PokemonSet[]> => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const sets = await response.json();
-    return sets;
+    const data = await response.json();
+    
+    // Ensure we're returning an array of PokemonSet objects
+    // Handle different possible response structures
+    let sets: PokemonSet[] = [];
+    
+    if (Array.isArray(data)) {
+      // If the response is already an array
+      sets = data;
+    } else if (data && typeof data === 'object') {
+      // If the response is an object with a data property that's an array
+      if (Array.isArray(data.data)) {
+        sets = data.data;
+      } else if (data.$values && Array.isArray(data.$values)) {
+        // Handle potential circular reference format
+        sets = data.$values;
+      }
+    }
+    
+    // Map the data to ensure it matches the PokemonSet type
+    return sets.map((set: any) => ({
+      setId: set.setId || set.id || '',
+      setName: set.setName || set.name || '',
+      series: set.series || '',
+      releaseDate: set.releaseDate || '',
+      logoUrl: set.logoUrl || set.images?.logo || ''
+    }));
   } catch (error) {
     console.error("Error fetching Pokemon sets:", error);
     throw error;

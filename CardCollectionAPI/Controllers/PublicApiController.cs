@@ -321,7 +321,16 @@ namespace CardCollectionAPI.Controllers
             {
                 return NotFound();
             }
-            return Ok(card);
+            
+            // Utilizziamo opzioni di serializzazione personalizzate per gestire i riferimenti circolari
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+                MaxDepth = 64 // Aumentiamo la profondità massima per gestire oggetti complessi
+            };
+            
+            // Utilizziamo JsonResult per applicare le opzioni di serializzazione personalizzate
+            return new JsonResult(card, options);
         }
         
         // GET: api/public/sets

@@ -1,3 +1,40 @@
+export type PokemonAttack = {
+  name: string;
+  damage?: string;
+  text: string;
+  cost: string;
+  convertedEnergyCost: string;
+};
+
+export type PokemonWeakness = {
+  type: string;
+  value: string;
+};
+
+export type PokemonResistance = {
+  type: string;
+  value: string;
+};
+
+export type PokemonPriceDetail = {
+  foilType?: string;
+  low?: number;
+  mid?: number;
+  high?: number;
+  market?: number;
+  directLow?: number;
+  // CardMarket specific fields
+  averageSellPrice?: number;
+  trendPrice?: number;
+  suggestedPrice?: number;
+};
+
+export type PokemonPrice = {
+  url: string;
+  updatedAt: string;
+  priceDetails: PokemonPriceDetail[];
+};
+
 export type PokemonCard = {
   id: string;
   name: string;
@@ -6,10 +43,16 @@ export type PokemonCard = {
   evolvesFrom: string;
   rarity: string;
   largeImageUrl: string;
-  smallImageUrl : string;
+  smallImageUrl: string;
   setName?: string;
   relevance?: number;
   number?: string;
+  // Additional fields for detailed view
+  attacks?: PokemonAttack[];
+  weaknesses?: PokemonWeakness[];
+  resistances?: PokemonResistance[];
+  cardMarketPrices?: PokemonPrice;
+  tcgPlayerPrices?: PokemonPrice;
 };
 
 export type PokemonCardResponse = {

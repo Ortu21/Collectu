@@ -34,9 +34,16 @@ export const usePokemonSets = ({
     setIsLoadingSets(true);
     try {
       const setsData = await fetchPokemonSets();
-      setSets(setsData);
+      // Ensure sets is always an array, even if API returns unexpected data
+      if (Array.isArray(setsData)) {
+        setSets(setsData);
+      } else {
+        console.error("Unexpected data format for sets:", setsData);
+        setSets([]); // Set to empty array as fallback
+      }
     } catch (err) {
       console.error("Error loading Pokemon sets:", err);
+      setSets([]); // Set to empty array on error
     } finally {
       setIsLoadingSets(false);
     }

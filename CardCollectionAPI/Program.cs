@@ -62,7 +62,12 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.MaxDepth = 64; // Aumentiamo la profondità massima per gestire oggetti complessi
+    });
 builder.Services.AddEndpointsApiExplorer();
 // Aggiungi questo nella sezione di configurazione dei servizi
 builder.Services.AddSwaggerGen(c =>
