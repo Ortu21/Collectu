@@ -315,6 +315,7 @@ namespace CardCollectionAPI.Controllers
                 .ThenInclude(p => p!.PriceDetails)
                 .Include(c => c.TcgPlayerPrices)
                 .ThenInclude(p => p!.PriceDetails)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (card == null)
