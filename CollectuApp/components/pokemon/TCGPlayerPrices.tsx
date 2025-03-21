@@ -4,12 +4,12 @@ import { PokemonPrice, PokemonPriceDetail } from '../../types/pokemon';
 import { PriceTable } from './PriceTable';
 import { extractArray } from '../../utils/circularReferenceHandler';
 
-type CardMarketPricesProps = {
+type TCGPlayerPricesProps = {
   prices: PokemonPrice;
   formatPrice: (price: number | undefined | null) => string;
 };
 
-export const CardMarketPrices = ({ prices, formatPrice }: CardMarketPricesProps) => {
+export const TCGPlayerPrices = ({ prices, formatPrice }: TCGPlayerPricesProps) => {
   // Safely extract price details array using the utility function
   const priceDetails = prices ? extractArray<PokemonPriceDetail>(prices.priceDetails, []) : [];
   
@@ -19,17 +19,22 @@ export const CardMarketPrices = ({ prices, formatPrice }: CardMarketPricesProps)
 
   return (
     <View style={styles.priceSection}>
-      <Text style={styles.priceSourceTitle}>CardMarket</Text>
+      <Text style={styles.priceSourceTitle}>TCGPlayer</Text>
       <Text style={styles.priceUpdated}>
         Updated: {prices.updatedAt}
       </Text>
       
       {priceDetails.map((detail, index) => (
-        <PriceTable 
-          key={`cm-price-${index}`} 
-          priceDetail={detail} 
-          formatPrice={formatPrice} 
-        />
+        <View key={`tcg-price-${index}`} style={styles.priceDetailContainer}>
+          {detail.foilType && (
+            <Text style={styles.foilTypeText}>{detail.foilType}</Text>
+          )}
+          <PriceTable 
+            key={`tcg-price-detail-${index}`} 
+            priceDetail={detail} 
+            formatPrice={formatPrice} 
+          />
+        </View>
       ))}
     </View>
   );
@@ -52,4 +57,14 @@ const styles = StyleSheet.create({
     color: '#aaa',
     marginBottom: 12,
   },
+  priceDetailContainer: {
+    marginBottom: 16,
+  },
+  foilTypeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#ddd',
+    marginBottom: 8,
+    textAlign: 'center',
+  }
 });

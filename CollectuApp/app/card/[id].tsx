@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { fetchPokemonCardById } from '../../services/api';
 import { PokemonCard } from '../../types/pokemon';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { CardMarketPrices } from '../../components/pokemon/CardMarketPrices';
+import { TCGPlayerPrices } from '../../components/pokemon/TCGPlayerPrices';
 
 export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -243,106 +245,20 @@ export default function CardDetailScreen() {
         <View style={styles.cardInfoSection}>
           <Text style={styles.sectionTitle}>Market Prices</Text>
           
-          {/* CardMarket Prices */}
-          {card.cardMarketPrices && card.cardMarketPrices.priceDetails.length > 0 && (
-            <View style={styles.priceSection}>
-              <Text style={styles.priceSourceTitle}>CardMarket</Text>
-              <Text style={styles.priceUpdated}>
-                Updated: {card.cardMarketPrices.updatedAt}
-              </Text>
-              
-              <View style={styles.priceTable}>
-                {card.cardMarketPrices.priceDetails.map((detail, index) => (
-                  <View key={`cm-price-${index}`} style={styles.priceRow}>
-                    {detail.averageSellPrice && (
-                      <View style={styles.priceItem}>
-                        <Text style={styles.priceLabel}>Avg Sell</Text>
-                        <Text style={styles.priceValue}>
-                          {formatPrice(detail.averageSellPrice)}
-                        </Text>
-                      </View>
-                    )}
-                    
-                    {detail.trendPrice && (
-                      <View style={styles.priceItem}>
-                        <Text style={styles.priceLabel}>Trend</Text>
-                        <Text style={styles.priceValue}>
-                          {formatPrice(detail.trendPrice)}
-                        </Text>
-                      </View>
-                    )}
-                    
-                    {detail.low && (
-                      <View style={styles.priceItem}>
-                        <Text style={styles.priceLabel}>Low</Text>
-                        <Text style={styles.priceValue}>
-                          {formatPrice(detail.low)}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </View>
-            </View>
+          {/* CardMarket Prices - Using the CardMarketPrices component */}
+          {card.cardMarketPrices && (
+            <CardMarketPrices 
+              prices={card.cardMarketPrices} 
+              formatPrice={formatPrice} 
+            />
           )}
           
-          {/* TCGPlayer Prices */}
-          {card.tcgPlayerPrices && card.tcgPlayerPrices.priceDetails.length > 0 && (
-            <View style={styles.priceSection}>
-              <Text style={styles.priceSourceTitle}>TCGPlayer</Text>
-              <Text style={styles.priceUpdated}>
-                Updated: {card.tcgPlayerPrices.updatedAt}
-              </Text>
-              
-              {card.tcgPlayerPrices.priceDetails.map((detail, index) => (
-                <View key={`tcg-price-${index}`} style={styles.priceDetailContainer}>
-                  {detail.foilType && (
-                    <Text style={styles.foilTypeText}>{detail.foilType}</Text>
-                  )}
-                  
-                  <View style={styles.priceTable}>
-                    <View style={styles.priceRow}>
-                      {detail.low && (
-                        <View style={styles.priceItem}>
-                          <Text style={styles.priceLabel}>Low</Text>
-                          <Text style={styles.priceValue}>{formatPrice(detail.low)}</Text>
-                        </View>
-                      )}
-                      
-                      {detail.mid && (
-                        <View style={styles.priceItem}>
-                          <Text style={styles.priceLabel}>Mid</Text>
-                          <Text style={styles.priceValue}>{formatPrice(detail.mid)}</Text>
-                        </View>
-                      )}
-                      
-                      {detail.high && (
-                        <View style={styles.priceItem}>
-                          <Text style={styles.priceLabel}>High</Text>
-                          <Text style={styles.priceValue}>{formatPrice(detail.high)}</Text>
-                        </View>
-                      )}
-                    </View>
-                    
-                    <View style={styles.priceRow}>
-                      {detail.market && (
-                        <View style={styles.priceItem}>
-                          <Text style={styles.priceLabel}>Market</Text>
-                          <Text style={styles.priceValue}>{formatPrice(detail.market)}</Text>
-                        </View>
-                      )}
-                      
-                      {detail.directLow && (
-                        <View style={styles.priceItem}>
-                          <Text style={styles.priceLabel}>Direct Low</Text>
-                          <Text style={styles.priceValue}>{formatPrice(detail.directLow)}</Text>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
+          {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
+          {card.tcgPlayerPrices && (
+            <TCGPlayerPrices 
+              prices={card.tcgPlayerPrices} 
+              formatPrice={formatPrice} 
+            />
           )}
           
           {!card.cardMarketPrices && !card.tcgPlayerPrices && (

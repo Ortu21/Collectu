@@ -1,4 +1,5 @@
-import { PokemonCard, PokemonCardResponse , PokemonSet} from '../types/pokemon';
+import { PokemonCard, PokemonCardResponse, PokemonSet } from '../types/pokemon';
+import { extractArray, extractObject, mapArray } from '../utils/circularReferenceHandler';
 
 export const API_BASE_URL = 'http://192.168.1.10:5193/api/public';
 
@@ -36,13 +37,11 @@ export const fetchPokemonCards = async (
       };
     }
     
-    // Handle the case where data is an object with $values property (from .NET serialization)
-    let cardData = result.data;
-    if (!Array.isArray(result.data) && result.data.$values && Array.isArray(result.data.$values)) {
-      console.log("Detected $values array structure, extracting data");
-      cardData = result.data.$values;
-    } else if (!Array.isArray(result.data)) {
-      console.error("Invalid API response structure:", result);
+    // Use the utility function to safely extract the array from potentially circular references
+    const cardData = extractArray(result.data, []);
+    
+    if (cardData.length === 0) {
+      console.warn("No card data found in response");
       return {
         data: [],
         totalCount: result.totalCount || 0,
@@ -51,25 +50,25 @@ export const fetchPokemonCards = async (
       };
     }
     
-    // Trasforma i dati per adattarli al tipo PokemonCard
+    // Transform the data to match the PokemonCard type using safe access
     const transformedCards: PokemonCard[] = cardData.map((card: any) => ({
-      id: card.id,
-      name: card.name,
+      id: card.id || '',
+      name: card.name || '',
       supertype: card.supertype || "",
       hp: card.hp || "",
       evolvesFrom: card.evolvesFrom || "",
       rarity: card.rarity || "",
-      largeImageUrl: card.largeImageUrl,
-      smallImageUrl: card.smallImageUrl,
+      largeImageUrl: card.largeImageUrl || '',
+      smallImageUrl: card.smallImageUrl || '',
       setName: card.setName || "",
-      number : card.number || ""
+      number: card.number || ""
     }));
 
     return {
       data: transformedCards,
-      totalCount: result.totalCount,
-      page: result.page,
-      pageSize: result.pageSize
+      totalCount: result.totalCount || 0,
+      page: result.page || 1,
+      pageSize: result.pageSize || 20
     };
   } catch (error) {
     console.error("Error fetching Pokemon cards:", error);
@@ -157,52 +156,69 @@ export const fetchPokemonCardById = async (id: string): Promise<PokemonCard> => 
 
     // Gestione della risposta con ReferenceHandler.Preserve
     const rawData = await response.json();
-    // Estrai la carta principale, ignorando i riferimenti circolari
-    const card = rawData.$values ? rawData.$values[0] : rawData;
+    // Estrai la carta principale, ignorando i riferimenti circolari usando la utility
+    // Aggiungiamo un'asserzione di tipo per far sapere a TypeScript che card è un oggetto con le proprietà che ci aspettiamo
+    const card = extractObject(rawData) as {
+      id: string;
+      name: string;
+      supertype?: string;
+      hp?: string;
+      evolvesFrom?: string;
+      rarity?: string;
+      largeImageUrl: string;
+      smallImageUrl: string;
+      number?: string;
+      attacks?: any;
+      weaknesses?: any;
+      resistances?: any;
+      cardMarketPrices?: any;
+      tcgPlayerPrices?: any;
+      set?: any;
+    };
     
-    // Map attacks if they exist, gestendo la struttura con $values per i riferimenti circolari
-    const attacksArray = card.attacks?.$values || card.attacks || [];
-    const attacks = attacksArray.map((attack: any) => ({
-      name: attack.name,
-      damage: attack.damage,
-      text: attack.text,
-      cost: attack.cost,
-      convertedEnergyCost: attack.convertedEnergyCost
+    if (!card) {
+      throw new Error('Failed to extract card data from response');
+    }
+    
+    // Map attacks if they exist, usando la utility per gestire i riferimenti circolari
+    const attacks = mapArray(card.attacks, (attack: any) => ({
+      name: attack.name || '',
+      damage: attack.damage || '',
+      text: attack.text || '',
+      cost: attack.cost || '',
+      convertedEnergyCost: attack.convertedEnergyCost || ''
     }));
 
-    // Map weaknesses if they exist, gestendo la struttura con $values
-    const weaknessesArray = card.weaknesses?.$values || card.weaknesses || [];
-    const weaknesses = weaknessesArray.map((weakness: any) => ({
-      type: weakness.type,
-      value: weakness.value
+    // Map weaknesses if they exist, usando la utility per gestire i riferimenti circolari
+    const weaknesses = mapArray(card.weaknesses, (weakness: any) => ({
+      type: weakness.type || '',
+      value: weakness.value || ''
     }));
 
-    // Map resistances if they exist, gestendo la struttura con $values
-    const resistancesArray = card.resistances?.$values || card.resistances || [];
-    const resistances = resistancesArray.map((resistance: any) => ({
-      type: resistance.type,
-      value: resistance.value
+    // Map resistances if they exist, usando la utility per gestire i riferimenti circolari
+    const resistances = mapArray(card.resistances, (resistance: any) => ({
+      type: resistance.type || '',
+      value: resistance.value || ''
     }));
 
-    // Map CardMarket prices if they exist, gestendo la struttura con $values
+    // Map CardMarket prices if they exist, usando la utility per gestire i riferimenti circolari
     const cardMarketPrices = card.cardMarketPrices ? {
-      url: card.cardMarketPrices.url,
-      updatedAt: card.cardMarketPrices.updatedAt,
-      priceDetails: (card.cardMarketPrices.priceDetails?.$values || card.cardMarketPrices.priceDetails || []).map((detail: any) => ({
+      url: card.cardMarketPrices.url || '',
+      updatedAt: card.cardMarketPrices.updatedAt || '',
+      priceDetails: mapArray(card.cardMarketPrices.priceDetails, (detail: any) => ({
         averageSellPrice: detail.averageSellPrice,
         trendPrice: detail.trendPrice,
         suggestedPrice: detail.suggestedPrice,
-        low: detail.lowPrice,
-        mid: null,
-        high: null
+        low: detail.lowPrice
+        // Don't set mid and high as they're not in the CardMarket model
       }))
     } : undefined;
 
-    // Map TCGPlayer prices if they exist, gestendo la struttura con $values
+    // Map TCGPlayer prices if they exist, usando la utility per gestire i riferimenti circolari
     const tcgPlayerPrices = card.tcgPlayerPrices ? {
-      url: card.tcgPlayerPrices.url,
-      updatedAt: card.tcgPlayerPrices.updatedAt,
-      priceDetails: (card.tcgPlayerPrices.priceDetails?.$values || card.tcgPlayerPrices.priceDetails || []).map((detail: any) => ({
+      url: card.tcgPlayerPrices.url || '',
+      updatedAt: card.tcgPlayerPrices.updatedAt || '',
+      priceDetails: mapArray(card.tcgPlayerPrices.priceDetails, (detail: any) => ({
         foilType: detail.foilType,
         low: detail.low,
         mid: detail.mid,
@@ -345,13 +361,11 @@ export const fetchPokemonCardsBySet = async (
 
     const result = await response.json();
     
-    // Handle the case where data is an object with $values property (from .NET serialization)
-    let cardData = result.data;
-    if (!Array.isArray(result.data) && result.data.$values && Array.isArray(result.data.$values)) {
-      console.log("Detected $values array structure in search results, extracting data");
-      cardData = result.data.$values;
-    } else if (!Array.isArray(result.data)) {
-      console.error("Invalid API response structure in search results:", result);
+    // Use the utility function to safely extract the array from potentially circular references
+    const cardData = extractArray(result.data, []);
+    
+    if (cardData.length === 0) {
+      console.warn("No card data found in response");
       return {
         data: [],
         totalCount: result.totalCount || 0,
@@ -361,16 +375,16 @@ export const fetchPokemonCardsBySet = async (
       };
     }
     
-    // Transform the data to match the PokemonCard type
+    // Transform the data to match the PokemonCard type using safe access
     const transformedCards: PokemonCard[] = cardData.map((card: any) => ({
-      id: card.id,
-      name: card.name,
+      id: card.id || '',
+      name: card.name || '',
       supertype: card.supertype || "",
       hp: card.hp || "",
       evolvesFrom: card.evolvesFrom || "",
       rarity: card.rarity || "",
-      largeImageUrl: card.largeImageUrl,
-      smallImageUrl: card.smallImageUrl,
+      largeImageUrl: card.largeImageUrl || '',
+      smallImageUrl: card.smallImageUrl || '',
       setName: card.setName || "",
       number: card.number || "",
       relevance: card.relevance
@@ -378,9 +392,9 @@ export const fetchPokemonCardsBySet = async (
 
     return {
       data: transformedCards,
-      totalCount: result.totalCount,
-      page: result.page,
-      pageSize: result.pageSize,
+      totalCount: result.totalCount || 0,
+      page: result.page || 1,
+      pageSize: result.pageSize || 20,
       query: result.query
     };
   } catch (error) {
