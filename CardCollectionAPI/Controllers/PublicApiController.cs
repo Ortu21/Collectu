@@ -122,7 +122,8 @@ namespace CardCollectionAPI.Controllers
                     c.Hp,
                     c.EvolvesFrom,
                     c.Rarity,
-                    c.ImageUrl,
+                    c.LargeImageUrl,
+                    c.SmallImageUrl, // Aggiunto il campo SmallImageUrl per le anteprime
                     SetName = c.Set != null ? c.Set.SetName : null,
                     c.Number, // Aggiunto il campo Number alla risposta
                     // Aggiungi campo di rilevanza se è stata usata la ricerca elastica
@@ -211,7 +212,8 @@ namespace CardCollectionAPI.Controllers
                 c.Hp,
                 c.EvolvesFrom,
                 c.Rarity,
-                c.ImageUrl,
+                c.LargeImageUrl,
+                c.SmallImageUrl, // Aggiunto il campo SmallImageUrl per le anteprime
                 SetName = c.Set != null ? c.Set.SetName : null,
                 c.Number,
                 Relevance = keywords.Count(k => c.Name.ToLower().Contains(k.ToLower()))
@@ -313,13 +315,23 @@ namespace CardCollectionAPI.Controllers
                 .ThenInclude(p => p!.PriceDetails)
                 .Include(c => c.TcgPlayerPrices)
                 .ThenInclude(p => p!.PriceDetails)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (card == null)
             {
                 return NotFound();
             }
-            return Ok(card);
+            
+            // Utilizziamo opzioni di serializzazione personalizzate per gestire i riferimenti circolari
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+                MaxDepth = 8 // Aumentiamo la profondità massima per gestire oggetti complessi
+            };
+            
+            // Utilizziamo JsonResult per applicare le opzioni di serializzazione personalizzate
+            return new JsonResult(card, options);
         }
         
         // GET: api/public/sets

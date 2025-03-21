@@ -11,7 +11,8 @@ namespace CardCollectionAPI.Models
         public string? Hp { get; set; } // Punti vita
         public required string EvolvesFrom { get; set; } // Da quale Pokémon evolve
         public required string Rarity { get; set; } // Rarità
-        public required string ImageUrl { get; set; } // URL immagine
+        public required string LargeImageUrl { get; set; } // URL immagine grande
+        public string? SmallImageUrl { get; set; } // URL immagine piccola
         public string? SetId { get; set; } // Relazione con il Set
         public PokemonSet? Set { get; set; }
         public string? Number { get; set; }

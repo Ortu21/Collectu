@@ -38,6 +38,11 @@ export const SetFilterModal = ({
               <ActivityIndicator size="large" color="#007AFF" />
               <Text style={styles.loadingText}>Loading sets...</Text>
             </View>
+          ) : sets.length === 0 ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.errorText}>No sets available</Text>
+              <Text style={styles.errorSubText}>Please try again later</Text>
+            </View>
           ) : (
             <ScrollView style={styles.setsList}>
               {sets.map((set) => (
@@ -97,6 +102,18 @@ const styles = StyleSheet.create({
   },
   setsList: {
     flex: 1,
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  errorSubText: {
+    fontSize: 14,
+    color: "#aaa",
+    textAlign: "center",
   },
   setItem: {
     flexDirection: "row",

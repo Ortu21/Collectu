@@ -110,7 +110,14 @@ namespace CardCollectionAPI.Services
             }
             else
             {
-                _logger.LogInformation("La carta {Name} (ID: {Id}) esiste già. Aggiornamento prezzi...", cardDto.Name, cardDto.Id);
+                _logger.LogInformation("La carta {Name} (ID: {Id}) esiste già. Aggiornamento prezzi e immagini...", cardDto.Name, cardDto.Id);
+                
+                // Aggiorna il campo SmallImageUrl se necessario
+                if (string.IsNullOrEmpty(existingCard.SmallImageUrl))
+                {
+                    existingCard.SmallImageUrl = cardDto.Images.Small.ToString();
+                    _logger.LogInformation("Aggiornata immagine piccola per la carta {Name} (ID: {Id})", cardDto.Name, cardDto.Id);
+                }
                 
                 // Aggiungi nuovi record di prezzi per la carta esistente
                 PokemonPriceMapper.MapCardMarketPrices(cardDto, existingCard);

@@ -124,5 +124,17 @@
         <member name="M:CardCollectionAPI.Migrations.cambioTipoNumberInstringa.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CardCollectionAPI.Migrations.ModificaImagePokemonCard">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.ModificaImagePokemonCard.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.ModificaImagePokemonCard.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.ModificaImagePokemonCard.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

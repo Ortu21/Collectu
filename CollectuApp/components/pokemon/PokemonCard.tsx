@@ -15,12 +15,13 @@ export const PokemonCardItem = ({ card, onPress, cardDimensions }: PokemonCardIt
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: card.imageUrl }}
+        source={{ uri: card.smallImageUrl || card.largeImageUrl }}
         style={[
           styles.cardImage,
           cardDimensions ? { height: cardDimensions.height * 0.6 } : null
         ]}
         resizeMode="contain"
+        defaultSource={require('../../assets/images/card-placeholder.png')}
       />
       <View style={styles.cardInfo}>
         <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">
