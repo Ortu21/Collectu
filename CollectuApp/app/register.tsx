@@ -109,7 +109,7 @@ export default function Register() {
           </TouchableOpacity>
 
           <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
+            <Text style={styles.loginText}>Already have an account?</Text>
             <Link href="/login" asChild>
               <TouchableOpacity>
                 <Text style={styles.loginLink}>Sign In</Text>
@@ -191,9 +191,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 20,
+    alignItems: 'center',
   },
   loginText: {
     color: '#aaa',
+    marginRight: 4,
   },
   loginLink: {
     color: '#007AFF',

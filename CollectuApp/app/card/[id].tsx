@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
+  useWindowDimensions,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -22,6 +23,41 @@ export default function CardDetailScreen() {
   const [card, setCard] = useState<PokemonCard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { width, height } = useWindowDimensions();
+  
+  // Determine if we should use desktop layout
+  const isDesktopLayout = width >= 768;
+  
+  // Calculate optimal card dimensions based on screen size
+  const getCardDimensions = () => {
+    // Card aspect ratio is approximately 1:1.4 (width:height)
+    const cardAspectRatio = 1.4;
+    
+    if (isDesktopLayout) {
+      // For desktop, use 40% of the screen width (matching the desktopImageContainer width)
+      const containerWidth = width * 0.4 - 40; // 40% of screen width minus padding
+      const cardWidth = Math.min(containerWidth, 500); // Cap at 500px max width
+      const cardHeight = cardWidth * cardAspectRatio;
+      
+      return {
+        width: cardWidth,
+        height: cardHeight
+      };
+    } else {
+      // For mobile, use 90% of the screen width
+      const containerWidth = width * 0.9;
+      const cardWidth = Math.min(containerWidth, 400); // Cap at 400px max width
+      const cardHeight = cardWidth * cardAspectRatio;
+      
+      return {
+        width: cardWidth,
+        height: cardHeight
+      };
+    }
+  };
+  
+  // Get the optimal card dimensions
+  const cardDimensions = getCardDimensions();
 
   useEffect(() => {
     const loadCard = async () => {
@@ -158,195 +194,431 @@ export default function CardDetailScreen() {
         )}
       </View>
 
-      {/* Card image with shadow effect */}
-      <View style={styles.cardImageContainer}>
-        <View style={styles.cardImageWrapper}>
-          <Image
-            source={{ uri: card.largeImageUrl }}
-            style={styles.cardImage}
-            resizeMode="contain"
-          />
-        </View>
-      </View>
-
-      {/* Basic card information */}
-      <View style={styles.cardInfoSection}>
-        <Text style={styles.sectionTitle}>Card Information</Text>
-        <View style={styles.cardInfo}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoLabelContainer}>
-              <Ionicons
-                name="albums-outline"
-                size={18}
-                color="#aaa"
-                style={styles.infoIcon}
+      {isDesktopLayout ? (
+        /* Desktop layout - Horizontal layout for larger screens */
+        <View style={styles.desktopContainer}>
+          {/* Card image with shadow effect - Left side */}
+          <View style={styles.desktopImageContainer}>
+            <View style={styles.cardImageWrapper}>
+              <Image
+                source={{ uri: card.largeImageUrl }}
+                style={[styles.cardImage, { width: cardDimensions.width, height: cardDimensions.height }]}
+                resizeMode="contain"
               />
-              <Text style={styles.infoLabel}>Set:</Text>
             </View>
-            <Text style={styles.infoValue}>{card.setName || "Unknown"}</Text>
           </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.infoLabelContainer}>
-              <Ionicons
-                name="pricetag-outline"
-                size={18}
-                color="#aaa"
-                style={styles.infoIcon}
-              />
-              <Text style={styles.infoLabel}>Number:</Text>
-            </View>
-            <Text style={styles.infoValue}>{card.number || "Unknown"}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.infoLabelContainer}>
-              <Ionicons
-                name="star-outline"
-                size={18}
-                color="#aaa"
-                style={styles.infoIcon}
-              />
-              <Text style={styles.infoLabel}>Rarity:</Text>
-            </View>
-            <Text style={styles.infoValue}>{card.rarity || "Unknown"}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.infoLabelContainer}>
-              <MaterialCommunityIcons
-                name="cards"
-                size={18}
-                color="#aaa"
-                style={styles.infoIcon}
-              />
-              <Text style={styles.infoLabel}>Type:</Text>
-            </View>
-            <Text style={styles.infoValue}>{card.supertype || "Unknown"}</Text>
-          </View>
-
-          {card.evolvesFrom && (
-            <View style={styles.infoRow}>
-              <View style={styles.infoLabelContainer}>
-                <MaterialCommunityIcons
-                  name="arrow-up-bold"
-                  size={18}
-                  color="#aaa"
-                  style={styles.infoIcon}
-                />
-                <Text style={styles.infoLabel}>Evolves From:</Text>
-              </View>
-              <Text style={styles.infoValue}>{card.evolvesFrom}</Text>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* Attacks section */}
-      {card.attacks && card.attacks.length > 0 && (
-        <View style={styles.cardInfoSection}>
-          <Text style={styles.sectionTitle}>Attacks</Text>
-          {card.attacks.map((attack, index) => (
-            <View key={`attack-${index}`} style={styles.attackContainer}>
-              <View style={styles.attackHeader}>
-                <View style={styles.attackNameContainer}>
-                  {renderEnergyCost(attack.cost)}
-                  <Text style={styles.attackName}>{attack.name}</Text>
+          
+          {/* Card details - Right side */}
+          <View style={styles.desktopDetailsContainer}>
+            {/* Basic card information - Desktop */}
+          <View style={styles.cardInfoSection}>
+            {/* Basic card information - Desktop */}
+            <View style={styles.cardInfoSection}>
+              <Text style={styles.sectionTitle}>Card Information</Text>
+              <View style={styles.cardInfo}>
+                <View style={styles.infoRow}>
+                  <View style={styles.infoLabelContainer}>
+                    <Ionicons
+                      name="albums-outline"
+                      size={18}
+                      color="#aaa"
+                      style={styles.infoIcon}
+                    />
+                    <Text style={styles.infoLabel}>Set:</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{card.setName || "Unknown"}</Text>
                 </View>
-                {attack.damage && (
-                  <Text style={styles.attackDamage}>{attack.damage}</Text>
+
+                <View style={styles.infoRow}>
+                  <View style={styles.infoLabelContainer}>
+                    <Ionicons
+                      name="pricetag-outline"
+                      size={18}
+                      color="#aaa"
+                      style={styles.infoIcon}
+                    />
+                    <Text style={styles.infoLabel}>Number:</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{card.number || "Unknown"}</Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <View style={styles.infoLabelContainer}>
+                    <Ionicons
+                      name="star-outline"
+                      size={18}
+                      color="#aaa"
+                      style={styles.infoIcon}
+                    />
+                    <Text style={styles.infoLabel}>Rarity:</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{card.rarity || "Unknown"}</Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <View style={styles.infoLabelContainer}>
+                    <MaterialCommunityIcons
+                      name="cards"
+                      size={18}
+                      color="#aaa"
+                      style={styles.infoIcon}
+                    />
+                    <Text style={styles.infoLabel}>Type:</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{card.supertype || "Unknown"}</Text>
+                </View>
+
+                {card.evolvesFrom && (
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoLabelContainer}>
+                      <MaterialCommunityIcons
+                        name="arrow-up-bold"
+                        size={18}
+                        color="#aaa"
+                        style={styles.infoIcon}
+                      />
+                      <Text style={styles.infoLabel}>Evolves From:</Text>
+                    </View>
+                    <Text style={styles.infoValue}>{card.evolvesFrom}</Text>
+                  </View>
                 )}
               </View>
-              <Text style={styles.attackText}>{attack.text}</Text>
             </View>
-          ))}
-        </View>
-      )}
+            
+            {/* Market Prices Section - Desktop */}
+            {(card.cardMarketPrices || card.tcgPlayerPrices) && (
+              <View style={styles.cardInfoSection}>
+                <Text style={styles.sectionTitle}>Market Prices</Text>
 
-      {/* Weaknesses and Resistances */}
-      <View style={styles.cardInfoSection}>
-        <Text style={styles.sectionTitle}>Battle Attributes</Text>
-        <View style={styles.battleAttributesContainer}>
-          {/* Weaknesses */}
-          <View style={styles.attributeSection}>
-            <Text style={styles.attributeTitle}>Weaknesses</Text>
-            {card.weaknesses && card.weaknesses.length > 0 ? (
-              <View style={styles.attributeList}>
-                {card.weaknesses.map((weakness, index) => (
-                  <View key={`weakness-${index}`} style={styles.attributeItem}>
-                    <Text
-                      style={[
-                        styles.attributeType,
-                        { color: getTypeColor(weakness.type) },
-                      ]}
-                    >
-                      {weakness.type}
-                    </Text>
-                    <Text style={styles.attributeValue}>{weakness.value}</Text>
+                {/* CardMarket Prices - Using the CardMarketPrices component */}
+                {card.cardMarketPrices && (
+                  <CardMarketPrices
+                    prices={card.cardMarketPrices}
+                    formatPrice={formatPrice}
+                  />
+                )}
+
+                {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
+                {card.tcgPlayerPrices && (
+                  <TCGPlayerPrices
+                    prices={card.tcgPlayerPrices}
+                    formatPrice={formatPrice}
+                  />
+                )}
+
+                {!card.cardMarketPrices && !card.tcgPlayerPrices && (
+                  <Text style={styles.noDataText}>No price data available</Text>
+                )}
+              </View>
+            )}
+            
+            {/* Attacks section - Desktop */}
+            {card.attacks && card.attacks.length > 0 && (
+              <View style={styles.cardInfoSection}>
+                <Text style={styles.sectionTitle}>Attacks</Text>
+                {card.attacks.map((attack, index) => (
+                  <View key={`attack-${index}`} style={styles.attackContainer}>
+                    <View style={styles.attackHeader}>
+                      <View style={styles.attackNameContainer}>
+                        {renderEnergyCost(attack.cost)}
+                        <Text style={styles.attackName}>{attack.name}</Text>
+                      </View>
+                      {attack.damage && (
+                        <Text style={styles.attackDamage}>{attack.damage}</Text>
+                      )}
+                    </View>
+                    <Text style={styles.attackText}>{attack.text}</Text>
                   </View>
                 ))}
               </View>
-            ) : (
-              <Text style={styles.noDataText}>None</Text>
             )}
-          </View>
+            
+            {/* Battle Attributes - Desktop */}
+            <View style={styles.cardInfoSection}>
+              <Text style={styles.sectionTitle}>Battle Attributes</Text>
+              <View style={styles.battleAttributesContainer}>
+                {/* Weaknesses */}
+                <View style={styles.attributeSection}>
+                  <Text style={styles.attributeTitle}>Weaknesses</Text>
+                  {card.weaknesses && card.weaknesses.length > 0 ? (
+                    <View style={styles.attributeList}>
+                      {card.weaknesses.map((weakness, index) => (
+                        <View key={`weakness-${index}`} style={styles.attributeItem}>
+                          <Text
+                            style={[
+                              styles.attributeType,
+                              { color: getTypeColor(weakness.type) },
+                            ]}
+                          >
+                            {weakness.type}
+                          </Text>
+                          <Text style={styles.attributeValue}>{weakness.value}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.noDataText}>None</Text>
+                  )}
+                </View>
 
-          {/* Resistances */}
-          <View style={styles.attributeSection}>
-            <Text style={styles.attributeTitle}>Resistances</Text>
-            {card.resistances && card.resistances.length > 0 ? (
-              <View style={styles.attributeList}>
-                {card.resistances.map((resistance, index) => (
-                  <View
-                    key={`resistance-${index}`}
-                    style={styles.attributeItem}
-                  >
-                    <Text
-                      style={[
-                        styles.attributeType,
-                        { color: getTypeColor(resistance.type) },
-                      ]}
-                    >
-                      {resistance.type}
-                    </Text>
-                    <Text style={styles.attributeValue}>
-                      {resistance.value}
-                    </Text>
-                  </View>
-                ))}
+                {/* Resistances */}
+                <View style={styles.attributeSection}>
+                  <Text style={styles.attributeTitle}>Resistances</Text>
+                  {card.resistances && card.resistances.length > 0 ? (
+                    <View style={styles.attributeList}>
+                      {card.resistances.map((resistance, index) => (
+                        <View
+                          key={`resistance-${index}`}
+                          style={styles.attributeItem}
+                        >
+                          <Text
+                            style={[
+                              styles.attributeType,
+                              { color: getTypeColor(resistance.type) },
+                            ]}
+                          >
+                            {resistance.type}
+                          </Text>
+                          <Text style={styles.attributeValue}>
+                            {resistance.value}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.noDataText}>None</Text>
+                  )}
+                </View>
               </View>
-            ) : (
-              <Text style={styles.noDataText}>None</Text>
+            </View>
+            
+            {/* Market Prices Section - Desktop */}
+            {(card.cardMarketPrices || card.tcgPlayerPrices) && (
+              <View style={styles.cardInfoSection}>
+                <Text style={styles.sectionTitle}>Market Prices</Text>
+
+                {/* CardMarket Prices - Using the CardMarketPrices component */}
+                {card.cardMarketPrices && (
+                  <CardMarketPrices
+                    prices={card.cardMarketPrices}
+                    formatPrice={formatPrice}
+                  />
+                )}
+
+                {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
+                {card.tcgPlayerPrices && (
+                  <TCGPlayerPrices
+                    prices={card.tcgPlayerPrices}
+                    formatPrice={formatPrice}
+                  />
+                )}
+
+                {!card.cardMarketPrices && !card.tcgPlayerPrices && (
+                  <Text style={styles.noDataText}>No price data available</Text>
+                )}
+              </View>
             )}
           </View>
+
+
+
+
+          </View>
         </View>
-      </View>
+      ) : (
+        /* Mobile layout - Original vertical layout */
+        <>
+          {/* Card image with shadow effect */}
+          <View style={styles.cardImageContainer}>
+            <View style={styles.cardImageWrapper}>
+              <Image
+                source={{ uri: card.largeImageUrl }}
+                style={[styles.cardImage, { width: cardDimensions.width, height: cardDimensions.height }]}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
 
-      {/* Market Prices Section */}
-      {(card.cardMarketPrices || card.tcgPlayerPrices) && (
-        <View style={styles.cardInfoSection}>
-          <Text style={styles.sectionTitle}>Market Prices</Text>
+          {/* Basic card information - Mobile */}
+          <View style={styles.cardInfoSection}>
+            <Text style={styles.sectionTitle}>Card Information</Text>
+            <View style={styles.cardInfo}>
+              <View style={styles.infoRow}>
+                <View style={styles.infoLabelContainer}>
+                  <Ionicons
+                    name="albums-outline"
+                    size={18}
+                    color="#aaa"
+                    style={styles.infoIcon}
+                  />
+                  <Text style={styles.infoLabel}>Set:</Text>
+                </View>
+                <Text style={styles.infoValue}>{card.setName || "Unknown"}</Text>
+              </View>
 
-          {/* CardMarket Prices - Using the CardMarketPrices component */}
-          {card.cardMarketPrices && (
-            <CardMarketPrices
-              prices={card.cardMarketPrices}
-              formatPrice={formatPrice}
-            />
+              <View style={styles.infoRow}>
+                <View style={styles.infoLabelContainer}>
+                  <Ionicons
+                    name="pricetag-outline"
+                    size={18}
+                    color="#aaa"
+                    style={styles.infoIcon}
+                  />
+                  <Text style={styles.infoLabel}>Number:</Text>
+                </View>
+                <Text style={styles.infoValue}>{card.number || "Unknown"}</Text>
+              </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoLabelContainer}>
+                  <Ionicons
+                    name="star-outline"
+                    size={18}
+                    color="#aaa"
+                    style={styles.infoIcon}
+                  />
+                  <Text style={styles.infoLabel}>Rarity:</Text>
+                </View>
+                <Text style={styles.infoValue}>{card.rarity || "Unknown"}</Text>
+              </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoLabelContainer}>
+                  <MaterialCommunityIcons
+                    name="cards"
+                    size={18}
+                    color="#aaa"
+                    style={styles.infoIcon}
+                  />
+                  <Text style={styles.infoLabel}>Type:</Text>
+                </View>
+                <Text style={styles.infoValue}>{card.supertype || "Unknown"}</Text>
+              </View>
+
+              {card.evolvesFrom && (
+                <View style={styles.infoRow}>
+                  <View style={styles.infoLabelContainer}>
+                    <MaterialCommunityIcons
+                      name="arrow-up-bold"
+                      size={18}
+                      color="#aaa"
+                      style={styles.infoIcon}
+                    />
+                    <Text style={styles.infoLabel}>Evolves From:</Text>
+                  </View>
+                  <Text style={styles.infoValue}>{card.evolvesFrom}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+          
+          {/* Market Prices Section - Mobile */}
+          {(card.cardMarketPrices || card.tcgPlayerPrices) && (
+            <View style={styles.cardInfoSection}>
+              <Text style={styles.sectionTitle}>Market Prices</Text>
+
+              {/* CardMarket Prices - Using the CardMarketPrices component */}
+              {card.cardMarketPrices && (
+                <CardMarketPrices
+                  prices={card.cardMarketPrices}
+                  formatPrice={formatPrice}
+                />
+              )}
+
+              {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
+              {card.tcgPlayerPrices && (
+                <TCGPlayerPrices
+                  prices={card.tcgPlayerPrices}
+                  formatPrice={formatPrice}
+                />
+              )}
+
+              {!card.cardMarketPrices && !card.tcgPlayerPrices && (
+                <Text style={styles.noDataText}>No price data available</Text>
+              )}
+            </View>
           )}
-
-          {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
-          {card.tcgPlayerPrices && (
-            <TCGPlayerPrices
-              prices={card.tcgPlayerPrices}
-              formatPrice={formatPrice}
-            />
+          
+          {/* Attacks section - Mobile */}
+          {card.attacks && card.attacks.length > 0 && (
+            <View style={styles.cardInfoSection}>
+              <Text style={styles.sectionTitle}>Attacks</Text>
+              {card.attacks.map((attack, index) => (
+                <View key={`attack-${index}`} style={styles.attackContainer}>
+                  <View style={styles.attackHeader}>
+                    <View style={styles.attackNameContainer}>
+                      {renderEnergyCost(attack.cost)}
+                      <Text style={styles.attackName}>{attack.name}</Text>
+                    </View>
+                    {attack.damage && (
+                      <Text style={styles.attackDamage}>{attack.damage}</Text>
+                    )}
+                  </View>
+                  <Text style={styles.attackText}>{attack.text}</Text>
+                </View>
+              ))}
+            </View>
           )}
+          
+          {/* Battle Attributes - Mobile */}
+          <View style={styles.cardInfoSection}>
+            <Text style={styles.sectionTitle}>Battle Attributes</Text>
+            <View style={styles.battleAttributesContainer}>
+              {/* Weaknesses */}
+              <View style={styles.attributeSection}>
+                <Text style={styles.attributeTitle}>Weaknesses</Text>
+                {card.weaknesses && card.weaknesses.length > 0 ? (
+                  <View style={styles.attributeList}>
+                    {card.weaknesses.map((weakness, index) => (
+                      <View key={`weakness-${index}`} style={styles.attributeItem}>
+                        <Text
+                          style={[
+                            styles.attributeType,
+                            { color: getTypeColor(weakness.type) },
+                          ]}
+                        >
+                          {weakness.type}
+                        </Text>
+                        <Text style={styles.attributeValue}>{weakness.value}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <Text style={styles.noDataText}>None</Text>
+                )}
+              </View>
 
-          {!card.cardMarketPrices && !card.tcgPlayerPrices && (
-            <Text style={styles.noDataText}>No price data available</Text>
-          )}
-        </View>
+              {/* Resistances */}
+              <View style={styles.attributeSection}>
+                <Text style={styles.attributeTitle}>Resistances</Text>
+                {card.resistances && card.resistances.length > 0 ? (
+                  <View style={styles.attributeList}>
+                    {card.resistances.map((resistance, index) => (
+                      <View
+                        key={`resistance-${index}`}
+                        style={styles.attributeItem}
+                      >
+                        <Text
+                          style={[
+                            styles.attributeType,
+                            { color: getTypeColor(resistance.type) },
+                          ]}
+                        >
+                          {resistance.type}
+                        </Text>
+                        <Text style={styles.attributeValue}>
+                          {resistance.value}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <Text style={styles.noDataText}>None</Text>
+                )}
+              </View>
+            </View>
+          </View>
+        </>
       )}
     </ScrollView>
   );
@@ -386,6 +658,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#25292e",
+  },
+  desktopContainer: {
+    flexDirection: "row",
+    padding: 20,
+  },
+  desktopImageContainer: {
+    width: "40%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  desktopDetailsContainer: {
+    width: "60%",
+    paddingLeft: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -447,6 +733,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#333",
+    width: "100%",
   },
   cardImageWrapper: {
     shadowColor: "#000",
@@ -457,11 +744,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#444",
     borderRadius: 10,
     overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
   },
   cardImage: {
-    width: 300,
-    height: 420,
     backgroundColor: "#444",
+    borderRadius: 10,
   },
   cardInfoSection: {
     marginVertical: 16,
