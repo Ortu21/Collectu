@@ -6,11 +6,11 @@ import { useAuth } from "../context/AuthContext";
 import { PokemonCard } from "../types/pokemon";
 import { usePokemonCards } from "../hooks/usePokemonCards";
 import { usePokemonSets } from "../hooks/usePokemonSets";
-import { PokemonCardList } from "../components/pokemon/PokemonCardList";
-import { SearchFilterBar } from "../components/pokemon/SearchFilterBar";
-import { SetFilterModal } from "../components/pokemon/SetFilterModal";
+import { CardList } from "../components/collectibles/CardList";
+import { SearchFilterBar } from "../components/collectibles/SearchFilterBar";
+import { SetFilterModal } from "../components/collectibles/SetFilterModal";
 
-export default function PokemonCards() {
+export default function CollectiblesScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -107,7 +107,7 @@ export default function PokemonCards() {
         onSelectSet={handleSetSelect}
       />
       
-      <PokemonCardList
+      <CardList
         cards={cards}
         isLoading={isLoading}
         isLoadingMore={isLoadingMore}

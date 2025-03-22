@@ -5,7 +5,7 @@ import {
   mapArray,
 } from "../utils/circularReferenceHandler";
 
-export const API_BASE_URL = "http://192.168.1.10:5193/api/public";
+export const API_BASE_URL = "http://192.168.1.8:5193/api/public";
 
 export const fetchPokemonCards = async (
   pageSize: number = 20,
@@ -91,6 +91,7 @@ export const searchPokemonCards = async (
   try {
     if (!query || query.trim() === "") {
       return await fetchPokemonCards(pageSize, page);
+
     }
 
     // Normalize the query and prepare for elastic search
@@ -138,16 +139,16 @@ export const searchPokemonCards = async (
 
     // Transform the data to match the PokemonCard type
     const transformedCards: PokemonCard[] = cardData.map((card: any) => ({
-      Id: card.id,
-      Name: card.name,
+      id: card.id,
+      name: card.name,
       supertype: card.supertype || "",
       hp: card.hp || "",
       evolvesFrom: card.evolvesFrom || "",
       rarity: card.rarity || "",
       largeImageUrl: card.largeImageUrl,
       smallImageUrl: card.smallImageUrl,
-      SetName: card.set?.setName || "",
-      Number: card.number || "",
+      setName: card.setName || "",
+      number: card.number || "",
       attacks:
         card.attacks?.map((attack: any) => ({
           name: attack.name || "",

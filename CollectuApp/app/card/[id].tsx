@@ -13,8 +13,8 @@ import { StatusBar } from "expo-status-bar";
 import { fetchPokemonCardById } from "../../services/api";
 import { PokemonCard } from "../../types/pokemon";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { CardMarketPrices } from "../../components/pokemon/CardMarketPrices";
-import { TCGPlayerPrices } from "../../components/pokemon/TCGPlayerPrices";
+import { CardMarketPrices } from "../../components/collectibles/CardMarketPrices";
+import { TCGPlayerPrices } from "../../components/collectibles/TCGPlayerPrices";
 
 export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

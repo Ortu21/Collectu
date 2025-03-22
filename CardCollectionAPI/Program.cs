@@ -51,8 +51,8 @@ builder.Services
 // Configura CORS - spostato qui prima di app.Build()
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", 
-        corsBuilder =>  
+    options.AddPolicy("AllowAll",
+        corsBuilder =>
         {
             if (builder.Environment.IsDevelopment())
             {
@@ -100,8 +100,9 @@ builder.Services.AddEndpointsApiExplorer();
 // Aggiungi questo nella sezione di configurazione dei servizi
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { 
-        Title = "Collectu API", 
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Collectu API",
         Version = "v1",
         Description = "API per la gestione delle collezioni di carte",
         Contact = new OpenApiContact
@@ -111,7 +112,7 @@ builder.Services.AddSwaggerGen(c =>
             Url = new Uri("https://github.com/Ortu21/Collectu")
         }
     });
-    
+
     // Configura Swagger per utilizzare i file XML di documentazione
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -133,17 +134,17 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 5
             });
     });
-    
+
     // Configurazione della risposta quando il limite viene superato
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         context.HttpContext.Response.ContentType = "application/json";
-        
+
         // Imposta un valore fisso per il retry
         var retryAfterSeconds = 60;
         context.HttpContext.Response.Headers.Append("Retry-After", retryAfterSeconds.ToString());
-        
+
         await context.HttpContext.Response.WriteAsJsonAsync(new
         {
             error = "Troppe richieste. Per favore, riprova più tardi.",
@@ -160,13 +161,19 @@ builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogL
 
 var app = builder.Build();
 
-// Aggiungi questo nella sezione di configurazione dell'app
+// Verifica e mostra l'ambiente corrente
+Console.WriteLine($"Ambiente corrente: {app.Environment.EnvironmentName}");
+
 if (app.Environment.IsDevelopment())
 {
+    Console.WriteLine("L'applicazione è in esecuzione in modalità Development");
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Collectu API v1"));
 }
-
+else
+{
+    Console.WriteLine("L'applicazione è in esecuzione in modalità Production");
+}
 // Usa CORS prima di Authentication e Authorization
 app.UseCors("AllowAll");
 
@@ -176,5 +183,21 @@ app.UseRateLimiter();
 app.UseAuthentication(); // Attiva l'autenticazione
 app.UseAuthorization();
 
+// Near the end of your file, before app.Run()
 app.MapControllers();
+
+// Log dettagliato degli indirizzi di ascolto
+Console.WriteLine($"Application is listening on: {string.Join(", ", builder.WebHost.GetSetting("urls")?.Split(';') ?? new[] { "default" })}");
+
+// Ottieni e mostra tutti gli indirizzi IP locali per facilitare la connessione
+Console.WriteLine("Available local IP addresses:");
+var hostName = System.Net.Dns.GetHostName();
+var addresses = System.Net.Dns.GetHostAddresses(hostName)
+    .Where(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+    .Select(ip => ip.ToString());
+foreach (var address in addresses)
+{
+    Console.WriteLine($"  http://{address}:5193");
+}
+
 app.Run();

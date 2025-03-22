@@ -22,9 +22,9 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Home screen</Text>
-      <Link href="/pokemon" asChild>
+      <Link href="/collectibles" asChild>
         <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Go to Pokemon</Text>
+          <Text style={styles.buttonText}>View Collection</Text>
         </Pressable>
       </Link>
       <Pressable 
