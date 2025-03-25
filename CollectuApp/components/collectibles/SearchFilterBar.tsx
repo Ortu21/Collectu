@@ -57,11 +57,13 @@ export const SearchFilterBar = ({
         </View>
       )}
       
-      {totalCount > 0 && !isLoading && (
-        <Text style={styles.resultCount}>
-          Found {totalCount} card{totalCount !== 1 ? "s" : ""}
-        </Text>
-      )}
+      <View style={styles.resultCountContainer}>
+        {totalCount > 0 && !isLoading && (
+          <Text style={styles.resultCount}>
+            Found {totalCount} card{totalCount !== 1 ? "s" : ""}
+          </Text>
+        )}
+      </View>
     </View>
   );
 };
@@ -138,10 +140,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
   },
+  resultCountContainer: {
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 5,
+  },
   resultCount: {
-    color: "#aaa",
-    fontSize: 14,
-    marginTop: 8,
+    color: "#bbb",
+    fontSize: 13,
+    fontWeight: "500",
     textAlign: "center",
+    opacity: 0.9,
   },
 });

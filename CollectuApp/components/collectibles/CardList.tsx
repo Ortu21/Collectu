@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, useWindowDimensions, Animated } from 'react-native';
 import { PokemonCard } from '../../types/pokemon';
 import { CardItem } from './CardItem';
+import { CardSkeleton } from './CardSkeleton';
 
 interface CardListProps {
   cards: PokemonCard[];
@@ -47,30 +48,67 @@ export const CardList = ({
   
   const cardDimensions = getCardDimensions();
 
-  return (
-    <FlatList
-      data={cards}
-      numColumns={numColumns}
-      key={`list-${numColumns}`}
-      renderItem={({ item }) => (
-        <TouchableOpacity 
+  // Create an array of skeleton placeholders when loading
+  const renderSkeletons = () => {
+    const skeletons = [];
+    const skeletonCount = 6; // Number of skeleton items to show
+    
+    for (let i = 0; i < skeletonCount; i++) {
+      skeletons.push(
+        <View 
+          key={`skeleton-${i}`}
           style={[
-            styles.card, 
+            styles.card,
             { 
-              // Modifica qui: usiamo una percentuale valida per React Native
               width: cardDimensions.width,
               margin: 8,
             }
-          ]} 
-          onPress={() => onCardPress(item)}
+          ]}
         >
-          <CardItem 
-            card={item} 
-            onPress={onCardPress} 
-            cardDimensions={cardDimensions}
-          />
-        </TouchableOpacity>
-      )}
+          <CardSkeleton cardDimensions={cardDimensions} />
+        </View>
+      );
+    }
+    
+    return skeletons;
+  };
+
+  return (
+    <>
+      {isLoading ? (
+        <View style={styles.cardList}>
+          <Animated.View style={styles.skeletonContainer}>
+            {renderSkeletons()}
+          </Animated.View>
+        </View>
+      ) : (
+        <FlatList
+          data={cards}
+          numColumns={numColumns}
+          key={`list-${numColumns}`}
+          renderItem={({ item, index }) => {
+            // Add a small delay for each item to create a staggered animation effect
+            const itemDelay = index * 50;
+            
+            return (
+              <TouchableOpacity 
+                style={[
+                  styles.card, 
+                  { 
+                    width: cardDimensions.width,
+                    margin: 8,
+                  }
+                ]} 
+                onPress={() => onCardPress(item)}
+              >
+                <CardItem 
+                  card={item} 
+                  onPress={onCardPress} 
+                  cardDimensions={cardDimensions}
+                />
+              </TouchableOpacity>
+            );
+          }}
       keyExtractor={(item, index) => `${item.id}-${index}`}
       contentContainerStyle={styles.cardList}
       onRefresh={onRefresh}
@@ -88,6 +126,8 @@ export const CardList = ({
         </View>
       )}
     />
+      )}    
+    </>
   );
 };
 
@@ -100,6 +140,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardList: {
+    padding: 8,
+  },
+  skeletonContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     padding: 8,
   },
   loadingContainer: {

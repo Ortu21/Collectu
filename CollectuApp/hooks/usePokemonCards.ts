@@ -210,8 +210,11 @@ export const usePokemonCards = ({
   useEffect(() => {
     if (isInitialized && user) {
       // Only trigger search when query changes, not on initial mount
-      // This prevents duplicate API calls
-      handleSearch();
+        // This prevents duplicate API calls
+      if (!isInitialMount.current) {
+        // Only run search when it's not the initial mount
+        handleSearch();
+      }
     }
     
     // Cleanup function to clear any pending timeouts
@@ -232,6 +235,7 @@ export const usePokemonCards = ({
       // Only load cards on initial mount or when auth changes
       // This prevents duplicate API calls
       if (isInitialMount.current) {
+        console.log("Initial mount, loading cards...");
         isInitialMount.current = false;
         const timer = setTimeout(() => {
           loadPokemonCards(1, true);
@@ -241,6 +245,17 @@ export const usePokemonCards = ({
       }
     }
   }, [isInitialized, user, loadPokemonCards]);
+  
+  // Debug logging for tracking component lifecycle
+  useEffect(() => {
+    console.log("Component mounted");
+    return () => {
+      console.log("Component unmounted");
+      // Reset initial mount flag when component unmounts
+      // This ensures proper behavior if the component remounts
+      isInitialMount.current = true;
+    };
+  }, []);
   
   // Effect for set selection changes
   useEffect(() => {

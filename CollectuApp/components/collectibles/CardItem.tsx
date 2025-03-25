@@ -1,6 +1,8 @@
-import React from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Platform } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
 import { PokemonCard } from '../../types/pokemon';
+import { ImageSkeleton } from './ImageSkeleton';
 
 interface CardItemProps {
   card: PokemonCard;
@@ -12,17 +14,71 @@ interface CardItemProps {
 }
 
 export const CardItem = ({ card, onPress, cardDimensions }: CardItemProps) => {
+  // Reanimated shared values for animations
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.95);
+
+  // Create animated styles
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }]
+    };
+  });
+
+  useEffect(() => {
+    // Start animations when component mounts
+    opacity.value = withTiming(1, { duration: 500 });
+    scale.value = withSpring(1, { damping: 20, stiffness: 90 });
+  }, []);
+
+  // State to track image loading status
+  const [isImageLoading, setIsImageLoading] = useState(true);
+
+  // Ensure image loading state is properly managed
+  useEffect(() => {
+    // Reset loading state when card changes
+    setIsImageLoading(true);
+  }, [card.id]);
+
+  // Use a regular View with animated styles for web compatibility
+  const AnimatedContainer = Platform.OS === 'web' ? View : Animated.View;
+
   return (
-    <View style={styles.container}>
-      <Image
-        source={{ uri: card.smallImageUrl || card.largeImageUrl }}
+    <AnimatedContainer 
+      style={[
+        styles.container, 
+        Platform.OS !== 'web' ? animatedStyles : { opacity: 1 }
+      ]}
+    >
+      <View
         style={[
-          styles.cardImage,
+          styles.cardImageContainer,
           cardDimensions ? { height: cardDimensions.height * 0.6 } : null
         ]}
-        resizeMode="contain"
-        defaultSource={require('../../assets/images/card-placeholder.png')}
-      />
+      >
+        {isImageLoading && (
+          <ImageSkeleton 
+            style={[
+              styles.cardImage,
+              cardDimensions ? { height: cardDimensions.height * 0.6 } : null
+            ]}
+          />
+        )}
+        <Image
+          source={{ uri: card.smallImageUrl || card.largeImageUrl }}
+          style={[
+            styles.cardImage,
+            isImageLoading ? styles.hiddenImage : null,
+            cardDimensions ? { height: cardDimensions.height * 0.6 } : null
+          ]}
+          resizeMode="contain"
+          defaultSource={require('../../assets/images/card-placeholder.png')}
+          // These handlers ensure proper loading state management
+          onLoad={() => setIsImageLoading(false)}
+          onError={() => setIsImageLoading(false)}
+        />
+      </View>
       <View style={styles.cardInfo}>
         <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">
           {card.name}
@@ -39,18 +95,31 @@ export const CardItem = ({ card, onPress, cardDimensions }: CardItemProps) => {
           </Text>
         </View>
       </View>
-    </View>
+    </AnimatedContainer>
   );
 };
 
+// Styles remain the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  cardImageContainer: {
+    width: '100%',
+    height: 180,
+    position: 'relative',
+  },
   cardImage: {
     width: '100%',
     height: 180,
-    backgroundColor: '#444',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  hiddenImage: {
+    opacity: 0,
   },
   cardInfo: {
     padding: 12,

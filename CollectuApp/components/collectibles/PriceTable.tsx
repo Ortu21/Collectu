@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   priceItem: {
     flex: 1,
@@ -108,11 +108,11 @@ const styles = StyleSheet.create({
   priceLabel: {
     fontSize: 12,
     color: '#aaa',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   priceValue: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#2ecc71',
-  }
+    color: '#fff',
+  },
 });
