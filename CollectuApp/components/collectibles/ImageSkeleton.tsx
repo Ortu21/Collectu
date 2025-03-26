@@ -10,9 +10,13 @@ import Animated, {
 
 interface ImageSkeletonProps {
   style?: any;
+  cardDimensions?: {
+    width: number;
+    height: number;
+  };
 }
 
-export const ImageSkeleton = ({ style }: ImageSkeletonProps) => {
+export const ImageSkeleton = ({ style, cardDimensions }: ImageSkeletonProps) => {
   // Create animation value for the shimmer effect
   const shimmerPosition = useSharedValue(0);
 
@@ -40,7 +44,14 @@ export const ImageSkeleton = ({ style }: ImageSkeletonProps) => {
   }, []);
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[
+      styles.container, 
+      style,
+      cardDimensions ? { 
+        width: cardDimensions.width, 
+        height: cardDimensions.height * 0.6 
+      } : null
+    ]}>
       <View style={styles.shimmerContainer}>
         <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
       </View>

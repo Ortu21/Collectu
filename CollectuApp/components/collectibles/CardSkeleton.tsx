@@ -13,13 +13,17 @@ interface CardSkeletonProps {
     width: number;
     height: number;
   };
+  animationDelay?: number;
 }
 
-export const CardSkeleton = ({ cardDimensions }: CardSkeletonProps) => {
-  // Create animation value for the shimmer effect
-  const shimmerPosition = useSharedValue(0);
+export const CardSkeleton = ({
+  cardDimensions,
+  animationDelay = 0,
+}: CardSkeletonProps) => {
+  const shimmerPosition = useSharedValue(-400);
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.95);
 
-  // Create animated style for shimmer effect
   const shimmerAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -30,28 +34,50 @@ export const CardSkeleton = ({ cardDimensions }: CardSkeletonProps) => {
     };
   });
 
+  // Create animated style for container
+  const containerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    };
+  });
+
   useEffect(() => {
-    // Create a looping animation for the shimmer effect
-    shimmerPosition.value = withRepeat(
-      withTiming(-300, {
-        duration: 1500,
-        easing: Easing.linear,
-      }),
-      -1,
-      false
-    );
-  }, []);
+    setTimeout(() => {
+      shimmerPosition.value = withRepeat(
+        withTiming(300, {
+          duration: 2000,
+          easing: Easing.bezier(0.4, 0.0, 0.2, 1), // Curva di easing più elegante e naturale
+        }),
+        -1,
+        true
+      );
+
+      opacity.value = withTiming(1, { duration: 300 });
+      scale.value = withTiming(1, {
+        duration: 250,
+        easing: Easing.out(Easing.cubic),
+      });
+    }, animationDelay);
+  }, [animationDelay]);
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, containerAnimatedStyle]}>
       <View
         style={[
-          styles.cardImage,
+          styles.cardImageContainer,
           cardDimensions ? { height: cardDimensions.height * 0.6 } : null,
         ]}
       >
-        <View style={styles.shimmerContainer}>
-          <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
+        <View
+          style={[
+            styles.cardImage,
+            cardDimensions ? { height: cardDimensions.height * 0.6 } : null,
+          ]}
+        >
+          <View style={styles.shimmerContainer}>
+            <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
+          </View>
         </View>
       </View>
       <View style={styles.cardInfo}>
@@ -78,7 +104,7 @@ export const CardSkeleton = ({ cardDimensions }: CardSkeletonProps) => {
           </View>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -86,11 +112,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  cardImage: {
+  cardImageContainer: {
     width: "100%",
     height: 180,
+    position: "relative",
+    overflow: "hidden", // Assicura che il contenuto rispetti il bordo arrotondato
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  cardImage: {
+    width: "100%",
+    height: "100%",
     backgroundColor: "#444",
     overflow: "hidden",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   cardInfo: {
     padding: 12,
@@ -98,14 +137,14 @@ const styles = StyleSheet.create({
   cardName: {
     height: 20,
     backgroundColor: "#444",
-    marginBottom: 8,
+    marginBottom: 4,
     borderRadius: 4,
     overflow: "hidden",
   },
   cardRarity: {
     height: 16,
     backgroundColor: "#444",
-    marginBottom: 8,
+    marginBottom: 4,
     width: "40%",
     borderRadius: 4,
     overflow: "hidden",
@@ -114,6 +153,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: 4,
   },
   cardSet: {
     height: 16,
@@ -136,9 +176,12 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   shimmer: {
-    width: "400%",
+    width: "300%", // Ridotto per adattarsi meglio all'animazione
     height: "100%",
+    backgroundImage:
+      "linear-gradient(to right, #444 0%, #555 20%, #444 40%, #444 60%, #555 80%, #444 100%)",
+    backgroundSize: "100% 100%", // Adattato per un effetto più fluido
     backgroundColor: "#444",
-    opacity: 0.5,
+    opacity: 0.8,
   },
 });

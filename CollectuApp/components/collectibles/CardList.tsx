@@ -48,67 +48,70 @@ export const CardList = ({
   
   const cardDimensions = getCardDimensions();
 
-  // Create an array of skeleton placeholders when loading
+  // Funzione comune per renderizzare sia le carte che gli skeleton
+  const renderCardItem = ({ item, index }: { item: PokemonCard | number, index: number }) => {
+    const itemDelay = index * 50;
+    const isSkeletonItem = typeof item === 'number';
+    
+    return (
+      <TouchableOpacity 
+        style={[
+          styles.card, 
+          { 
+            width: cardDimensions.width,
+            margin: 8,
+          }
+        ]} 
+        onPress={isSkeletonItem ? undefined : () => onCardPress(item as PokemonCard)}
+        disabled={isSkeletonItem}
+      >
+        {isSkeletonItem ? (
+          <Animated.View style={[styles.container, { opacity: 1 }]}>
+            <CardSkeleton cardDimensions={cardDimensions} animationDelay={itemDelay} />
+          </Animated.View>
+        ) : (
+          <CardItem 
+            card={item as PokemonCard} 
+            onPress={onCardPress} 
+            cardDimensions={cardDimensions}
+            animationDelay={itemDelay}
+          />
+        )}
+      </TouchableOpacity>
+    );
+  };
+  
+  // Genera un array di numeri per gli skeleton
+  const generateSkeletonData = () => {
+    return Array.from({ length: 10 }, (_, i) => i);
+  };
+  
+  const skeletonData = generateSkeletonData();
+
+  // Funzione per renderizzare gli skeleton durante il caricamento
   const renderSkeletons = () => {
-    const skeletons = [];
-    const skeletonCount = 6; // Number of skeleton items to show
-    
-    for (let i = 0; i < skeletonCount; i++) {
-      skeletons.push(
-        <View 
-          key={`skeleton-${i}`}
-          style={[
-            styles.card,
-            { 
-              width: cardDimensions.width,
-              margin: 8,
-            }
-          ]}
-        >
-          <CardSkeleton cardDimensions={cardDimensions} />
-        </View>
-      );
-    }
-    
-    return skeletons;
+    return (
+      <FlatList
+        data={skeletonData}
+        numColumns={numColumns}
+        key={`skeleton-list-${numColumns}`}
+        renderItem={renderCardItem}
+        keyExtractor={(item, index) => `skeleton-${index}`}
+        contentContainerStyle={styles.cardList}
+      />
+    );
   };
 
   return (
     <>
       {isLoading ? (
-        <View style={styles.cardList}>
-          <Animated.View style={styles.skeletonContainer}>
-            {renderSkeletons()}
-          </Animated.View>
-        </View>
+        renderSkeletons()
       ) : (
         <FlatList
           data={cards}
           numColumns={numColumns}
           key={`list-${numColumns}`}
-          renderItem={({ item, index }) => {
-            // Add a small delay for each item to create a staggered animation effect
-            const itemDelay = index * 50;
-            
-            return (
-              <TouchableOpacity 
-                style={[
-                  styles.card, 
-                  { 
-                    width: cardDimensions.width,
-                    margin: 8,
-                  }
-                ]} 
-                onPress={() => onCardPress(item)}
-              >
-                <CardItem 
-                  card={item} 
-                  onPress={onCardPress} 
-                  cardDimensions={cardDimensions}
-                />
-              </TouchableOpacity>
-            );
-          }}
+          renderItem={renderCardItem}
       keyExtractor={(item, index) => `${item.id}-${index}`}
       contentContainerStyle={styles.cardList}
       onRefresh={onRefresh}
@@ -132,6 +135,9 @@ export const CardList = ({
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   card: {
     flex: 1,
     backgroundColor: "#333",
@@ -145,8 +151,9 @@ const styles = StyleSheet.create({
   skeletonContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
     padding: 8,
+    // Utilizziamo lo stesso layout della FlatList per garantire coerenza
+    // tra gli skeleton e le carte reali
   },
   loadingContainer: {
     flex: 1,

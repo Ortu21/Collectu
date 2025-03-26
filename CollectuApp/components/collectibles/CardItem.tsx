@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useRef } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
 import { PokemonCard } from '../../types/pokemon';
@@ -11,9 +11,10 @@ interface CardItemProps {
     width: number;
     height: number;
   };
+  animationDelay?: number;
 }
 
-export const CardItem = ({ card, onPress, cardDimensions }: CardItemProps) => {
+export const CardItem = memo(({ card, onPress, cardDimensions, animationDelay = 0 }: CardItemProps) => {
   // Reanimated shared values for animations
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.95);
@@ -27,28 +28,35 @@ export const CardItem = ({ card, onPress, cardDimensions }: CardItemProps) => {
   });
 
   useEffect(() => {
-    // Start animations when component mounts
-    opacity.value = withTiming(1, { duration: 500 });
-    scale.value = withSpring(1, { damping: 20, stiffness: 90 });
-  }, []);
+    // Start animations when component mounts with delay based on position
+    setTimeout(() => {
+      opacity.value = withTiming(1, { duration: 500 });
+      scale.value = withSpring(1, { damping: 20, stiffness: 90 });
+    }, animationDelay);
+  }, [animationDelay]);
 
-  // State to track image loading status
+  // State to track image loading status with a ref to avoid unnecessary re-renders
   const [isImageLoading, setIsImageLoading] = useState(true);
-
-  // Ensure image loading state is properly managed
+  const imageLoadingRef = useRef(true);
+  const cardIdRef = useRef(card.id);
+  
+  // Only reset loading state when card ID actually changes
   useEffect(() => {
-    // Reset loading state when card changes
-    setIsImageLoading(true);
+    if (cardIdRef.current !== card.id) {
+      setIsImageLoading(true);
+      imageLoadingRef.current = true;
+      cardIdRef.current = card.id;
+    }
   }, [card.id]);
 
   // Use a regular View with animated styles for web compatibility
-  const AnimatedContainer = Platform.OS === 'web' ? View : Animated.View;
+  const AnimatedContainer = Platform.OS === 'web' ? Animated.createAnimatedComponent(View) : Animated.View;
 
   return (
     <AnimatedContainer 
       style={[
         styles.container, 
-        Platform.OS !== 'web' ? animatedStyles : { opacity: 1 }
+        animatedStyles
       ]}
     >
       <View
@@ -75,8 +83,18 @@ export const CardItem = ({ card, onPress, cardDimensions }: CardItemProps) => {
           resizeMode="contain"
           defaultSource={require('../../assets/images/card-placeholder.png')}
           // These handlers ensure proper loading state management
-          onLoad={() => setIsImageLoading(false)}
-          onError={() => setIsImageLoading(false)}
+          onLoad={() => {
+            if (imageLoadingRef.current) {
+              imageLoadingRef.current = false;
+              setIsImageLoading(false);
+            }
+          }}
+          onError={() => {
+            if (imageLoadingRef.current) {
+              imageLoadingRef.current = false;
+              setIsImageLoading(false);
+            }
+          }}
         />
       </View>
       <View style={styles.cardInfo}>
@@ -97,7 +115,14 @@ export const CardItem = ({ card, onPress, cardDimensions }: CardItemProps) => {
       </View>
     </AnimatedContainer>
   );
-};
+}, (prevProps, nextProps) => {
+  // Only re-render if the card ID changes or dimensions change
+  return (
+    prevProps.card.id === nextProps.card.id &&
+    prevProps.cardDimensions?.width === nextProps.cardDimensions?.width &&
+    prevProps.cardDimensions?.height === nextProps.cardDimensions?.height
+  );
+});
 
 // Styles remain the same
 const styles = StyleSheet.create({
