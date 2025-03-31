@@ -8,7 +8,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   useWindowDimensions,
+  Platform,
 } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring, withDelay, FadeIn, FadeInDown } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { fetchPokemonCardById } from "../../services/api";
@@ -24,6 +26,45 @@ export default function CardDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { width, height } = useWindowDimensions();
+  
+  // Shared values for animations
+  const cardOpacity = useSharedValue(0);
+  const cardScale = useSharedValue(0.9);
+  const detailsOpacity = useSharedValue(0);
+  
+  // Animated styles for card image
+  const cardAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: cardOpacity.value,
+      transform: [{ scale: cardScale.value }]
+    };
+  });
+  
+  // Animated styles for details container
+  const detailsAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: detailsOpacity.value
+    };
+  });
+  
+  // Function to trigger animations when card loads
+  const triggerAnimations = () => {
+    // Reset animation values when loading a new card
+    cardOpacity.value = 0;
+    cardScale.value = 0.9;
+    detailsOpacity.value = 0;
+    
+    // Animate card with spring effect
+    setTimeout(() => {
+      cardOpacity.value = withTiming(1, { duration: 600 });
+      cardScale.value = withSpring(1, { damping: 15, stiffness: 100 });
+      
+      // Animate details with a delay
+      setTimeout(() => {
+        detailsOpacity.value = withTiming(1, { duration: 500 });
+      }, 300);
+    }, 100);
+  };
   
   // Determine if we should use desktop layout
   const isDesktopLayout = width >= 768;
@@ -78,11 +119,17 @@ export default function CardDetailScreen() {
         setError("Failed to load card details");
       } finally {
         setIsLoading(false);
+        // Trigger animations when card is loaded
+        triggerAnimations();
       }
     };
 
     loadCard();
   }, [id]);
+  
+  // Create animated components for better platform compatibility
+  const AnimatedView = Platform.OS === 'web' ? Animated.createAnimatedComponent(View) : Animated.View;
+  const AnimatedImage = Animated.createAnimatedComponent(Image);
 
   const handleGoBack = () => {
     if (router.canGoBack()) {
@@ -198,18 +245,18 @@ export default function CardDetailScreen() {
         /* Desktop layout - Horizontal layout for larger screens */
         <View style={styles.desktopContainer}>
           {/* Card image with shadow effect - Left side */}
-          <View style={styles.desktopImageContainer}>
+          <AnimatedView style={[styles.desktopImageContainer, cardAnimatedStyle]}>
             <View style={styles.cardImageWrapper}>
-              <Image
+              <AnimatedImage
                 source={{ uri: card.largeImageUrl }}
                 style={[styles.cardImage, { width: cardDimensions.width, height: cardDimensions.height }]}
                 resizeMode="contain"
               />
             </View>
-          </View>
+          </AnimatedView>
           
           {/* Card details - Right side */}
-          <View style={styles.desktopDetailsContainer}>
+          <AnimatedView style={[styles.desktopDetailsContainer, detailsAnimatedStyle]}>
             {/* Basic card information - Desktop */}
           <View style={styles.cardInfoSection}>
             {/* Basic card information - Desktop */}
@@ -423,24 +470,24 @@ export default function CardDetailScreen() {
 
 
 
-          </View>
+          </AnimatedView>
         </View>
       ) : (
         /* Mobile layout - Original vertical layout */
         <>
           {/* Card image with shadow effect */}
-          <View style={styles.cardImageContainer}>
+          <AnimatedView style={[styles.cardImageContainer, cardAnimatedStyle]}>
             <View style={styles.cardImageWrapper}>
-              <Image
+              <AnimatedImage
                 source={{ uri: card.largeImageUrl }}
                 style={[styles.cardImage, { width: cardDimensions.width, height: cardDimensions.height }]}
                 resizeMode="contain"
               />
             </View>
-          </View>
+          </AnimatedView>
 
           {/* Basic card information - Mobile */}
-          <View style={styles.cardInfoSection}>
+          <Animated.View entering={FadeInDown.delay(300).duration(500)} style={styles.cardInfoSection}>
             <Text style={styles.sectionTitle}>Card Information</Text>
             <View style={styles.cardInfo}>
               <View style={styles.infoRow}>
@@ -510,11 +557,11 @@ export default function CardDetailScreen() {
                 </View>
               )}
             </View>
-          </View>
+          </Animated.View>
           
           {/* Market Prices Section - Mobile */}
           {(card.cardMarketPrices || card.tcgPlayerPrices) && (
-            <View style={styles.cardInfoSection}>
+            <Animated.View entering={FadeInDown.delay(400).duration(500)} style={styles.cardInfoSection}>
               <Text style={styles.sectionTitle}>Market Prices</Text>
 
               {/* CardMarket Prices - Using the CardMarketPrices component */}
@@ -536,12 +583,12 @@ export default function CardDetailScreen() {
               {!card.cardMarketPrices && !card.tcgPlayerPrices && (
                 <Text style={styles.noDataText}>No price data available</Text>
               )}
-            </View>
+            </Animated.View>
           )}
           
           {/* Attacks section - Mobile */}
           {card.attacks && card.attacks.length > 0 && (
-            <View style={styles.cardInfoSection}>
+            <Animated.View entering={FadeInDown.delay(500).duration(500)} style={styles.cardInfoSection}>
               <Text style={styles.sectionTitle}>Attacks</Text>
               {card.attacks.map((attack, index) => (
                 <View key={`attack-${index}`} style={styles.attackContainer}>
@@ -557,11 +604,11 @@ export default function CardDetailScreen() {
                   <Text style={styles.attackText}>{attack.text}</Text>
                 </View>
               ))}
-            </View>
+            </Animated.View>
           )}
           
           {/* Battle Attributes - Mobile */}
-          <View style={styles.cardInfoSection}>
+          <Animated.View entering={FadeInDown.delay(600).duration(500)} style={styles.cardInfoSection}>
             <Text style={styles.sectionTitle}>Battle Attributes</Text>
             <View style={styles.battleAttributesContainer}>
               {/* Weaknesses */}
@@ -617,7 +664,7 @@ export default function CardDetailScreen() {
                 )}
               </View>
             </View>
-          </View>
+          </Animated.View>
         </>
       )}
     </ScrollView>
