@@ -32,8 +32,13 @@ namespace CardCollectionAPI.Data
                 .HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
 
             // Configurazione della chiave primaria composita per PokemonCardMarketPriceDetails
+            // Aggiungiamo un campo discriminatore per evitare duplicazioni
             modelBuilder.Entity<PokemonCardMarketPriceDetails>()
-                .HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
+                .HasKey(p => new { p.PokemonCardId, p.UpdatedAt});
+            
+            // Configurazione dell'indice per la ricerca efficiente
+            modelBuilder.Entity<PokemonCardMarketPriceDetails>()
+                .HasIndex(p => new { p.PokemonCardId, p.UpdatedAt });
 
             // Configurazione della relazione tra PokemonCardMarketPrices e PokemonCardMarketPriceDetails
             modelBuilder.Entity<PokemonCardMarketPriceDetails>()

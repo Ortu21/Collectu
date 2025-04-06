@@ -5,8 +5,9 @@ namespace CardCollectionAPI.Models
 {
     public class PokemonCardMarketPriceDetails
     {
-        // Chiavi esterne che fanno riferimento alla chiave primaria composita di PokemonCardMarketPrices
-
+        // Identificatore univoco per ogni record di dettaglio prezzi
+        [Key]
+        
         // Chiavi esterne che fanno riferimento alla chiave primaria composita di PokemonCardMarketPrices
         public required string PokemonCardId { get; set; }
         public required DateOnly UpdatedAt { get; set; }
