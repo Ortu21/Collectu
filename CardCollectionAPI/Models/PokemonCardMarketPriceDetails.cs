@@ -5,11 +5,12 @@ namespace CardCollectionAPI.Models
 {
     public class PokemonCardMarketPriceDetails
     {
-        [Key]
-        public int Id { get; set; }
+        // Chiavi esterne che fanno riferimento alla chiave primaria composita di PokemonCardMarketPrices
 
-        [ForeignKey("PokemonCardMarketPrices")]
-        public int PokemonCardMarketPricesId { get; set; }
+        // Chiavi esterne che fanno riferimento alla chiave primaria composita di PokemonCardMarketPrices
+        public required string PokemonCardId { get; set; }
+        public required DateOnly UpdatedAt { get; set; }
+        
         public required PokemonCardMarketPrices PokemonCardMarketPrices { get; set; }
         
         public decimal? AverageSellPrice { get; set; }

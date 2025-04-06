@@ -19,7 +19,16 @@ namespace CardCollectionAPI.Services.Mappers
                 [
                     new PokemonCardMarketPriceDetails
                     {
-                        PokemonCardMarketPrices = card.CardMarketPrices!,
+                        PokemonCardId = card.Id,
+                        UpdatedAt = DateOnly.TryParse(dto.Cardmarket.UpdatedAt, out var updatedAtDetails) ? updatedAtDetails : DateOnly.MinValue,
+                        // Utilizzo di un nuovo oggetto se card.CardMarketPrices è null
+                        PokemonCardMarketPrices = card.CardMarketPrices ?? new PokemonCardMarketPrices
+                        {
+                            PokemonCardId = card.Id,
+                            PokemonCard = card,
+                            UpdatedAt = DateOnly.TryParse(dto.Cardmarket.UpdatedAt, out var updatedAtNew) ? updatedAtNew : DateOnly.MinValue,
+                            Url = dto.Cardmarket.Url?.ToString() ?? string.Empty
+                        },
                         AverageSellPrice = dto.Cardmarket?.CardmarketPrices?.AverageSellPrice,
                         LowPrice = dto.Cardmarket?.CardmarketPrices?.LowPrice,
                         TrendPrice = dto.Cardmarket?.CardmarketPrices?.TrendPrice,
@@ -49,13 +58,22 @@ namespace CardCollectionAPI.Services.Mappers
                 PokemonCardId = card.Id,
                 PokemonCard = card,
                 Url = dto.Tcgplayer.Url?.ToString() ?? string.Empty,
-                UpdatedAt = DateOnly.Parse(dto.Tcgplayer.UpdatedAt ?? DateTime.MinValue.ToString()),
+                UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
                 PriceDetails =
                 [
                 // Holofoil prices
                 new PokemonTcgPlayerPriceDetails
                 {
-                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    PokemonCardId = card.Id,
+                    UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                    // Utilizzo di un nuovo oggetto se card.TcgPlayerPrices è null
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices ?? new PokemonTcgPlayerPrices
+                    {
+                        PokemonCardId = card.Id,
+                        PokemonCard = card,
+                        UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                        Url = dto.Tcgplayer?.Url?.ToString() ?? string.Empty
+                    },
                     FoilType = "Holofoil",
                     Low = dto.Tcgplayer?.TcgplayerPrices?.Holofoil?.Low ?? 0,
                     Mid = dto.Tcgplayer?.TcgplayerPrices?.Holofoil?.Mid ?? 0,
@@ -66,7 +84,16 @@ namespace CardCollectionAPI.Services.Mappers
                 // Reverse Holofoil prices
                 new PokemonTcgPlayerPriceDetails
                 {
-                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    PokemonCardId = card.Id,
+                    UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                    // Utilizzo di un nuovo oggetto se card.TcgPlayerPrices è null
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices ?? new PokemonTcgPlayerPrices
+                    {
+                        PokemonCardId = card.Id,
+                        PokemonCard = card,
+                        UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                        Url = dto.Tcgplayer?.Url?.ToString() ?? string.Empty
+                    },
                     FoilType = "ReverseHolofoil",
                     Low = dto.Tcgplayer?.TcgplayerPrices?.ReverseHolofoil?.Low ?? 0,
                     Mid = dto.Tcgplayer?.TcgplayerPrices?.ReverseHolofoil?.Mid ?? 0,
@@ -77,7 +104,16 @@ namespace CardCollectionAPI.Services.Mappers
                 // Normal prices
                 new PokemonTcgPlayerPriceDetails
                 {
-                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    PokemonCardId = card.Id,
+                    UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                    // Utilizzo di un nuovo oggetto se card.TcgPlayerPrices è null
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices ?? new PokemonTcgPlayerPrices
+                    {
+                        PokemonCardId = card.Id,
+                        PokemonCard = card,
+                        UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                        Url = dto.Tcgplayer?.Url?.ToString() ?? string.Empty
+                    },
                     FoilType = "Normal",
                     Low = dto.Tcgplayer?.TcgplayerPrices?.Normal?.Low ?? 0,
                     Mid = dto.Tcgplayer?.TcgplayerPrices?.Normal?.Mid ?? 0,
@@ -88,7 +124,16 @@ namespace CardCollectionAPI.Services.Mappers
                 // 1st Edition Holofoil prices
                 new PokemonTcgPlayerPriceDetails
                 {
-                    PokemonTcgPlayerPrices = card.TcgPlayerPrices!,
+                    PokemonCardId = card.Id,
+                    UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                    // Utilizzo di un nuovo oggetto se card.TcgPlayerPrices è null
+                    PokemonTcgPlayerPrices = card.TcgPlayerPrices ?? new PokemonTcgPlayerPrices
+                    {
+                        PokemonCardId = card.Id,
+                        PokemonCard = card,
+                        UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                        Url = dto.Tcgplayer?.Url?.ToString() ?? string.Empty
+                    },
                     FoilType = "1stEditionHolofoil",
                     Low = dto.Tcgplayer?.TcgplayerPrices?.The1stEditionHolofoil?.Low ?? 0,
                     Mid = dto.Tcgplayer?.TcgplayerPrices?.The1stEditionHolofoil?.Mid ?? 0,

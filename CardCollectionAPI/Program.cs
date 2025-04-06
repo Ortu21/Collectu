@@ -1,5 +1,6 @@
 using CardCollectionAPI.Data;
 using CardCollectionAPI.Services;
+using CardCollectionAPI.Services.Interfaces;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -154,6 +155,8 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddHttpClient<PokemonCardService>();
+builder.Services.AddHttpClient<PokemonPriceService>();
+builder.Services.AddScoped<IPokemonPriceService, PokemonPriceService>();
 builder.Logging.AddConsole(); // Mostra log sulla console
 builder.Logging.SetMinimumLevel(LogLevel.Information); // Raccogli tutti i log di livello 'Information' o superiore
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning); // Raccogli solo i log di Entity Framework Core
