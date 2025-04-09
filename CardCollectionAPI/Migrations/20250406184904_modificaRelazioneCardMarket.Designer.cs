@@ -3,6 +3,7 @@ using System;
 using CardCollectionAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250406184904_modificaRelazioneCardMarket")]
+    partial class modificaRelazioneCardMarket
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,9 +112,6 @@ namespace CardCollectionAPI.Migrations
                     b.Property<string>("PokemonCardId")
                         .HasColumnType("text");
 
-                    b.Property<DateOnly>("UpdatedAt")
-                        .HasColumnType("date");
-
                     b.Property<decimal?>("AverageSellPrice")
                         .HasColumnType("numeric");
 
@@ -157,7 +157,10 @@ namespace CardCollectionAPI.Migrations
                     b.Property<decimal?>("TrendPrice")
                         .HasColumnType("numeric");
 
-                    b.HasKey("PokemonCardId", "UpdatedAt");
+                    b.Property<DateOnly>("UpdatedAt")
+                        .HasColumnType("date");
+
+                    b.HasKey("PokemonCardId");
 
                     b.HasIndex("PokemonCardId");
 
@@ -169,17 +172,11 @@ namespace CardCollectionAPI.Migrations
                     b.Property<string>("PokemonCardId")
                         .HasColumnType("text");
 
-                    b.Property<DateOnly>("UpdatedAt")
-                        .HasColumnType("date");
-
                     b.Property<string>("Url")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("PokemonCardId", "UpdatedAt");
-
-                    b.HasIndex("PokemonCardId")
-                        .IsUnique();
+                    b.HasKey("PokemonCardId");
 
                     b.ToTable("PokemonCardMarketPrices");
                 });
@@ -338,7 +335,7 @@ namespace CardCollectionAPI.Migrations
                 {
                     b.HasOne("CardCollectionAPI.Models.PokemonCardMarketPrices", "PokemonCardMarketPrices")
                         .WithMany("PriceDetails")
-                        .HasForeignKey("PokemonCardId", "UpdatedAt")
+                        .HasForeignKey("PokemonCardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

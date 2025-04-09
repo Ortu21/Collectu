@@ -9,7 +9,7 @@ namespace CardCollectionAPI.Models
         [ForeignKey("PokemonCard")]
         public required string PokemonCardId { get; set; }
         public required PokemonCard PokemonCard { get; set; }
-
+        
         public required DateOnly UpdatedAt { get; set; } // Parte della chiave primaria composita
         
         public required string Url { get; set; }

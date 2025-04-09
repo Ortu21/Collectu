@@ -183,6 +183,9 @@ app.UseCors("AllowAll");
 // Attiva il rate limiting per prevenire attacchi DoS
 app.UseRateLimiter();
 
+// Registra il middleware di gestione globale delle eccezioni
+app.UseMiddleware<CardCollectionAPI.Middleware.GlobalExceptionHandlingMiddleware>();
+
 app.UseAuthentication(); // Attiva l'autenticazione
 app.UseAuthorization();
 

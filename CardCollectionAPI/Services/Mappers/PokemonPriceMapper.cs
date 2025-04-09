@@ -14,20 +14,20 @@ namespace CardCollectionAPI.Services.Mappers
                 PokemonCardId = card.Id,
                 PokemonCard = card,
                 Url = dto.Cardmarket.Url?.ToString() ?? string.Empty,
-                UpdatedAt = DateOnly.TryParse(dto.Cardmarket.UpdatedAt, out var updatedAt) ? updatedAt : DateOnly.MinValue,
+                UpdatedAt = DateOnly.Parse(dto.Cardmarket?.UpdatedAt?? DateTime.MinValue.ToString()),
                 PriceDetails =
                 [
                     new PokemonCardMarketPriceDetails
                     {
                         PokemonCardId = card.Id,
-                        UpdatedAt = DateOnly.TryParse(dto.Cardmarket.UpdatedAt, out var updatedAtDetails) ? updatedAtDetails : DateOnly.MinValue,
+                        UpdatedAt = DateOnly.TryParse(dto.Cardmarket?.UpdatedAt ?? DateTime.MinValue.ToString(), out var updatedAtDetails) ? updatedAtDetails : DateOnly.MinValue,
                         // Utilizzo di un nuovo oggetto se card.CardMarketPrices è null
                         PokemonCardMarketPrices = card.CardMarketPrices ?? new PokemonCardMarketPrices
                         {
                             PokemonCardId = card.Id,
                             PokemonCard = card,
-                            UpdatedAt = DateOnly.TryParse(dto.Cardmarket.UpdatedAt, out var updatedAtNew) ? updatedAtNew : DateOnly.MinValue,
-                            Url = dto.Cardmarket.Url?.ToString() ?? string.Empty
+                            Url = dto.Cardmarket?.Url?.ToString() ?? string.Empty,
+                            UpdatedAt = DateOnly.Parse(dto.Cardmarket?.UpdatedAt?? DateTime.MinValue.ToString())
                         },
                         AverageSellPrice = dto.Cardmarket?.CardmarketPrices?.AverageSellPrice,
                         LowPrice = dto.Cardmarket?.CardmarketPrices?.LowPrice,

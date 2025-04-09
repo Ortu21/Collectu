@@ -9,21 +9,14 @@ namespace CardCollectionAPI.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class PokemonCardController : ControllerBase
+    public class PokemonCardController(PokemonCardService pokemonCardService, IPokemonPriceService pokemonPriceService) : ControllerBase
     {
-        private readonly PokemonCardService _pokemonCardService;
-        private readonly IPokemonPriceService _pokemonPriceService;
+        private readonly PokemonCardService _pokemonCardService = pokemonCardService;
+        private readonly IPokemonPriceService _pokemonPriceService = pokemonPriceService;
 
         /// <summary>
         /// Inizializza una nuova istanza del controller
         /// </summary>
-        /// <param name="pokemonCardService">Servizio per la gestione delle carte Pokémon</param>
-        /// <param name="pokemonPriceService">Servizio per l'aggiornamento dei prezzi delle carte Pokémon</param>
-        public PokemonCardController(PokemonCardService pokemonCardService, IPokemonPriceService pokemonPriceService)
-        {
-            _pokemonCardService = pokemonCardService;
-            _pokemonPriceService = pokemonPriceService;
-        }
 
         /// <summary>
         /// Importa tutte le carte Pokémon
@@ -55,8 +48,16 @@ namespace CardCollectionAPI.Controllers
         [HttpPost("update-prices")]
         public async Task<IActionResult> UpdateCardPrices()
         {
-            await _pokemonPriceService.UpdateCardPricesAsync();
-            return Ok("Aggiornamento prezzi di tutte le carte completato!");
+            try
+            {
+                await _pokemonPriceService.UpdateCardPricesAsync();
+                return Ok("Aggiornamento prezzi di tutte le carte completato!");
+            }
+            catch (Exception)
+            {
+                // L'eccezione verrà gestita dal middleware globale
+                throw;
+            }
         }
         
         /// <summary>
@@ -67,8 +68,26 @@ namespace CardCollectionAPI.Controllers
         [HttpPost("update-prices/{id}")]
         public async Task<IActionResult> UpdateSingleCardPrice(string id)
         {
-            await _pokemonPriceService.UpdateSingleCardPriceAsync(id);
-            return Ok($"Aggiornamento prezzi della carta {id} completato!");
+            try
+            {
+                await _pokemonPriceService.UpdateSingleCardPriceAsync(id);
+                return Ok($"Aggiornamento prezzi della carta {id} completato!");
+            }
+            catch (KeyNotFoundException)
+            {
+                // L'eccezione verrà gestita dal middleware globale
+                throw;
+            }
+            catch (InvalidOperationException)
+            {
+                // L'eccezione verrà gestita dal middleware globale
+                throw;
+            }
+            catch (Exception)
+            {
+                // L'eccezione verrà gestita dal middleware globale
+                throw;
+            }
         }
     }
 }

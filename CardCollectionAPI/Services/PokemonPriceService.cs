@@ -132,107 +132,114 @@ namespace CardCollectionAPI.Services
             // Ottieni la data di aggiornamento dal DTO
             var updatedAt = DateOnly.TryParse(cardDto.Cardmarket.UpdatedAt, out var parsedDate) ? parsedDate : DateOnly.FromDateTime(DateTime.Today);
 
-            // Verifica se esiste già un record per i prezzi di CardMarket per questa data
-            var existingPrices = card.CardMarketPrices;
-            
-            // Se esiste già un record per oggi, esci senza aggiornamenti
-            if (existingPrices != null && existingPrices.UpdatedAt == updatedAt)
+            try
             {
-                return;
-            }
-            
-            if (existingPrices == null || existingPrices.UpdatedAt != updatedAt)
-            {
-                // Se non esiste un record per questa data, creane uno nuovo
-                card.CardMarketPrices = new PokemonCardMarketPrices
+                // Verifica se esiste già un record per i prezzi di CardMarket per questa data
+                var existingPrices = card.CardMarketPrices;
+                
+                if (existingPrices == null)
                 {
-                    PokemonCardId = card.Id,
-                    PokemonCard = card,
-                    Url = cardDto.Cardmarket.Url?.ToString() ?? string.Empty,
-                    UpdatedAt = updatedAt,
-                    PriceDetails = []
-                };
-            }
-            else
-            {
-                // Aggiorna solo l'URL se il record per questa data esiste già
-                if (card.CardMarketPrices != null)
+                    // Se non esiste un record per questa data, creane uno nuovo
+                    card.CardMarketPrices = new PokemonCardMarketPrices
+                    {
+                        PokemonCardId = card.Id,
+                        PokemonCard = card,
+                        Url = cardDto.Cardmarket?.Url?.ToString() ?? string.Empty,
+                        UpdatedAt = updatedAt,
+                        PriceDetails = []
+                    };
+                }
+                else
                 {
-                    card.CardMarketPrices.Url = cardDto.Cardmarket.Url?.ToString() ?? card.CardMarketPrices.Url ?? string.Empty;
+                    // Aggiorna solo l'URL se il record per questa data esiste già
+                    if (card.CardMarketPrices != null)
+                    {
+                        card.CardMarketPrices.Url = cardDto.Cardmarket.Url?.ToString() ?? card.CardMarketPrices.Url ?? string.Empty;
+                    }
+                }
+
+                // Assicurati che card.CardMarketPrices non sia null
+                if (card.CardMarketPrices == null)
+                {
+                    card.CardMarketPrices ??= new PokemonCardMarketPrices
+                    {
+                        PokemonCardId = card.Id,
+                        PokemonCard = card,
+                        Url = cardDto.Cardmarket?.Url?.ToString() ?? string.Empty,
+                        UpdatedAt = updatedAt,
+                        PriceDetails = []
+                    };
+                }
+                
+                // Assicurati che PriceDetails non sia null
+                if (card.CardMarketPrices.PriceDetails == null)
+                {
+                    card.CardMarketPrices.PriceDetails = [];
+                }
+
+                // Verifica se esiste già un record di dettagli prezzi per questa data
+                // Utilizziamo FirstOrDefault per trovare un record esistente con la stessa chiave primaria
+                // per evitare violazioni del vincolo di chiave primaria (PK_PokemonCardMarketPriceDetails)
+                var existingPriceDetails = card.CardMarketPrices.PriceDetails
+                    .FirstOrDefault(pd => pd.PokemonCardId == card.Id && pd.UpdatedAt == updatedAt);
+     
+                if (existingPriceDetails != null)
+                {
+                    // Aggiorna i dettagli dei prezzi esistenti
+                    existingPriceDetails.AverageSellPrice = cardDto.Cardmarket?.CardmarketPrices?.AverageSellPrice;
+                    existingPriceDetails.LowPrice = cardDto.Cardmarket?.CardmarketPrices?.LowPrice;
+                    existingPriceDetails.TrendPrice = cardDto.Cardmarket?.CardmarketPrices?.TrendPrice;
+                    existingPriceDetails.GermanProLow = cardDto.Cardmarket?.CardmarketPrices?.GermanProLow;
+                    existingPriceDetails.SuggestedPrice = cardDto.Cardmarket?.CardmarketPrices?.SuggestedPrice;
+                    existingPriceDetails.ReverseHoloSell = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloSell;
+                    existingPriceDetails.ReverseHoloLow = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloLow;
+                    existingPriceDetails.ReverseHoloTrend = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloTrend;
+                    existingPriceDetails.LowPriceExPlus = cardDto.Cardmarket?.CardmarketPrices?.LowPriceExPlus;
+                    existingPriceDetails.Avg1 = cardDto.Cardmarket?.CardmarketPrices?.Avg1;
+                    existingPriceDetails.Avg7 = cardDto.Cardmarket?.CardmarketPrices?.Avg7;
+                    existingPriceDetails.Avg30 = cardDto.Cardmarket?.CardmarketPrices?.Avg30;
+                    existingPriceDetails.ReverseHoloAvg1 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg1;
+                    existingPriceDetails.ReverseHoloAvg7 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg7;
+                    existingPriceDetails.ReverseHoloAvg30 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg30;
+                }
+                else
+                {
+                    // Verifica se esiste già un record nel database con la stessa chiave primaria
+                    // Questo è un controllo aggiuntivo per evitare violazioni del vincolo di chiave primaria
+                    // quando si lavora con entità che potrebbero non essere completamente caricate in memoria
+                    
+                    // Crea un nuovo record di dettagli prezzi
+                    var priceDetails = new PokemonCardMarketPriceDetails
+                    {
+                        PokemonCardId = card.Id,
+                        UpdatedAt = updatedAt,
+                        PokemonCardMarketPrices = card.CardMarketPrices,
+                        AverageSellPrice = cardDto.Cardmarket?.CardmarketPrices?.AverageSellPrice,
+                        LowPrice = cardDto.Cardmarket?.CardmarketPrices?.LowPrice,
+                        TrendPrice = cardDto.Cardmarket?.CardmarketPrices?.TrendPrice,
+                        GermanProLow = cardDto.Cardmarket?.CardmarketPrices?.GermanProLow,
+                        SuggestedPrice = cardDto.Cardmarket?.CardmarketPrices?.SuggestedPrice,
+                        ReverseHoloSell = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloSell,
+                        ReverseHoloLow = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloLow,
+                        ReverseHoloTrend = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloTrend,
+                        LowPriceExPlus = cardDto.Cardmarket?.CardmarketPrices?.LowPriceExPlus,
+                        Avg1 = cardDto.Cardmarket?.CardmarketPrices?.Avg1,
+                        Avg7 = cardDto.Cardmarket?.CardmarketPrices?.Avg7,
+                        Avg30 = cardDto.Cardmarket?.CardmarketPrices?.Avg30,
+                        ReverseHoloAvg1 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg1,
+                        ReverseHoloAvg7 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg7,
+                        ReverseHoloAvg30 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg30
+                    };
+
+                    // Aggiungi il nuovo record alla collezione
+                    card.CardMarketPrices.PriceDetails.Add(priceDetails);
                 }
             }
-
-            // Assicurati che card.CardMarketPrices non sia null
-            if (card.CardMarketPrices == null)
+            catch (Exception ex) when (ex.Message.Contains("PK_PokemonCardMarketPriceDetails"))
             {
-                card.CardMarketPrices = new PokemonCardMarketPrices
-                {
-                    PokemonCardId = card.Id,
-                    PokemonCard = card,
-                    UpdatedAt = updatedAt,
-                    Url = cardDto.Cardmarket?.Url?.ToString() ?? string.Empty,
-                    PriceDetails = []
-                };
-            }
-            
-            // Assicurati che PriceDetails non sia null
-            if (card.CardMarketPrices.PriceDetails == null)
-            {
-                card.CardMarketPrices.PriceDetails = [];
-            }
-
-            // Verifica se esiste già un record di dettagli prezzi per questa data
-            // Nota: ora che abbiamo aggiunto un Id come chiave primaria, possiamo avere più dettagli per la stessa data
-            // ma per semplicità, continuiamo a cercare e aggiornare un singolo record esistente
-            var existingPriceDetails = card.CardMarketPrices.PriceDetails
-                .FirstOrDefault(pd => pd.PokemonCardId == card.Id && pd.UpdatedAt == updatedAt);
- 
-            if (existingPriceDetails != null)
-            {
-                // Aggiorna i dettagli dei prezzi esistenti
-                existingPriceDetails.AverageSellPrice = cardDto.Cardmarket?.CardmarketPrices?.AverageSellPrice;
-                existingPriceDetails.LowPrice = cardDto.Cardmarket?.CardmarketPrices?.LowPrice;
-                existingPriceDetails.TrendPrice = cardDto.Cardmarket?.CardmarketPrices?.TrendPrice;
-                existingPriceDetails.GermanProLow = cardDto.Cardmarket?.CardmarketPrices?.GermanProLow;
-                existingPriceDetails.SuggestedPrice = cardDto.Cardmarket?.CardmarketPrices?.SuggestedPrice;
-                existingPriceDetails.ReverseHoloSell = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloSell;
-                existingPriceDetails.ReverseHoloLow = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloLow;
-                existingPriceDetails.ReverseHoloTrend = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloTrend;
-                existingPriceDetails.LowPriceExPlus = cardDto.Cardmarket?.CardmarketPrices?.LowPriceExPlus;
-                existingPriceDetails.Avg1 = cardDto.Cardmarket?.CardmarketPrices?.Avg1;
-                existingPriceDetails.Avg7 = cardDto.Cardmarket?.CardmarketPrices?.Avg7;
-                existingPriceDetails.Avg30 = cardDto.Cardmarket?.CardmarketPrices?.Avg30;
-                existingPriceDetails.ReverseHoloAvg1 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg1;
-                existingPriceDetails.ReverseHoloAvg7 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg7;
-                existingPriceDetails.ReverseHoloAvg30 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg30;
-            }
-            else
-            {
-                // Crea un nuovo record di dettagli prezzi
-                var priceDetails = new PokemonCardMarketPriceDetails
-                {
-                    PokemonCardId = card.Id,
-                    UpdatedAt = updatedAt,
-                    PokemonCardMarketPrices = card.CardMarketPrices,
-                    AverageSellPrice = cardDto.Cardmarket?.CardmarketPrices?.AverageSellPrice,
-                    LowPrice = cardDto.Cardmarket?.CardmarketPrices?.LowPrice,
-                    TrendPrice = cardDto.Cardmarket?.CardmarketPrices?.TrendPrice,
-                    GermanProLow = cardDto.Cardmarket?.CardmarketPrices?.GermanProLow,
-                    SuggestedPrice = cardDto.Cardmarket?.CardmarketPrices?.SuggestedPrice,
-                    ReverseHoloSell = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloSell,
-                    ReverseHoloLow = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloLow,
-                    ReverseHoloTrend = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloTrend,
-                    LowPriceExPlus = cardDto.Cardmarket?.CardmarketPrices?.LowPriceExPlus,
-                    Avg1 = cardDto.Cardmarket?.CardmarketPrices?.Avg1,
-                    Avg7 = cardDto.Cardmarket?.CardmarketPrices?.Avg7,
-                    Avg30 = cardDto.Cardmarket?.CardmarketPrices?.Avg30,
-                    ReverseHoloAvg1 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg1,
-                    ReverseHoloAvg7 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg7,
-                    ReverseHoloAvg30 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg30
-                };
-
-                // Aggiungi il nuovo record alla collezione
-                card.CardMarketPrices.PriceDetails.Add(priceDetails);
+                // Cattura specificamente le eccezioni di violazione del vincolo di chiave primaria
+                // Questo è un fallback nel caso in cui la logica di prevenzione sopra non funzioni
+                throw new InvalidOperationException("Esiste già un dettaglio di prezzo per questa carta con la stessa data di aggiornamento.", ex);
             }
         }
 
@@ -243,41 +250,55 @@ namespace CardCollectionAPI.Services
             // Ottieni la data di aggiornamento dal DTO
             var updatedAt = DateOnly.TryParse(cardDto.Tcgplayer.UpdatedAt, out var parsedDate) ? parsedDate : DateOnly.FromDateTime(DateTime.Today);
 
-            // Verifica se esiste già un record per i prezzi di TcgPlayer per questa data
-            var existingPrices = card.TcgPlayerPrices;
-            
-            // Se esiste già un record per oggi, esci senza aggiornamenti
-            if (existingPrices != null && existingPrices.UpdatedAt == updatedAt)
+            try
             {
-                return;
-            }
-            
-            if (existingPrices == null || existingPrices.UpdatedAt != updatedAt)
-            {
-                // Se non esiste un record per questa data, creane uno nuovo
-                card.TcgPlayerPrices = new PokemonTcgPlayerPrices
+                // Verifica se esiste già un record per i prezzi di TcgPlayer per questa data
+                var existingPrices = card.TcgPlayerPrices;
+                
+                // Se esiste già un record per oggi, esci senza aggiornamenti
+                if (existingPrices != null && existingPrices.UpdatedAt == updatedAt)
                 {
-                    PokemonCardId = card.Id,
-                    PokemonCard = card,
-                    Url = cardDto.Tcgplayer.Url?.ToString() ?? string.Empty,
-                    UpdatedAt = updatedAt,
-                    PriceDetails = []
-                };
-            }
-            else
-            {
-                // Aggiorna solo l'URL se il record per questa data esiste già
-                card.TcgPlayerPrices.Url = cardDto.Tcgplayer.Url?.ToString() ?? card.TcgPlayerPrices.Url ?? string.Empty;
-            }
+                    return;
+                }
+                
+                if (existingPrices == null || existingPrices.UpdatedAt != updatedAt)
+                {
+                    // Se non esiste un record per questa data, creane uno nuovo
+                    card.TcgPlayerPrices = new PokemonTcgPlayerPrices
+                    {
+                        PokemonCardId = card.Id,
+                        PokemonCard = card,
+                        Url = cardDto.Tcgplayer.Url?.ToString() ?? string.Empty,
+                        UpdatedAt = updatedAt,
+                        PriceDetails = []
+                    };
+                }
+                else
+                {
+                    // Aggiorna solo l'URL se il record per questa data esiste già
+                    if (card.TcgPlayerPrices != null)
+                    {
+                        card.TcgPlayerPrices.Url = cardDto.Tcgplayer?.Url?.ToString() ?? card.TcgPlayerPrices.Url ?? string.Empty;
+                    }
+                }
 
-            // Assicurati che PriceDetails non sia null
-            if (card.TcgPlayerPrices.PriceDetails == null)
+                // Ensure TcgPlayerPrices is not null before accessing PriceDetails
+                if (card.TcgPlayerPrices?.PriceDetails == null)
+                {
+                    if (card.TcgPlayerPrices != null)
+                    {
+                        card.TcgPlayerPrices.PriceDetails = [];
+                    }
+                }
+            }
+            catch (Exception ex) when (ex.Message.Contains("PK_PokemonTcgPlayerPriceDetails"))
             {
-                card.TcgPlayerPrices.PriceDetails = [];
+                // Cattura specificamente le eccezioni di violazione del vincolo di chiave primaria
+                throw new InvalidOperationException("Esiste già un dettaglio di prezzo TCGPlayer per questa carta con la stessa data di aggiornamento.", ex);
             }
             
             // Gestisci i prezzi Holofoil
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.Holofoil != null)
+            if (cardDto.Tcgplayer?.TcgplayerPrices?.Holofoil != null && card.TcgPlayerPrices?.PriceDetails != null)
             {
                 // Cerca un record esistente per questo tipo di foil
                 var existingHolofoil = card.TcgPlayerPrices.PriceDetails
@@ -314,7 +335,7 @@ namespace CardCollectionAPI.Services
             }
 
             // Gestisci i prezzi ReverseHolofoil
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.ReverseHolofoil != null)
+            if (cardDto.Tcgplayer?.TcgplayerPrices?.ReverseHolofoil != null && card.TcgPlayerPrices?.PriceDetails != null)
             {
                 // Cerca un record esistente per questo tipo di foil
                 var existingReverseHolofoil = card.TcgPlayerPrices.PriceDetails
@@ -351,7 +372,7 @@ namespace CardCollectionAPI.Services
             }
 
             // Gestisci i prezzi Normal
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.Normal != null)
+            if (cardDto.Tcgplayer?.TcgplayerPrices?.Normal != null && card.TcgPlayerPrices?.PriceDetails != null)
             {
                 // Cerca un record esistente per questo tipo di foil
                 var existingNormal = card.TcgPlayerPrices.PriceDetails
@@ -388,7 +409,7 @@ namespace CardCollectionAPI.Services
             }
 
             // Gestisci i prezzi 1stEditionHolofoil
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.The1stEditionHolofoil != null)
+            if (cardDto.Tcgplayer?.TcgplayerPrices?.The1stEditionHolofoil != null && card.TcgPlayerPrices?.PriceDetails != null)
             {
                 // Cerca un record esistente per questo tipo di foil
                 var existing1stEdition = card.TcgPlayerPrices.PriceDetails
