@@ -79,7 +79,7 @@ export const PriceTable = ({ priceDetail, formatPrice }: PriceTableProps) => {
               </View>
             )}
             
-            {priceDetail.directLow && (
+            {priceDetail.directLow !== undefined && priceDetail.directLow !== null && (
               <View style={styles.priceItem}>
                 <Text style={styles.priceLabel}>Direct Low</Text>
                 <Text style={styles.priceValue}>{formatPrice(priceDetail.directLow)}</Text>

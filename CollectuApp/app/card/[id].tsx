@@ -335,7 +335,7 @@ export default function CardDetailScreen() {
             {/* Market Prices Section - Desktop */}
             {(card.cardMarketPrices || card.tcgPlayerPrices) && (
               <View style={styles.cardInfoSection}>
-                <Text style={styles.sectionTitle}>Market Prices</Text>
+                <Text style={styles.sectionTitle}>CardMarket Prices</Text>
 
                 {/* CardMarket Prices - Using the CardMarketPrices component */}
                 {card.cardMarketPrices && (
@@ -535,7 +535,7 @@ export default function CardDetailScreen() {
           {/* Market Prices Section - Mobile */}
           {(card.cardMarketPrices || card.tcgPlayerPrices) && (
             <Animated.View entering={FadeInDown.delay(400).duration(500)} style={styles.cardInfoSection}>
-              <Text style={styles.sectionTitle}>Market Prices</Text>
+              <Text style={styles.sectionTitle}>CardMarket Prices</Text>
 
               {/* CardMarket Prices - Using the CardMarketPrices component */}
               {card.cardMarketPrices && (

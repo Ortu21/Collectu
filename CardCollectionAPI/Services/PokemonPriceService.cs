@@ -8,22 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CardCollectionAPI.Services
 {
-    public class PokemonPriceService : IPokemonPriceService
+    public class PokemonPriceService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonPriceService> logger, IConfiguration configuration) : IPokemonPriceService
     {
-        private readonly HttpClient _httpClient;
-        private readonly AppDbContext _dbContext;
-        private readonly ILogger<PokemonPriceService> _logger;
+        private readonly HttpClient _httpClient = httpClient;
+        private readonly AppDbContext _dbContext = dbContext;
+        private readonly ILogger<PokemonPriceService> _logger = logger;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
         private const string ApiUrl = "https://api.pokemontcg.io/v2/cards";
-        private readonly string _apiKey;
-
-        public PokemonPriceService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonPriceService> logger, IConfiguration configuration)
-        {
-            _httpClient = httpClient;
-            _dbContext = dbContext;
-            _logger = logger;
-            _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
-        }
+        private readonly string _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
 
         /// <summary>
         /// Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database
@@ -34,34 +26,42 @@ namespace CardCollectionAPI.Services
             {
                 _logger.LogInformation("Inizio aggiornamento prezzi di tutte le carte Pokémon");
                 
-                var cards = await _dbContext.PokemonCards
-                    .Include(c => c.CardMarketPrices)
-                    .Include(c => c.TcgPlayerPrices)
+                // Recupera solo gli ID delle carte dal database per evitare problemi di tracking tra carte diverse
+                var cardIds = await _dbContext.PokemonCards
+                    .Select(c => c.Id)
                     .ToListAsync();
 
-                _logger.LogInformation("Trovate {CardCount} carte da aggiornare", cards.Count);
+                _logger.LogInformation("Trovate {CardCount} carte da aggiornare", cardIds.Count);
 
                 int successCount = 0;
                 int errorCount = 0;
                 int skippedCount = 0;
 
-                foreach (var card in cards)
+                // Per ogni carta, utilizza un nuovo DbContext per evitare problemi di tracking
+                foreach (var cardId in cardIds)
                 {
                     try
                     {
-                        await UpdateSingleCardPriceAsync(card.Id);
+                        // Utilizzo un nuovo scope di servizi per ottenere un nuovo DbContext per ogni carta
+                        using var scope = new HttpClient();
+                        
+                        // Chiamo il servizio per aggiornare una singola carta
+                        await UpdateSingleCardIndependentAsync(cardId);
                         successCount++;
                     }
                     catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("23505") == true)
                     {
-                        _logger.LogDebug("Carta {CardId} saltata: prezzi già aggiornati per oggi", card.Id);
+                        _logger.LogDebug("Carta {CardId} saltata: prezzi già aggiornati per oggi", cardId);
                         skippedCount++;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Errore durante l'aggiornamento dei prezzi per la carta {CardId}", card.Id);
+                        _logger.LogError(ex, "Errore durante l'aggiornamento dei prezzi per la carta {CardId}", cardId);
                         errorCount++;
                     }
+                    
+                    // Pulisco il contesto dopo ogni carta per evitare accumulo di entità tracciate
+                    _dbContext.ChangeTracker.Clear();
                 }
 
                 _logger.LogInformation("Aggiornamento prezzi completato. Successi: {SuccessCount}, Saltati: {SkippedCount}, Errori: {ErrorCount}", 
@@ -82,91 +82,105 @@ namespace CardCollectionAPI.Services
         {
             try
             {
-                _logger.LogDebug("Inizio aggiornamento prezzi per carta {CardId}", cardId);
-
-                // Verifica se la carta esiste nel database
-                var existingCard = await _dbContext.PokemonCards
-                    .AsNoTracking() // Importante: Non tracciare per evitare update automatici
-                    .FirstOrDefaultAsync(c => c.Id == cardId);
-
-                if (existingCard == null)
-                {
-                    _logger.LogWarning("Carta {CardId} non trovata nel database", cardId);
-                    throw new KeyNotFoundException($"La carta con ID {cardId} non è stata trovata nel database");
-                }
-
-                var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}/{cardId}");
-                request.Headers.Add("X-Api-Key", _apiKey);
-
-                var response = await _httpClient.SendAsync(request);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogError("Errore API TCG per carta {CardId}: {StatusCode}", cardId, response.StatusCode);
-                    throw new HttpRequestException($"Errore nella richiesta API: {response.StatusCode}");
-                }
-
-                var content = await response.Content.ReadAsStringAsync();
-                var cardDto = JsonSerializer.Deserialize<PokemonCardService.SingleCardResponse>(content, _jsonSerializerOptions)?.Data;
-
-                if (cardDto == null)
-                {
-                    _logger.LogWarning("Nessun dato ricevuto dall'API per la carta {CardId}", cardId);
-                    throw new InvalidOperationException($"Nessun dato ricevuto dall'API per la carta {cardId}");
-                }
-
-                // Controlla se ci sono già prezzi per oggi prima di procedere
-                var today = DateOnly.FromDateTime(DateTime.Today);
-                
-                // Verifico se esistono già dati per oggi per CardMarket
-                var existingCardMarketToday = await _dbContext.PokemonCardMarketPrices
-                    .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
-                
-                // Verifico se esistono già dati per oggi per TcgPlayer
-                var existingTcgToday = await _dbContext.PokemonCardTcgPrices
-                    .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
-                
-                bool dataAdded = false;
-                
-                // Inserisco prezzi CardMarket solo se non esistono già per oggi
-                if (!existingCardMarketToday && cardDto.Cardmarket != null)
-                {
-                    var cardMarketDate = GetUpdatedAtFromDto(cardDto.Cardmarket.UpdatedAt);
-                    
-                    // Inserisco solo se i dati sono di oggi
-                    if (cardMarketDate == today)
-                    {
-                        await AddCardMarketPricesAsync(cardDto, cardId);
-                        dataAdded = true;
-                    }
-                }
-                
-                // Inserisco prezzi TcgPlayer solo se non esistono già per oggi
-                if (!existingTcgToday && cardDto.Tcgplayer != null)
-                {
-                    var tcgDate = GetUpdatedAtFromDto(cardDto.Tcgplayer.UpdatedAt);
-                    
-                    // Inserisco solo se i dati sono di oggi
-                    if (tcgDate == today)
-                    {
-                        await AddTcgPlayerPricesAsync(cardDto, cardId);
-                        dataAdded = true;
-                    }
-                }
-
-                if (dataAdded)
-                {
-                    _logger.LogInformation("Prezzi aggiornati con successo per la carta {CardId}", cardId);
-                }
-                else
-                {
-                    _logger.LogInformation("Nessun nuovo prezzo da aggiungere per la carta {CardId}", cardId);
-                }
+                // Pulisco il contesto e utilizzo il metodo privato
+                _dbContext.ChangeTracker.Clear();
+                await UpdateSingleCardIndependentAsync(cardId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Errore durante l'aggiornamento dei prezzi per la carta {CardId}", cardId);
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Aggiorna i prezzi di una singola carta in modo indipendente
+        /// </summary>
+        private async Task UpdateSingleCardIndependentAsync(string cardId)
+        {
+            // Pulisco eventuali entità tracciate prima di iniziare
+            _dbContext.ChangeTracker.Clear();
+            
+            // Utilizzo lo stesso codice di UpdateSingleCardPriceAsync, ma con contesto pulito
+            _logger.LogDebug("Inizio aggiornamento prezzi per carta {CardId}", cardId);
+
+            // Verifica se la carta esiste nel database
+            var existingCard = await _dbContext.PokemonCards
+                .AsNoTracking() // Importante: Non tracciare per evitare update automatici
+                .FirstOrDefaultAsync(c => c.Id == cardId);
+
+            if (existingCard == null)
+            {
+                _logger.LogWarning("Carta {CardId} non trovata nel database", cardId);
+                throw new KeyNotFoundException($"La carta con ID {cardId} non è stata trovata nel database");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}/{cardId}");
+            request.Headers.Add("X-Api-Key", _apiKey);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Errore API TCG per carta {CardId}: {StatusCode}", cardId, response.StatusCode);
+                throw new HttpRequestException($"Errore nella richiesta API: {response.StatusCode}");
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var cardDto = JsonSerializer.Deserialize<PokemonCardService.SingleCardResponse>(content, _jsonSerializerOptions)?.Data;
+
+            if (cardDto == null)
+            {
+                _logger.LogWarning("Nessun dato ricevuto dall'API per la carta {CardId}", cardId);
+                throw new InvalidOperationException($"Nessun dato ricevuto dall'API per la carta {cardId}");
+            }
+
+            // Controlla se ci sono già prezzi per oggi prima di procedere
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            
+            // Verifico se esistono già dati per oggi per CardMarket
+            var existingCardMarketToday = await _dbContext.PokemonCardMarketPrices
+                .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
+            
+            // Verifico se esistono già dati per oggi per TcgPlayer
+            var existingTcgToday = await _dbContext.PokemonCardTcgPrices
+                .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
+            
+            bool dataAdded = false;
+            
+            // Inserisco prezzi CardMarket solo se non esistono già per oggi
+            if (!existingCardMarketToday && cardDto.Cardmarket != null)
+            {
+                var cardMarketDate = GetUpdatedAtFromDto(cardDto.Cardmarket.UpdatedAt);
+                
+                // Inserisco solo se i dati sono di oggi
+                if (cardMarketDate == today)
+                {
+                    await AddCardMarketPricesAsync(cardDto, cardId);
+                    dataAdded = true;
+                }
+            }
+            
+            // Inserisco prezzi TcgPlayer solo se non esistono già per oggi
+            if (!existingTcgToday && cardDto.Tcgplayer != null)
+            {
+                var tcgDate = GetUpdatedAtFromDto(cardDto.Tcgplayer.UpdatedAt);
+                
+                // Inserisco solo se i dati sono di oggi
+                if (tcgDate == today)
+                {
+                    await AddTcgPlayerPricesAsync(cardDto, cardId);
+                    dataAdded = true;
+                }
+            }
+
+            if (dataAdded)
+            {
+                _logger.LogInformation("Prezzi aggiornati con successo per la carta {CardId}", cardId);
+            }
+            else
+            {
+                _logger.LogInformation("Nessun nuovo prezzo da aggiungere per la carta {CardId}", cardId);
             }
         }
 

@@ -245,5 +245,10 @@
             </summary>
             <param name="cardId">ID della carta da aggiornare</param>
         </member>
+        <member name="M:CardCollectionAPI.Services.PokemonPriceService.UpdateSingleCardIndependentAsync(System.String)">
+            <summary>
+            Aggiorna i prezzi di una singola carta in modo indipendente
+            </summary>
+        </member>
     </members>
 </doc>
