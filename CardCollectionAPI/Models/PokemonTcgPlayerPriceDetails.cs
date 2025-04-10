@@ -5,11 +5,10 @@ namespace CardCollectionAPI.Models
 {
     public class PokemonTcgPlayerPriceDetails
     {
-        [Key]
-        public int Id { get; set; } // PK
-
-        [ForeignKey("PokemonCardTcgPrices")]
-        public int PokemonTcgPlayerPricesId { get; set; }
+        // Chiavi esterne che fanno riferimento alla chiave primaria composita di PokemonTcgPlayerPrices
+        public required string PokemonCardId { get; set; }
+        public required DateOnly UpdatedAt { get; set; }
+        
         public required PokemonTcgPlayerPrices PokemonTcgPlayerPrices { get; set; }
 
         public required string FoilType { get; set; } // "Holofoil" o "ReverseHolofoil"

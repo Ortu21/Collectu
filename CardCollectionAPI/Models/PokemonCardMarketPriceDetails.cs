@@ -5,11 +5,11 @@ namespace CardCollectionAPI.Models
 {
     public class PokemonCardMarketPriceDetails
     {
-        [Key]
-        public int Id { get; set; }
-
-        [ForeignKey("PokemonCardMarketPrices")]
-        public int PokemonCardMarketPricesId { get; set; }
+        // Identificatore univoco per ogni record di dettaglio prezzi
+        public required string PokemonCardId { get; set; }
+        public required DateOnly UpdatedAt { get; set; }
+        
+        [ForeignKey("PokemonCardId,UpdatedAt")]
         public required PokemonCardMarketPrices PokemonCardMarketPrices { get; set; }
         
         public decimal? AverageSellPrice { get; set; }

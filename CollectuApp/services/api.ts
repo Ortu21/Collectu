@@ -250,38 +250,34 @@ export const fetchPokemonCardById = async (
       : [];
 
     // Map CardMarket prices if they exist
-    const cardMarketPrices = card.cardMarketPrices
+    const cardMarketPrices = rawData.CardMarketPrices
       ? {
-          url: card.cardMarketPrices.url || "",
-          updatedAt: card.cardMarketPrices.updatedAt || "",
-          priceDetails: mapArray(
-            card.cardMarketPrices.priceDetails,
-            (detail: any) => ({
-              averageSellPrice: detail.averageSellPrice,
-              trendPrice: detail.trendPrice,
-              suggestedPrice: detail.suggestedPrice,
-              low: detail.low || detail.lowPrice,
-            })
-          ),
+          url: rawData.CardMarketPrices.Url || "",
+          updatedAt: rawData.CardMarketPrices.UpdatedAt || "",
+          priceDetails: rawData.CardMarketPrices.PriceDetails?.$values?.map((price: any) => ({
+            foilType: "",
+            averageSellPrice: price.AverageSellPrice || 0,
+            low: price.LowPrice || 0,
+            high: price.High || 0,
+            trendPrice: price.TrendPrice || 0,
+            suggestedPrice: price.SuggestedPrice || 0
+          })) || [],
         }
       : undefined;
 
     // Map TCGPlayer prices if they exist
-    const tcgPlayerPrices = card.tcgPlayerPrices
+    const tcgPlayerPrices = rawData.TcgPlayerPrices
       ? {
-          url: card.tcgPlayerPrices.url || "",
-          updatedAt: card.tcgPlayerPrices.updatedAt || "",
-          priceDetails: mapArray(
-            card.tcgPlayerPrices.priceDetails,
-            (detail: any) => ({
-              foilType: detail.foilType,
-              low: detail.low,
-              mid: detail.mid,
-              high: detail.high,
-              market: detail.market,
-              directLow: detail.directLow,
-            })
-          ),
+          url: rawData.TcgPlayerPrices.Url || "",
+          updatedAt: rawData.TcgPlayerPrices.UpdatedAt || "",
+          priceDetails: rawData.TcgPlayerPrices.PriceDetails?.$values?.map((price: any) => ({
+            foilType: price.FoilType || "",
+            low: price.Low || 0,
+            mid: price.Mid || 0,
+            high: price.High || 0,
+            market: price.Market || 0,
+            directLow: price.DirectLow || 0
+          })) || [],
         }
       : undefined;
 
@@ -295,6 +291,7 @@ export const fetchPokemonCardById = async (
     const rarity = card.rarity || rawData?.Rarity || "";
     const setName = card.set?.setName || rawData?.Set?.SetName || "";
     const number = card.number || rawData?.Number || "";
+    
 
     // Log the extracted card data for debugging
     console.log("Detailed Extracted Card Data:", {
