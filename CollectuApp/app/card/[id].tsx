@@ -438,33 +438,6 @@ export default function CardDetailScreen() {
                 </View>
               </View>
             </View>
-            
-            {/* Market Prices Section - Desktop */}
-            {(card.cardMarketPrices || card.tcgPlayerPrices) && (
-              <View style={styles.cardInfoSection}>
-                <Text style={styles.sectionTitle}>Market Prices</Text>
-
-                {/* CardMarket Prices - Using the CardMarketPrices component */}
-                {card.cardMarketPrices && (
-                  <CardMarketPrices
-                    prices={card.cardMarketPrices}
-                    formatPrice={formatPrice}
-                  />
-                )}
-
-                {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
-                {card.tcgPlayerPrices && (
-                  <TCGPlayerPrices
-                    prices={card.tcgPlayerPrices}
-                    formatPrice={formatPrice}
-                  />
-                )}
-
-                {!card.cardMarketPrices && !card.tcgPlayerPrices && (
-                  <Text style={styles.noDataText}>No price data available</Text>
-                )}
-              </View>
-            )}
           </View>
 
 
