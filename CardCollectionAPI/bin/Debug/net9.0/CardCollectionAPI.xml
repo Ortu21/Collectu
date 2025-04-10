@@ -211,6 +211,18 @@
         <member name="M:CardCollectionAPI.Migrations.CorrezioneFKPokemonCardMarketPriceDetails.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CardCollectionAPI.Migrations.FixPriceTablesIndexes">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.FixPriceTablesIndexes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.FixPriceTablesIndexes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.FixPriceTablesIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="M:CardCollectionAPI.Services.Interfaces.IPokemonPriceService.UpdateCardPricesAsync">
             <summary>
             Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database

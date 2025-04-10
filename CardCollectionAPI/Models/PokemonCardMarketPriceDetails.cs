@@ -8,7 +8,8 @@ namespace CardCollectionAPI.Models
         // Identificatore univoco per ogni record di dettaglio prezzi
         public required string PokemonCardId { get; set; }
         public required DateOnly UpdatedAt { get; set; }
-        [ForeignKey(nameof(PokemonCardMarketPrices))]  
+        
+        [ForeignKey("PokemonCardId,UpdatedAt")]
         public required PokemonCardMarketPrices PokemonCardMarketPrices { get; set; }
         
         public decimal? AverageSellPrice { get; set; }

@@ -34,7 +34,6 @@ namespace CardCollectionAPI.Services
             {
                 _logger.LogInformation("Inizio aggiornamento prezzi di tutte le carte Pokémon");
                 
-                // Recupera tutte le carte dal database
                 var cards = await _dbContext.PokemonCards
                     .Include(c => c.CardMarketPrices)
                     .Include(c => c.TcgPlayerPrices)
@@ -44,6 +43,7 @@ namespace CardCollectionAPI.Services
 
                 int successCount = 0;
                 int errorCount = 0;
+                int skippedCount = 0;
 
                 foreach (var card in cards)
                 {
@@ -52,6 +52,11 @@ namespace CardCollectionAPI.Services
                         await UpdateSingleCardPriceAsync(card.Id);
                         successCount++;
                     }
+                    catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("23505") == true)
+                    {
+                        _logger.LogDebug("Carta {CardId} saltata: prezzi già aggiornati per oggi", card.Id);
+                        skippedCount++;
+                    }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Errore durante l'aggiornamento dei prezzi per la carta {CardId}", card.Id);
@@ -59,7 +64,8 @@ namespace CardCollectionAPI.Services
                     }
                 }
 
-                _logger.LogInformation("Aggiornamento prezzi completato. Successi: {SuccessCount}, Errori: {ErrorCount}", successCount, errorCount);
+                _logger.LogInformation("Aggiornamento prezzi completato. Successi: {SuccessCount}, Saltati: {SkippedCount}, Errori: {ErrorCount}", 
+                    successCount, skippedCount, errorCount);
             }
             catch (Exception ex)
             {
@@ -76,21 +82,19 @@ namespace CardCollectionAPI.Services
         {
             try
             {
-                _logger.LogInformation("Aggiornamento prezzi per la carta {CardId}", cardId);
+                _logger.LogDebug("Inizio aggiornamento prezzi per carta {CardId}", cardId);
 
                 // Verifica se la carta esiste nel database
                 var existingCard = await _dbContext.PokemonCards
-                    .Include(c => c.CardMarketPrices)
-                    .Include(c => c.TcgPlayerPrices)
+                    .AsNoTracking() // Importante: Non tracciare per evitare update automatici
                     .FirstOrDefaultAsync(c => c.Id == cardId);
 
                 if (existingCard == null)
                 {
-                    _logger.LogWarning("La carta {CardId} non esiste nel database", cardId);
+                    _logger.LogWarning("Carta {CardId} non trovata nel database", cardId);
                     throw new KeyNotFoundException($"La carta con ID {cardId} non è stata trovata nel database");
                 }
 
-                // Recupera i dati aggiornati dalla API
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}/{cardId}");
                 request.Headers.Add("X-Api-Key", _apiKey);
 
@@ -98,7 +102,7 @@ namespace CardCollectionAPI.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("TCG API request failed with status code: {StatusCode}", response.StatusCode);
+                    _logger.LogError("Errore API TCG per carta {CardId}: {StatusCode}", cardId, response.StatusCode);
                     throw new HttpRequestException($"Errore nella richiesta API: {response.StatusCode}");
                 }
 
@@ -107,16 +111,57 @@ namespace CardCollectionAPI.Services
 
                 if (cardDto == null)
                 {
-                    _logger.LogWarning("No data received from TCG API for card {CardId}", cardId);
+                    _logger.LogWarning("Nessun dato ricevuto dall'API per la carta {CardId}", cardId);
                     throw new InvalidOperationException($"Nessun dato ricevuto dall'API per la carta {cardId}");
                 }
 
-                // Aggiorna i prezzi
-                UpdateCardMarketPrices(cardDto, existingCard);
-                UpdateTcgPlayerPrices(cardDto, existingCard);
+                // Controlla se ci sono già prezzi per oggi prima di procedere
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                
+                // Verifico se esistono già dati per oggi per CardMarket
+                var existingCardMarketToday = await _dbContext.PokemonCardMarketPrices
+                    .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
+                
+                // Verifico se esistono già dati per oggi per TcgPlayer
+                var existingTcgToday = await _dbContext.PokemonCardTcgPrices
+                    .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
+                
+                bool dataAdded = false;
+                
+                // Inserisco prezzi CardMarket solo se non esistono già per oggi
+                if (!existingCardMarketToday && cardDto.Cardmarket != null)
+                {
+                    var cardMarketDate = GetUpdatedAtFromDto(cardDto.Cardmarket.UpdatedAt);
+                    
+                    // Inserisco solo se i dati sono di oggi
+                    if (cardMarketDate == today)
+                    {
+                        await AddCardMarketPricesAsync(cardDto, cardId);
+                        dataAdded = true;
+                    }
+                }
+                
+                // Inserisco prezzi TcgPlayer solo se non esistono già per oggi
+                if (!existingTcgToday && cardDto.Tcgplayer != null)
+                {
+                    var tcgDate = GetUpdatedAtFromDto(cardDto.Tcgplayer.UpdatedAt);
+                    
+                    // Inserisco solo se i dati sono di oggi
+                    if (tcgDate == today)
+                    {
+                        await AddTcgPlayerPricesAsync(cardDto, cardId);
+                        dataAdded = true;
+                    }
+                }
 
-                await _dbContext.SaveChangesAsync();
-                _logger.LogInformation("Prezzi aggiornati con successo per la carta {CardId}", cardId);
+                if (dataAdded)
+                {
+                    _logger.LogInformation("Prezzi aggiornati con successo per la carta {CardId}", cardId);
+                }
+                else
+                {
+                    _logger.LogInformation("Nessun nuovo prezzo da aggiungere per la carta {CardId}", cardId);
+                }
             }
             catch (Exception ex)
             {
@@ -125,325 +170,139 @@ namespace CardCollectionAPI.Services
             }
         }
 
-        private static void UpdateCardMarketPrices(PokemonCardDto cardDto, PokemonCard card)
+        private async Task AddCardMarketPricesAsync(PokemonCardDto cardDto, string cardId)
         {
-            if (cardDto.Cardmarket == null) return;
+            if (cardDto.Cardmarket?.CardmarketPrices == null) return;
+            
+            var updatedAt = GetUpdatedAtFromDto(cardDto.Cardmarket.UpdatedAt);
+            _logger.LogDebug("CardMarket - Inserimento prezzi per carta {CardId} del {UpdatedAt}", cardId, updatedAt);
+            
+            // Creo nuova testata
+            var newHeader = new PokemonCardMarketPrices
+            {
+                PokemonCardId = cardId,
+                UpdatedAt = updatedAt,
+                Url = cardDto.Cardmarket.Url?.ToString() ?? string.Empty,
+                PriceDetails = [],
+                PokemonCard = null!  // Richiesto dal compilatore, sarà gestito automaticamente da EF Core
+            };
 
-            // Ottieni la data di aggiornamento dal DTO
-            var updatedAt = DateOnly.TryParse(cardDto.Cardmarket.UpdatedAt, out var parsedDate) ? parsedDate : DateOnly.FromDateTime(DateTime.Today);
-
+            // Creo nuovi dettagli
+            var newDetails = new PokemonCardMarketPriceDetails
+            {
+                PokemonCardId = cardId,
+                UpdatedAt = updatedAt,
+                PokemonCardMarketPrices = newHeader,
+                AverageSellPrice = cardDto.Cardmarket.CardmarketPrices.AverageSellPrice,
+                LowPrice = cardDto.Cardmarket.CardmarketPrices.LowPrice,
+                TrendPrice = cardDto.Cardmarket.CardmarketPrices.TrendPrice,
+                GermanProLow = cardDto.Cardmarket.CardmarketPrices.GermanProLow,
+                SuggestedPrice = cardDto.Cardmarket.CardmarketPrices.SuggestedPrice,
+                ReverseHoloSell = cardDto.Cardmarket.CardmarketPrices.ReverseHoloSell,
+                ReverseHoloLow = cardDto.Cardmarket.CardmarketPrices.ReverseHoloLow,
+                ReverseHoloTrend = cardDto.Cardmarket.CardmarketPrices.ReverseHoloTrend,
+                LowPriceExPlus = cardDto.Cardmarket.CardmarketPrices.LowPriceExPlus,
+                Avg1 = cardDto.Cardmarket.CardmarketPrices.Avg1,
+                Avg7 = cardDto.Cardmarket.CardmarketPrices.Avg7,
+                Avg30 = cardDto.Cardmarket.CardmarketPrices.Avg30,
+                ReverseHoloAvg1 = cardDto.Cardmarket.CardmarketPrices.ReverseHoloAvg1,
+                ReverseHoloAvg7 = cardDto.Cardmarket.CardmarketPrices.ReverseHoloAvg7,
+                ReverseHoloAvg30 = cardDto.Cardmarket.CardmarketPrices.ReverseHoloAvg30
+            };
+            
+            // Aggiunta alla testata la lista dei dettagli
+            newHeader.PriceDetails.Add(newDetails);
+            
+            // Aggiungo al database prima la testata e poi i dettagli (in un'unica operazione)
+            _dbContext.PokemonCardMarketPrices.Add(newHeader);
+            
+            // Salvo immediatamente (ogni mercato ha il suo salvataggio)
             try
             {
-                // Verifica se esiste già un record per i prezzi di CardMarket per questa data
-                var existingPrices = card.CardMarketPrices;
-                
-                if (existingPrices == null)
-                {
-                    // Se non esiste un record per questa data, creane uno nuovo
-                    card.CardMarketPrices = new PokemonCardMarketPrices
-                    {
-                        PokemonCardId = card.Id,
-                        PokemonCard = card,
-                        Url = cardDto.Cardmarket?.Url?.ToString() ?? string.Empty,
-                        UpdatedAt = updatedAt,
-                        PriceDetails = []
-                    };
-                }
-                else
-                {
-                    // Aggiorna solo l'URL se il record per questa data esiste già
-                    if (card.CardMarketPrices != null)
-                    {
-                        card.CardMarketPrices.Url = cardDto.Cardmarket.Url?.ToString() ?? card.CardMarketPrices.Url ?? string.Empty;
-                    }
-                }
-
-                // Assicurati che card.CardMarketPrices non sia null
-                if (card.CardMarketPrices == null)
-                {
-                    card.CardMarketPrices ??= new PokemonCardMarketPrices
-                    {
-                        PokemonCardId = card.Id,
-                        PokemonCard = card,
-                        Url = cardDto.Cardmarket?.Url?.ToString() ?? string.Empty,
-                        UpdatedAt = updatedAt,
-                        PriceDetails = []
-                    };
-                }
-                
-                // Assicurati che PriceDetails non sia null
-                if (card.CardMarketPrices.PriceDetails == null)
-                {
-                    card.CardMarketPrices.PriceDetails = [];
-                }
-
-                // Verifica se esiste già un record di dettagli prezzi per questa data
-                // Utilizziamo FirstOrDefault per trovare un record esistente con la stessa chiave primaria
-                // per evitare violazioni del vincolo di chiave primaria (PK_PokemonCardMarketPriceDetails)
-                var existingPriceDetails = card.CardMarketPrices.PriceDetails
-                    .FirstOrDefault(pd => pd.PokemonCardId == card.Id && pd.UpdatedAt == updatedAt);
-     
-                if (existingPriceDetails != null)
-                {
-                    // Aggiorna i dettagli dei prezzi esistenti
-                    existingPriceDetails.AverageSellPrice = cardDto.Cardmarket?.CardmarketPrices?.AverageSellPrice;
-                    existingPriceDetails.LowPrice = cardDto.Cardmarket?.CardmarketPrices?.LowPrice;
-                    existingPriceDetails.TrendPrice = cardDto.Cardmarket?.CardmarketPrices?.TrendPrice;
-                    existingPriceDetails.GermanProLow = cardDto.Cardmarket?.CardmarketPrices?.GermanProLow;
-                    existingPriceDetails.SuggestedPrice = cardDto.Cardmarket?.CardmarketPrices?.SuggestedPrice;
-                    existingPriceDetails.ReverseHoloSell = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloSell;
-                    existingPriceDetails.ReverseHoloLow = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloLow;
-                    existingPriceDetails.ReverseHoloTrend = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloTrend;
-                    existingPriceDetails.LowPriceExPlus = cardDto.Cardmarket?.CardmarketPrices?.LowPriceExPlus;
-                    existingPriceDetails.Avg1 = cardDto.Cardmarket?.CardmarketPrices?.Avg1;
-                    existingPriceDetails.Avg7 = cardDto.Cardmarket?.CardmarketPrices?.Avg7;
-                    existingPriceDetails.Avg30 = cardDto.Cardmarket?.CardmarketPrices?.Avg30;
-                    existingPriceDetails.ReverseHoloAvg1 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg1;
-                    existingPriceDetails.ReverseHoloAvg7 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg7;
-                    existingPriceDetails.ReverseHoloAvg30 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg30;
-                }
-                else
-                {
-                    // Verifica se esiste già un record nel database con la stessa chiave primaria
-                    // Questo è un controllo aggiuntivo per evitare violazioni del vincolo di chiave primaria
-                    // quando si lavora con entità che potrebbero non essere completamente caricate in memoria
-                    
-                    // Crea un nuovo record di dettagli prezzi
-                    var priceDetails = new PokemonCardMarketPriceDetails
-                    {
-                        PokemonCardId = card.Id,
-                        UpdatedAt = updatedAt,
-                        PokemonCardMarketPrices = card.CardMarketPrices,
-                        AverageSellPrice = cardDto.Cardmarket?.CardmarketPrices?.AverageSellPrice,
-                        LowPrice = cardDto.Cardmarket?.CardmarketPrices?.LowPrice,
-                        TrendPrice = cardDto.Cardmarket?.CardmarketPrices?.TrendPrice,
-                        GermanProLow = cardDto.Cardmarket?.CardmarketPrices?.GermanProLow,
-                        SuggestedPrice = cardDto.Cardmarket?.CardmarketPrices?.SuggestedPrice,
-                        ReverseHoloSell = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloSell,
-                        ReverseHoloLow = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloLow,
-                        ReverseHoloTrend = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloTrend,
-                        LowPriceExPlus = cardDto.Cardmarket?.CardmarketPrices?.LowPriceExPlus,
-                        Avg1 = cardDto.Cardmarket?.CardmarketPrices?.Avg1,
-                        Avg7 = cardDto.Cardmarket?.CardmarketPrices?.Avg7,
-                        Avg30 = cardDto.Cardmarket?.CardmarketPrices?.Avg30,
-                        ReverseHoloAvg1 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg1,
-                        ReverseHoloAvg7 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg7,
-                        ReverseHoloAvg30 = cardDto.Cardmarket?.CardmarketPrices?.ReverseHoloAvg30
-                    };
-
-                    // Aggiungi il nuovo record alla collezione
-                    card.CardMarketPrices.PriceDetails.Add(priceDetails);
-                }
+                await _dbContext.SaveChangesAsync();
+                _logger.LogDebug("CardMarket - Salvati prezzi per carta {CardId}", cardId);
             }
-            catch (Exception ex) when (ex.Message.Contains("PK_PokemonCardMarketPriceDetails"))
+            catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("23505") == true)
             {
-                // Cattura specificamente le eccezioni di violazione del vincolo di chiave primaria
-                // Questo è un fallback nel caso in cui la logica di prevenzione sopra non funzioni
-                throw new InvalidOperationException("Esiste già un dettaglio di prezzo per questa carta con la stessa data di aggiornamento.", ex);
+                // Ignora errori di chiave duplicata
+                _logger.LogDebug("CardMarket - Prezzi già esistenti per carta {CardId}", cardId);
             }
         }
 
-        private static void UpdateTcgPlayerPrices(PokemonCardDto cardDto, PokemonCard card)
+        private async Task AddTcgPlayerPricesAsync(PokemonCardDto cardDto, string cardId)
         {
-            if (cardDto.Tcgplayer == null) return;
-
-            // Ottieni la data di aggiornamento dal DTO
-            var updatedAt = DateOnly.TryParse(cardDto.Tcgplayer.UpdatedAt, out var parsedDate) ? parsedDate : DateOnly.FromDateTime(DateTime.Today);
-
-            try
+            if (cardDto.Tcgplayer?.TcgplayerPrices == null) return;
+            
+            var updatedAt = GetUpdatedAtFromDto(cardDto.Tcgplayer.UpdatedAt);
+            _logger.LogDebug("TCGPlayer - Inserimento prezzi per carta {CardId} del {UpdatedAt}", cardId, updatedAt);
+            
+            // Creo nuova testata
+            var newHeader = new PokemonTcgPlayerPrices
             {
-                // Verifica se esiste già un record per i prezzi di TcgPlayer per questa data
-                var existingPrices = card.TcgPlayerPrices;
-                
-                // Se esiste già un record per oggi, esci senza aggiornamenti
-                if (existingPrices != null && existingPrices.UpdatedAt == updatedAt)
-                {
-                    return;
-                }
-                
-                if (existingPrices == null || existingPrices.UpdatedAt != updatedAt)
-                {
-                    // Se non esiste un record per questa data, creane uno nuovo
-                    card.TcgPlayerPrices = new PokemonTcgPlayerPrices
-                    {
-                        PokemonCardId = card.Id,
-                        PokemonCard = card,
-                        Url = cardDto.Tcgplayer.Url?.ToString() ?? string.Empty,
-                        UpdatedAt = updatedAt,
-                        PriceDetails = []
-                    };
-                }
-                else
-                {
-                    // Aggiorna solo l'URL se il record per questa data esiste già
-                    if (card.TcgPlayerPrices != null)
-                    {
-                        card.TcgPlayerPrices.Url = cardDto.Tcgplayer?.Url?.ToString() ?? card.TcgPlayerPrices.Url ?? string.Empty;
-                    }
-                }
+                PokemonCardId = cardId,
+                UpdatedAt = updatedAt,
+                Url = cardDto.Tcgplayer.Url?.ToString() ?? string.Empty,
+                PriceDetails = [],
+                PokemonCard = null!  // Richiesto dal compilatore, sarà gestito automaticamente da EF Core
+            };
 
-                // Ensure TcgPlayerPrices is not null before accessing PriceDetails
-                if (card.TcgPlayerPrices?.PriceDetails == null)
-                {
-                    if (card.TcgPlayerPrices != null)
-                    {
-                        card.TcgPlayerPrices.PriceDetails = [];
-                    }
-                }
+            // Aggiungo i dettagli per ogni tipo di foil
+            if (cardDto.Tcgplayer.TcgplayerPrices.Holofoil != null)
+            {
+                AddTcgPriceDetail(newHeader, "Holofoil", cardDto.Tcgplayer.TcgplayerPrices.Holofoil, updatedAt);
             }
-            catch (Exception ex) when (ex.Message.Contains("PK_PokemonTcgPlayerPriceDetails"))
+            if (cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil != null)
             {
-                // Cattura specificamente le eccezioni di violazione del vincolo di chiave primaria
-                throw new InvalidOperationException("Esiste già un dettaglio di prezzo TCGPlayer per questa carta con la stessa data di aggiornamento.", ex);
+                AddTcgPriceDetail(newHeader, "ReverseHolofoil", cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil, updatedAt);
+            }
+            if (cardDto.Tcgplayer.TcgplayerPrices.Normal != null)
+            {
+                AddTcgPriceDetail(newHeader, "Normal", cardDto.Tcgplayer.TcgplayerPrices.Normal, updatedAt);
+            }
+            if (cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil != null)
+            {
+                AddTcgPriceDetail(newHeader, "1stEditionHolofoil", cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil, updatedAt);
             }
             
-            // Gestisci i prezzi Holofoil
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.Holofoil != null && card.TcgPlayerPrices?.PriceDetails != null)
+            // Aggiungo al database
+            _dbContext.PokemonCardTcgPrices.Add(newHeader);
+            
+            // Salvo immediatamente (ogni mercato ha il suo salvataggio)
+            try
             {
-                // Cerca un record esistente per questo tipo di foil
-                var existingHolofoil = card.TcgPlayerPrices.PriceDetails
-                    .FirstOrDefault(pd => pd.PokemonCardId == card.Id && 
-                                         pd.UpdatedAt == updatedAt && 
-                                         pd.FoilType == "Holofoil");
-
-                if (existingHolofoil != null)
-                {
-                    // Aggiorna il record esistente
-                    existingHolofoil.Low = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.Low;
-                    existingHolofoil.Mid = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.Mid;
-                    existingHolofoil.High = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.High;
-                    existingHolofoil.Market = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.Market;
-                    existingHolofoil.DirectLow = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.DirectLow;
-                }
-                else
-                {
-                    // Crea un nuovo record
-                    var holofoilPrices = new PokemonTcgPlayerPriceDetails
-                    {
-                        PokemonCardId = card.Id,
-                        UpdatedAt = updatedAt,
-                        PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                        FoilType = "Holofoil",
-                        Low = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.Low,
-                        Mid = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.Mid,
-                        High = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.High,
-                        Market = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.Market,
-                        DirectLow = cardDto.Tcgplayer.TcgplayerPrices.Holofoil.DirectLow
-                    };
-                    card.TcgPlayerPrices.PriceDetails.Add(holofoilPrices);
-                }
+                await _dbContext.SaveChangesAsync();
+                _logger.LogDebug("TCGPlayer - Salvati prezzi per carta {CardId}", cardId);
             }
-
-            // Gestisci i prezzi ReverseHolofoil
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.ReverseHolofoil != null && card.TcgPlayerPrices?.PriceDetails != null)
+            catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("23505") == true)
             {
-                // Cerca un record esistente per questo tipo di foil
-                var existingReverseHolofoil = card.TcgPlayerPrices.PriceDetails
-                    .FirstOrDefault(pd => pd.PokemonCardId == card.Id && 
-                                         pd.UpdatedAt == updatedAt && 
-                                         pd.FoilType == "ReverseHolofoil");
-
-                if (existingReverseHolofoil != null)
-                {
-                    // Aggiorna il record esistente
-                    existingReverseHolofoil.Low = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Low;
-                    existingReverseHolofoil.Mid = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Mid;
-                    existingReverseHolofoil.High = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.High;
-                    existingReverseHolofoil.Market = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Market;
-                    existingReverseHolofoil.DirectLow = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.DirectLow;
-                }
-                else
-                {
-                    // Crea un nuovo record
-                    var reverseHolofoilPrices = new PokemonTcgPlayerPriceDetails
-                    {
-                        PokemonCardId = card.Id,
-                        UpdatedAt = updatedAt,
-                        PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                        FoilType = "ReverseHolofoil",
-                        Low = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Low,
-                        Mid = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Mid,
-                        High = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.High,
-                        Market = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.Market,
-                        DirectLow = cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil.DirectLow
-                    };
-                    card.TcgPlayerPrices.PriceDetails.Add(reverseHolofoilPrices);
-                }
+                // Ignora errori di chiave duplicata
+                _logger.LogDebug("TCGPlayer - Prezzi già esistenti per carta {CardId}", cardId);
             }
+        }
 
-            // Gestisci i prezzi Normal
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.Normal != null && card.TcgPlayerPrices?.PriceDetails != null)
+        private static void AddTcgPriceDetail(PokemonTcgPlayerPrices header, string foilType, dynamic prices, DateOnly updatedAt)
+        {
+            var newDetail = new PokemonTcgPlayerPriceDetails
             {
-                // Cerca un record esistente per questo tipo di foil
-                var existingNormal = card.TcgPlayerPrices.PriceDetails
-                    .FirstOrDefault(pd => pd.PokemonCardId == card.Id && 
-                                         pd.UpdatedAt == updatedAt && 
-                                         pd.FoilType == "Normal");
+                PokemonCardId = header.PokemonCardId,
+                UpdatedAt = updatedAt,
+                PokemonTcgPlayerPrices = header,
+                FoilType = foilType,
+                Low = prices?.Low ?? 0,
+                Mid = prices?.Mid ?? 0,
+                High = prices?.High ?? 0,
+                Market = prices?.Market ?? 0,
+                DirectLow = prices?.DirectLow ?? 0
+            };
 
-                if (existingNormal != null)
-                {
-                    // Aggiorna il record esistente
-                    existingNormal.Low = cardDto.Tcgplayer.TcgplayerPrices.Normal.Low;
-                    existingNormal.Mid = cardDto.Tcgplayer.TcgplayerPrices.Normal.Mid;
-                    existingNormal.High = cardDto.Tcgplayer.TcgplayerPrices.Normal.High;
-                    existingNormal.Market = cardDto.Tcgplayer.TcgplayerPrices.Normal.Market;
-                    existingNormal.DirectLow = cardDto.Tcgplayer.TcgplayerPrices.Normal.DirectLow;
-                }
-                else
-                {
-                    // Crea un nuovo record
-                    var normalPrices = new PokemonTcgPlayerPriceDetails
-                    {
-                        PokemonCardId = card.Id,
-                        UpdatedAt = updatedAt,
-                        PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                        FoilType = "Normal",
-                        Low = cardDto.Tcgplayer.TcgplayerPrices.Normal.Low,
-                        Mid = cardDto.Tcgplayer.TcgplayerPrices.Normal.Mid,
-                        High = cardDto.Tcgplayer.TcgplayerPrices.Normal.High,
-                        Market = cardDto.Tcgplayer.TcgplayerPrices.Normal.Market,
-                        DirectLow = cardDto.Tcgplayer.TcgplayerPrices.Normal.DirectLow
-                    };
-                    card.TcgPlayerPrices.PriceDetails.Add(normalPrices);
-                }
-            }
+            header.PriceDetails.Add(newDetail);
+        }
 
-            // Gestisci i prezzi 1stEditionHolofoil
-            if (cardDto.Tcgplayer?.TcgplayerPrices?.The1stEditionHolofoil != null && card.TcgPlayerPrices?.PriceDetails != null)
-            {
-                // Cerca un record esistente per questo tipo di foil
-                var existing1stEdition = card.TcgPlayerPrices.PriceDetails
-                    .FirstOrDefault(pd => pd.PokemonCardId == card.Id && 
-                                         pd.UpdatedAt == updatedAt && 
-                                         pd.FoilType == "1stEditionHolofoil");
-
-                if (existing1stEdition != null)
-                {
-                    // Aggiorna il record esistente
-                    existing1stEdition.Low = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Low;
-                    existing1stEdition.Mid = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Mid;
-                    existing1stEdition.High = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.High;
-                    existing1stEdition.Market = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Market;
-                    existing1stEdition.DirectLow = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.DirectLow;
-                }
-                else
-                {
-                    // Crea un nuovo record
-                    var firstEditionPrices = new PokemonTcgPlayerPriceDetails
-                    {
-                        PokemonCardId = card.Id,
-                        UpdatedAt = updatedAt,
-                        PokemonTcgPlayerPrices = card.TcgPlayerPrices,
-                        FoilType = "1stEditionHolofoil",
-                        Low = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Low,
-                        Mid = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Mid,
-                        High = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.High,
-                        Market = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.Market,
-                        DirectLow = cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil.DirectLow
-                    };
-                    card.TcgPlayerPrices.PriceDetails.Add(firstEditionPrices);
-                }
-            }
+        private static DateOnly GetUpdatedAtFromDto(string? updatedAtString)
+        {
+            return DateOnly.TryParse(updatedAtString, out var parsedDate) 
+                ? parsedDate 
+                : DateOnly.FromDateTime(DateTime.Today);
         }
     }
 }

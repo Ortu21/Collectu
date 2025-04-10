@@ -23,38 +23,49 @@ namespace CardCollectionAPI.Data
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
             
-            // Configurazione della chiave primaria composita per PokemonCardMarketPrices
-            modelBuilder.Entity<PokemonCardMarketPrices>()
-                .HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
-            
-            // Configurazione della chiave primaria composita per PokemonTcgPlayerPrices
-            modelBuilder.Entity<PokemonTcgPlayerPrices>()
-                .HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
+            // Configurazione CardMarket Prices
+            modelBuilder.Entity<PokemonCardMarketPrices>(entity =>
+            {
+                entity.HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
+                
+                // Rimuovo eventuali indici univoci non necessari
+                entity.HasIndex(p => p.PokemonCardId).IsUnique(false);
+            });
 
-            // Configurazione della chiave primaria composita per PokemonCardMarketPriceDetails
-            // Aggiungiamo un campo discriminatore per evitare duplicazioni
-            modelBuilder.Entity<PokemonCardMarketPriceDetails>()
-                .HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
-            
-            // Configurazione dell'indice per la ricerca efficiente
-            modelBuilder.Entity<PokemonCardMarketPriceDetails>()
-                .HasIndex(p => new { p.PokemonCardId, p.UpdatedAt});
+            modelBuilder.Entity<PokemonCardMarketPriceDetails>(entity =>
+            {
+                entity.HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
+                
+                entity.HasOne(d => d.PokemonCardMarketPrices)
+                    .WithMany(p => p.PriceDetails)
+                    .HasForeignKey(d => new { d.PokemonCardId, d.UpdatedAt })
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Rimuovo eventuali indici univoci non necessari
+                entity.HasIndex(p => p.PokemonCardId).IsUnique(false);
+            });
 
-            // Configurazione della relazione tra PokemonCardMarketPrices e PokemonCardMarketPriceDetails
-            modelBuilder.Entity<PokemonCardMarketPriceDetails>()
-                .HasOne(d => d.PokemonCardMarketPrices)
-                .WithMany(p => p.PriceDetails)
-                .HasForeignKey(d => new { d.PokemonCardId, d.UpdatedAt });
+            // Configurazione TCGPlayer Prices
+            modelBuilder.Entity<PokemonTcgPlayerPrices>(entity =>
+            {
+                entity.HasKey(p => new { p.PokemonCardId, p.UpdatedAt });
+                
+                // Rimuovo eventuali indici univoci non necessari
+                entity.HasIndex(p => p.PokemonCardId).IsUnique(false);
+            });
 
-            // Configurazione della chiave primaria composita per PokemonTcgPlayerPriceDetails
-            modelBuilder.Entity<PokemonTcgPlayerPriceDetails>()
-                .HasKey(p => new { p.PokemonCardId, p.UpdatedAt, p.FoilType });
-
-            // Configurazione della relazione tra PokemonTcgPlayerPrices e PokemonTcgPlayerPriceDetails
-            modelBuilder.Entity<PokemonTcgPlayerPriceDetails>()
-                .HasOne(d => d.PokemonTcgPlayerPrices)
-                .WithMany(p => p.PriceDetails)
-                .HasForeignKey(d => new { d.PokemonCardId, d.UpdatedAt });
+            modelBuilder.Entity<PokemonTcgPlayerPriceDetails>(entity =>
+            {
+                entity.HasKey(p => new { p.PokemonCardId, p.UpdatedAt, p.FoilType });
+                
+                entity.HasOne(d => d.PokemonTcgPlayerPrices)
+                    .WithMany(p => p.PriceDetails)
+                    .HasForeignKey(d => new { d.PokemonCardId, d.UpdatedAt })
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Rimuovo eventuali indici univoci non necessari
+                entity.HasIndex(p => p.PokemonCardId).IsUnique(false);
+            });
         }
     }
 }
