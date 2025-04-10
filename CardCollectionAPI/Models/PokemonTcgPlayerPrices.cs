@@ -5,15 +5,14 @@ namespace CardCollectionAPI.Models
 {
     public class PokemonTcgPlayerPrices
     {
-        [Key]
-        public int Id { get; set; } // PK
-
+        // Chiave primaria composita configurata nel DbContext
         [ForeignKey("PokemonCard")]
         public required string PokemonCardId { get; set; }
         public required PokemonCard PokemonCard { get; set; }
 
+        public required DateOnly UpdatedAt { get; set; } // Parte della chiave primaria composita
+        
         public required string Url { get; set; }
-        public DateOnly UpdatedAt { get; set; }
 
         // Relazione uno-a-molti con i dettagli dei prezzi
         public List<PokemonTcgPlayerPriceDetails> PriceDetails { get; set; } = [];

@@ -9,13 +9,15 @@
             Controller per la gestione delle carte Pokémon
             </summary>
         </member>
-        <member name="M:CardCollectionAPI.Controllers.PokemonCardController.#ctor(CardCollectionAPI.Services.PokemonCardService)">
+        <member name="M:CardCollectionAPI.Controllers.PokemonCardController.#ctor(CardCollectionAPI.Services.PokemonCardService,CardCollectionAPI.Services.Interfaces.IPokemonPriceService)">
+            <summary>
+            Controller per la gestione delle carte Pokémon
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Controllers.PokemonCardController.ImportPokemonCards">
             <summary>
             Inizializza una nuova istanza del controller
             </summary>
-            <param name="pokemonCardService">Servizio per la gestione delle carte Pokémon</param>
-        </member>
-        <member name="M:CardCollectionAPI.Controllers.PokemonCardController.ImportPokemonCards">
             <summary>
             Importa tutte le carte Pokémon
             </summary>
@@ -27,6 +29,19 @@
             </summary>
             <param name="id">ID della carta da importare</param>
             <returns>Messaggio di conferma dell'importazione</returns>
+        </member>
+        <member name="M:CardCollectionAPI.Controllers.PokemonCardController.UpdateCardPrices">
+            <summary>
+            Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database
+            </summary>
+            <returns>Messaggio di conferma dell'aggiornamento</returns>
+        </member>
+        <member name="M:CardCollectionAPI.Controllers.PokemonCardController.UpdateSingleCardPrice(System.String)">
+            <summary>
+            Aggiorna i prezzi di una singola carta Pokémon
+            </summary>
+            <param name="id">ID della carta da aggiornare</param>
+            <returns>Messaggio di conferma dell'aggiornamento</returns>
         </member>
         <member name="T:CardCollectionAPI.Controllers.PublicApiController">
             <summary>
@@ -135,6 +150,100 @@
         </member>
         <member name="M:CardCollectionAPI.Migrations.ModificaImagePokemonCard.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.PuliziaEAggiornamentoPriceDetails">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.PuliziaEAggiornamentoPriceDetails.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.PuliziaEAggiornamentoPriceDetails.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.PuliziaEAggiornamentoPriceDetails.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.modificaRelazioneCardMarket">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.modificaRelazioneCardMarket.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.modificaRelazioneCardMarket.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.modificaRelazioneCardMarket.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.modificaRelazioneCardMarket2">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.modificaRelazioneCardMarket2.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.modificaRelazioneCardMarket2.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.modificaRelazioneCardMarket2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.CorrezionePrezziCardMarket">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CorrezionePrezziCardMarket.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CorrezionePrezziCardMarket.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CorrezionePrezziCardMarket.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.CorrezioneFKPokemonCardMarketPriceDetails">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CorrezioneFKPokemonCardMarketPriceDetails.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CorrezioneFKPokemonCardMarketPriceDetails.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CorrezioneFKPokemonCardMarketPriceDetails.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.FixPriceTablesIndexes">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.FixPriceTablesIndexes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.FixPriceTablesIndexes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.FixPriceTablesIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Services.Interfaces.IPokemonPriceService.UpdateCardPricesAsync">
+            <summary>
+            Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.Interfaces.IPokemonPriceService.UpdateSingleCardPriceAsync(System.String)">
+            <summary>
+            Aggiorna i prezzi di una singola carta Pokémon
+            </summary>
+            <param name="cardId">ID della carta da aggiornare</param>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonPriceService.UpdateCardPricesAsync">
+            <summary>
+            Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonPriceService.UpdateSingleCardPriceAsync(System.String)">
+            <summary>
+            Aggiorna i prezzi di una singola carta Pokémon
+            </summary>
+            <param name="cardId">ID della carta da aggiornare</param>
         </member>
     </members>
 </doc>
