@@ -58,7 +58,7 @@ namespace CardCollectionAPI.Services.Mappers
                 PokemonCardId = card.Id,
                 PokemonCard = card,
                 Url = dto.Tcgplayer.Url?.ToString() ?? string.Empty,
-                UpdatedAt = DateOnly.Parse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString()),
+                UpdatedAt = DateOnly.TryParse(dto.Tcgplayer?.UpdatedAt ?? DateTime.MinValue.ToString(), out var updatedAt) ? updatedAt : DateOnly.MinValue,
                 PriceDetails =
                 [
                 // Holofoil prices
