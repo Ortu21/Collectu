@@ -38,7 +38,7 @@ namespace CardCollectionAPI.Data
             
             // Configurazione dell'indice per la ricerca efficiente
             modelBuilder.Entity<PokemonCardMarketPriceDetails>()
-                .HasIndex(p => new { p.PokemonCardId});
+                .HasIndex(p => new { p.PokemonCardId, p.UpdatedAt});
 
             // Configurazione della relazione tra PokemonCardMarketPrices e PokemonCardMarketPriceDetails
             modelBuilder.Entity<PokemonCardMarketPriceDetails>()
