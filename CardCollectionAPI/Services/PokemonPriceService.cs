@@ -8,14 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CardCollectionAPI.Services
 {
-    public class PokemonPriceService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonPriceService> logger, IConfiguration configuration) : IPokemonPriceService
+    public class PokemonPriceService(HttpClient httpClient, AppDbContext dbContext, ILogger<PokemonPriceService> logger, IConfiguration configuration, IServiceScopeFactory serviceScopeFactory) : IPokemonPriceService
     {
         private readonly HttpClient _httpClient = httpClient;
         private readonly AppDbContext _dbContext = dbContext;
         private readonly ILogger<PokemonPriceService> _logger = logger;
+        private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
         private const string ApiUrl = "https://api.pokemontcg.io/v2/cards";
         private readonly string _apiKey = configuration["PokemonTcg:ApiKey"] ?? throw new InvalidOperationException("API key for Pokemon TCG not found in configuration");
+        private readonly int _maxDegreeOfParallelism = int.Parse(configuration["PokemonTcg:MaxParallelRequests"] ?? "5");
 
         /// <summary>
         /// Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database
@@ -36,33 +38,54 @@ namespace CardCollectionAPI.Services
                 int successCount = 0;
                 int errorCount = 0;
                 int skippedCount = 0;
+                
+                // Usa un semaforo per tenere traccia delle statistiche in modo thread-safe
+                var lockObject = new object();
+                
+                // Configura le opzioni per il parallelismo
+                var options = new ParallelOptions 
+                { 
+                    MaxDegreeOfParallelism = _maxDegreeOfParallelism 
+                };
 
-                // Per ogni carta, utilizza un nuovo DbContext per evitare problemi di tracking
-                foreach (var cardId in cardIds)
+                // Esegue l'aggiornamento in parallelo con un numero limitato di thread
+                await Parallel.ForEachAsync(cardIds, options, async (cardId, cancellationToken) =>
                 {
                     try
                     {
-                        // Utilizzo un nuovo scope di servizi per ottenere un nuovo DbContext per ogni carta
-                        using var scope = new HttpClient();
+                        // Crea un nuovo scope per ogni thread per ottenere un nuovo DbContext
+                        using var scope = _serviceScopeFactory.CreateScope();
+                        var scopedDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        
+                        // Creo un nuovo HttpClient locale per ogni thread per evitare condivisione di stato
+                        using var localHttpClient = new HttpClient();
                         
                         // Chiamo il servizio per aggiornare una singola carta
-                        await UpdateSingleCardIndependentAsync(cardId);
-                        successCount++;
+                        await UpdateSingleCardWithScopedContextAsync(cardId, scopedDbContext, localHttpClient, cancellationToken);
+                        
+                        // Aggiorna le statistiche in modo thread-safe
+                        lock (lockObject)
+                        {
+                            successCount++;
+                        }
                     }
                     catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("23505") == true)
                     {
-                        _logger.LogDebug("Carta {CardId} saltata: prezzi già aggiornati per oggi", cardId);
-                        skippedCount++;
+                        lock (lockObject)
+                        {
+                            _logger.LogDebug("Carta {CardId} saltata: prezzi già aggiornati per oggi", cardId);
+                            skippedCount++;
+                        }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Errore durante l'aggiornamento dei prezzi per la carta {CardId}", cardId);
-                        errorCount++;
+                        lock (lockObject)
+                        {
+                            _logger.LogError(ex, "Errore durante l'aggiornamento dei prezzi per la carta {CardId}", cardId);
+                            errorCount++;
+                        }
                     }
-                    
-                    // Pulisco il contesto dopo ogni carta per evitare accumulo di entità tracciate
-                    _dbContext.ChangeTracker.Clear();
-                }
+                });
 
                 _logger.LogInformation("Aggiornamento prezzi completato. Successi: {SuccessCount}, Saltati: {SkippedCount}, Errori: {ErrorCount}", 
                     successCount, skippedCount, errorCount);
@@ -84,7 +107,7 @@ namespace CardCollectionAPI.Services
             {
                 // Pulisco il contesto e utilizzo il metodo privato
                 _dbContext.ChangeTracker.Clear();
-                await UpdateSingleCardIndependentAsync(cardId);
+                await UpdateSingleCardWithScopedContextAsync(cardId, _dbContext, _httpClient, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -94,20 +117,17 @@ namespace CardCollectionAPI.Services
         }
 
         /// <summary>
-        /// Aggiorna i prezzi di una singola carta in modo indipendente
+        /// Aggiorna i prezzi di una singola carta in modo indipendente usando il contesto fornito
         /// </summary>
-        private async Task UpdateSingleCardIndependentAsync(string cardId)
+        private async Task UpdateSingleCardWithScopedContextAsync(string cardId, AppDbContext dbContext, HttpClient httpClient, CancellationToken cancellationToken)
         {
-            // Pulisco eventuali entità tracciate prima di iniziare
-            _dbContext.ChangeTracker.Clear();
-            
-            // Utilizzo lo stesso codice di UpdateSingleCardPriceAsync, ma con contesto pulito
+            // Utilizzo lo stesso codice di UpdateSingleCardPriceAsync, ma con contesto scoped
             _logger.LogDebug("Inizio aggiornamento prezzi per carta {CardId}", cardId);
 
             // Verifica se la carta esiste nel database
-            var existingCard = await _dbContext.PokemonCards
+            var existingCard = await dbContext.PokemonCards
                 .AsNoTracking() // Importante: Non tracciare per evitare update automatici
-                .FirstOrDefaultAsync(c => c.Id == cardId);
+                .FirstOrDefaultAsync(c => c.Id == cardId, cancellationToken);
 
             if (existingCard == null)
             {
@@ -118,7 +138,7 @@ namespace CardCollectionAPI.Services
             var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiUrl}/{cardId}");
             request.Headers.Add("X-Api-Key", _apiKey);
 
-            var response = await _httpClient.SendAsync(request);
+            var response = await httpClient.SendAsync(request, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -126,7 +146,7 @@ namespace CardCollectionAPI.Services
                 throw new HttpRequestException($"Errore nella richiesta API: {response.StatusCode}");
             }
 
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
             var cardDto = JsonSerializer.Deserialize<PokemonCardService.SingleCardResponse>(content, _jsonSerializerOptions)?.Data;
 
             if (cardDto == null)
@@ -139,12 +159,12 @@ namespace CardCollectionAPI.Services
             var today = DateOnly.FromDateTime(DateTime.Today);
             
             // Verifico se esistono già dati per oggi per CardMarket
-            var existingCardMarketToday = await _dbContext.PokemonCardMarketPrices
-                .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
+            var existingCardMarketToday = await dbContext.PokemonCardMarketPrices
+                .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today, cancellationToken);
             
             // Verifico se esistono già dati per oggi per TcgPlayer
-            var existingTcgToday = await _dbContext.PokemonCardTcgPrices
-                .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today);
+            var existingTcgToday = await dbContext.PokemonCardTcgPrices
+                .AnyAsync(p => p.PokemonCardId == cardId && p.UpdatedAt == today, cancellationToken);
             
             bool dataAdded = false;
             
@@ -156,7 +176,7 @@ namespace CardCollectionAPI.Services
                 // Inserisco solo se i dati sono di oggi
                 if (cardMarketDate == today)
                 {
-                    await AddCardMarketPricesAsync(cardDto, cardId);
+                    await AddCardMarketPricesAsync(cardDto, cardId, dbContext, cancellationToken);
                     dataAdded = true;
                 }
             }
@@ -169,7 +189,7 @@ namespace CardCollectionAPI.Services
                 // Inserisco solo se i dati sono di oggi
                 if (tcgDate == today)
                 {
-                    await AddTcgPlayerPricesAsync(cardDto, cardId);
+                    await AddTcgPlayerPricesAsync(cardDto, cardId, dbContext, cancellationToken);
                     dataAdded = true;
                 }
             }
@@ -184,7 +204,7 @@ namespace CardCollectionAPI.Services
             }
         }
 
-        private async Task AddCardMarketPricesAsync(PokemonCardDto cardDto, string cardId)
+        private async Task AddCardMarketPricesAsync(PokemonCardDto cardDto, string cardId, AppDbContext dbContext, CancellationToken cancellationToken)
         {
             if (cardDto.Cardmarket?.CardmarketPrices == null) return;
             
@@ -228,12 +248,12 @@ namespace CardCollectionAPI.Services
             newHeader.PriceDetails.Add(newDetails);
             
             // Aggiungo al database prima la testata e poi i dettagli (in un'unica operazione)
-            _dbContext.PokemonCardMarketPrices.Add(newHeader);
+            dbContext.PokemonCardMarketPrices.Add(newHeader);
             
             // Salvo immediatamente (ogni mercato ha il suo salvataggio)
             try
             {
-                await _dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync(cancellationToken);
                 _logger.LogDebug("CardMarket - Salvati prezzi per carta {CardId}", cardId);
             }
             catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("23505") == true)
@@ -243,7 +263,7 @@ namespace CardCollectionAPI.Services
             }
         }
 
-        private async Task AddTcgPlayerPricesAsync(PokemonCardDto cardDto, string cardId)
+        private async Task AddTcgPlayerPricesAsync(PokemonCardDto cardDto, string cardId, AppDbContext dbContext, CancellationToken cancellationToken)
         {
             if (cardDto.Tcgplayer?.TcgplayerPrices == null) return;
             
@@ -279,12 +299,12 @@ namespace CardCollectionAPI.Services
             }
             
             // Aggiungo al database
-            _dbContext.PokemonCardTcgPrices.Add(newHeader);
+            dbContext.PokemonCardTcgPrices.Add(newHeader);
             
             // Salvo immediatamente (ogni mercato ha il suo salvataggio)
             try
             {
-                await _dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync(cancellationToken);
                 _logger.LogDebug("TCGPlayer - Salvati prezzi per carta {CardId}", cardId);
             }
             catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("23505") == true)
