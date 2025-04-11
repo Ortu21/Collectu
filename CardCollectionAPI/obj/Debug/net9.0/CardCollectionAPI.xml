@@ -234,6 +234,87 @@
             </summary>
             <param name="cardId">ID della carta da aggiornare</param>
         </member>
+        <member name="M:CardCollectionAPI.Services.Mappers.PokemonPriceMapper.CreateCardMarketPrices(CardCollectionAPI.Models.Dtos.PokemonCardDto,System.String,System.DateOnly)">
+            <summary>
+            Crea un oggetto PokemonCardMarketPrices a partire dai dati DTO e dall'ID della carta.
+            Non effettua operazioni sul database.
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.Mappers.PokemonPriceMapper.CreateTcgPlayerPrices(CardCollectionAPI.Models.Dtos.PokemonCardDto,System.String,System.DateOnly)">
+            <summary>
+            Crea un oggetto PokemonTcgPlayerPrices a partire dai dati DTO e dall'ID della carta.
+            Non effettua operazioni sul database.
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.Mappers.PokemonPriceMapper.AddTcgPriceDetail(CardCollectionAPI.Models.PokemonTcgPlayerPrices,System.String,System.Object,System.DateOnly)">
+            <summary>
+            Aggiunge un dettaglio di prezzo TCG Player alla testata.
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.Mappers.PokemonPriceMapper.ParseDateFromString(System.String)">
+            <summary>
+            Converte una stringa di data in un DateOnly.
+            Restituisce la data corrente se la conversione fallisce.
+            </summary>
+        </member>
+        <member name="T:CardCollectionAPI.Services.PokemonCardService">
+            <summary>
+            Servizio per l'importazione e la gestione delle carte Pokémon
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonCardService.#ctor(System.Net.Http.HttpClient,CardCollectionAPI.Data.AppDbContext,Microsoft.Extensions.Logging.ILogger{CardCollectionAPI.Services.PokemonCardService},Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.DependencyInjection.IServiceScopeFactory)">
+            <summary>
+            Servizio per l'importazione e la gestione delle carte Pokémon
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonCardService.ImportPokemonCardsAsync">
+            <summary>
+            Importa tutte le carte Pokémon dall'API esterna al database
+            </summary>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonCardService.GetTotalPagesAsync">
+            <summary>
+            Calcola il numero totale di pagine basato sui metadati dell'API
+            </summary>
+            <returns>Numero totale di pagine da elaborare</returns>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonCardService.FetchAndProcessPageAsync(System.Int32)">
+            <summary>
+            Recupera e processa una singola pagina di carte dall'API
+            </summary>
+            <param name="page">Numero di pagina da elaborare</param>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonCardService.ProcessCardWithScopedContextAsync(CardCollectionAPI.Models.Dtos.PokemonCardDto,CardCollectionAPI.Data.AppDbContext,CardCollectionAPI.Services.PokemonSetService,System.Threading.CancellationToken)">
+            <summary>
+            Elabora una singola carta: la crea se non esiste, o la aggiorna se esiste già
+            </summary>
+            <param name="cardDto">Dati della carta da elaborare</param>
+            <param name="dbContext">Contesto del database</param>
+            <param name="setService">Servizio per gestire i set di carte</param>
+            <param name="cancellationToken">Token di cancellazione</param>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonCardService.ProcessCardAsync(CardCollectionAPI.Models.Dtos.PokemonCardDto)">
+            <summary>
+            Processa una singola carta utilizzando il contesto principale del database
+            </summary>
+            <param name="cardDto">Dati della carta da elaborare</param>
+        </member>
+        <member name="M:CardCollectionAPI.Services.PokemonCardService.ImportSingleCardAsync(System.String)">
+            <summary>
+            Importa una singola carta Pokémon identificata dal suo ID
+            </summary>
+            <param name="cardId">ID della carta da importare</param>
+        </member>
+        <member name="T:CardCollectionAPI.Services.PokemonCardService.SingleCardResponse">
+            <summary>
+            Classe per deserializzare la risposta con una singola carta
+            </summary>
+        </member>
+        <member name="T:CardCollectionAPI.Services.PokemonCardService.ApiRootResponse">
+            <summary>
+            Classe che corrisponde esattamente al formato JSON mostrato dell'API Pokémon TCG
+            </summary>
+        </member>
         <member name="M:CardCollectionAPI.Services.PokemonPriceService.UpdateCardPricesAsync">
             <summary>
             Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database

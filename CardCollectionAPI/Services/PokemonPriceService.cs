@@ -211,43 +211,10 @@ namespace CardCollectionAPI.Services
             var updatedAt = GetUpdatedAtFromDto(cardDto.Cardmarket.UpdatedAt);
             _logger.LogDebug("CardMarket - Inserimento prezzi per carta {CardId} del {UpdatedAt}", cardId, updatedAt);
             
-            // Creo nuova testata
-            var newHeader = new PokemonCardMarketPrices
-            {
-                PokemonCardId = cardId,
-                UpdatedAt = updatedAt,
-                Url = cardDto.Cardmarket.Url?.ToString() ?? string.Empty,
-                PriceDetails = [],
-                PokemonCard = null!  // Richiesto dal compilatore, sarà gestito automaticamente da EF Core
-            };
-
-            // Creo nuovi dettagli
-            var newDetails = new PokemonCardMarketPriceDetails
-            {
-                PokemonCardId = cardId,
-                UpdatedAt = updatedAt,
-                PokemonCardMarketPrices = newHeader,
-                AverageSellPrice = cardDto.Cardmarket.CardmarketPrices.AverageSellPrice,
-                LowPrice = cardDto.Cardmarket.CardmarketPrices.LowPrice,
-                TrendPrice = cardDto.Cardmarket.CardmarketPrices.TrendPrice,
-                GermanProLow = cardDto.Cardmarket.CardmarketPrices.GermanProLow,
-                SuggestedPrice = cardDto.Cardmarket.CardmarketPrices.SuggestedPrice,
-                ReverseHoloSell = cardDto.Cardmarket.CardmarketPrices.ReverseHoloSell,
-                ReverseHoloLow = cardDto.Cardmarket.CardmarketPrices.ReverseHoloLow,
-                ReverseHoloTrend = cardDto.Cardmarket.CardmarketPrices.ReverseHoloTrend,
-                LowPriceExPlus = cardDto.Cardmarket.CardmarketPrices.LowPriceExPlus,
-                Avg1 = cardDto.Cardmarket.CardmarketPrices.Avg1,
-                Avg7 = cardDto.Cardmarket.CardmarketPrices.Avg7,
-                Avg30 = cardDto.Cardmarket.CardmarketPrices.Avg30,
-                ReverseHoloAvg1 = cardDto.Cardmarket.CardmarketPrices.ReverseHoloAvg1,
-                ReverseHoloAvg7 = cardDto.Cardmarket.CardmarketPrices.ReverseHoloAvg7,
-                ReverseHoloAvg30 = cardDto.Cardmarket.CardmarketPrices.ReverseHoloAvg30
-            };
+            // Utilizzo il mapper per creare l'entità dei prezzi
+            var newHeader = PokemonPriceMapper.CreateCardMarketPrices(cardDto, cardId, updatedAt);
             
-            // Aggiunta alla testata la lista dei dettagli
-            newHeader.PriceDetails.Add(newDetails);
-            
-            // Aggiungo al database prima la testata e poi i dettagli (in un'unica operazione)
+            // Aggiungo al database
             dbContext.PokemonCardMarketPrices.Add(newHeader);
             
             // Salvo immediatamente (ogni mercato ha il suo salvataggio)
@@ -270,33 +237,8 @@ namespace CardCollectionAPI.Services
             var updatedAt = GetUpdatedAtFromDto(cardDto.Tcgplayer.UpdatedAt);
             _logger.LogDebug("TCGPlayer - Inserimento prezzi per carta {CardId} del {UpdatedAt}", cardId, updatedAt);
             
-            // Creo nuova testata
-            var newHeader = new PokemonTcgPlayerPrices
-            {
-                PokemonCardId = cardId,
-                UpdatedAt = updatedAt,
-                Url = cardDto.Tcgplayer.Url?.ToString() ?? string.Empty,
-                PriceDetails = [],
-                PokemonCard = null!  // Richiesto dal compilatore, sarà gestito automaticamente da EF Core
-            };
-
-            // Aggiungo i dettagli per ogni tipo di foil
-            if (cardDto.Tcgplayer.TcgplayerPrices.Holofoil != null)
-            {
-                AddTcgPriceDetail(newHeader, "Holofoil", cardDto.Tcgplayer.TcgplayerPrices.Holofoil, updatedAt);
-            }
-            if (cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil != null)
-            {
-                AddTcgPriceDetail(newHeader, "ReverseHolofoil", cardDto.Tcgplayer.TcgplayerPrices.ReverseHolofoil, updatedAt);
-            }
-            if (cardDto.Tcgplayer.TcgplayerPrices.Normal != null)
-            {
-                AddTcgPriceDetail(newHeader, "Normal", cardDto.Tcgplayer.TcgplayerPrices.Normal, updatedAt);
-            }
-            if (cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil != null)
-            {
-                AddTcgPriceDetail(newHeader, "1stEditionHolofoil", cardDto.Tcgplayer.TcgplayerPrices.The1stEditionHolofoil, updatedAt);
-            }
+            // Utilizzo il mapper per creare l'entità dei prezzi
+            var newHeader = PokemonPriceMapper.CreateTcgPlayerPrices(cardDto, cardId, updatedAt);
             
             // Aggiungo al database
             dbContext.PokemonCardTcgPrices.Add(newHeader);
@@ -314,29 +256,9 @@ namespace CardCollectionAPI.Services
             }
         }
 
-        private static void AddTcgPriceDetail(PokemonTcgPlayerPrices header, string foilType, dynamic prices, DateOnly updatedAt)
-        {
-            var newDetail = new PokemonTcgPlayerPriceDetails
-            {
-                PokemonCardId = header.PokemonCardId,
-                UpdatedAt = updatedAt,
-                PokemonTcgPlayerPrices = header,
-                FoilType = foilType,
-                Low = prices?.Low ?? 0,
-                Mid = prices?.Mid ?? 0,
-                High = prices?.High ?? 0,
-                Market = prices?.Market ?? 0,
-                DirectLow = prices?.DirectLow ?? 0
-            };
-
-            header.PriceDetails.Add(newDetail);
-        }
-
         private static DateOnly GetUpdatedAtFromDto(string? updatedAtString)
         {
-            return DateOnly.TryParse(updatedAtString, out var parsedDate) 
-                ? parsedDate 
-                : DateOnly.FromDateTime(DateTime.Today);
+            return PokemonPriceMapper.ParseDateFromString(updatedAtString);
         }
     }
 }
