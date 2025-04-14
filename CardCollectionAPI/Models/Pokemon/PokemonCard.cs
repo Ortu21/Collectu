@@ -5,8 +5,8 @@ namespace CardCollectionAPI.Models
     public class PokemonCard
     {
         [Key]
-        public required string Id { get; set; } // ID univoco della carta
-        public required string Name { get; set; } // Nome della carta
+        public required string Id { get; set; }
+        public required string Name { get; set; }
         public required string Supertype { get; set; } // "Pokémon" o altro
         public string? Hp { get; set; } // Punti vita
         public required string EvolvesFrom { get; set; } // Da quale Pokémon evolve

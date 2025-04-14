@@ -158,6 +158,7 @@ builder.Services.AddHttpClient<PokemonCardService>();
 builder.Services.AddHttpClient<PokemonPriceService>();
 builder.Services.AddScoped<IPokemonCardService, PokemonCardService>();
 builder.Services.AddScoped<IPokemonPriceService, PokemonPriceService>();
+builder.Services.AddScoped<CardInventoryService>();
 builder.Logging.AddConsole(); // Mostra log sulla console
 builder.Logging.SetMinimumLevel(LogLevel.Information); // Raccogli tutti i log di livello 'Information' o superiore
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning); // Raccogli solo i log di Entity Framework Core

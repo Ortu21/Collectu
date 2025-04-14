@@ -60,7 +60,7 @@ export default function CollectiblesScreen() {
     handleLoadMore,
     handleRefresh
   } = usePokemonCards({
-    initialPageSize: 20,
+    initialPageSize: 100,
     user,
     isInitialized
   });

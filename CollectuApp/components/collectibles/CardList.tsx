@@ -117,7 +117,7 @@ export const CardList = ({
       onRefresh={onRefresh}
       refreshing={isLoading}
       onEndReached={onLoadMore}
-      onEndReachedThreshold={0.3}
+      onEndReachedThreshold={5}
       ListFooterComponent={() => (
         <View style={styles.footerLoader}>
           {isLoadingMore && (

@@ -43,17 +43,17 @@
             <param name="id">ID della carta da aggiornare</param>
             <returns>Messaggio di conferma dell'aggiornamento</returns>
         </member>
-        <member name="T:CardCollectionAPI.Controllers.PublicApiController">
+        <member name="T:CardCollectionAPI.Controllers.PublicPokemonCardController">
             <summary>
             Controller per le API pubbliche dell'applicazione
             </summary>
         </member>
-        <member name="M:CardCollectionAPI.Controllers.PublicApiController.#ctor(CardCollectionAPI.Data.AppDbContext)">
+        <member name="M:CardCollectionAPI.Controllers.PublicPokemonCardController.#ctor(CardCollectionAPI.Data.AppDbContext)">
             <summary>
             Controller per le API pubbliche dell'applicazione
             </summary>
         </member>
-        <member name="M:CardCollectionAPI.Controllers.PublicApiController.GetCards(System.Int32,System.Int32,System.String,System.String,System.Boolean,System.String,System.String)">
+        <member name="M:CardCollectionAPI.Controllers.PublicPokemonCardController.GetCards(System.Int32,System.Int32,System.String,System.String,System.Boolean,System.String,System.String)">
             <summary>
             Ottiene un elenco paginato di carte Pokémon con opzioni di filtro e ordinamento
             </summary>
@@ -66,7 +66,7 @@
             <param name="sortOrder">Direzione dell'ordinamento (asc, desc)</param>
             <returns>Elenco paginato di carte Pokémon</returns>
         </member>
-        <member name="M:CardCollectionAPI.Controllers.PublicApiController.SearchCards(System.String,System.Int32,System.Int32,System.String,System.String,System.String)">
+        <member name="M:CardCollectionAPI.Controllers.PublicPokemonCardController.SearchCards(System.String,System.Int32,System.Int32,System.String,System.String,System.String)">
             <summary>
             Esegue una ricerca avanzata di carte Pokémon utilizzando parole chiave
             </summary>
@@ -78,7 +78,7 @@
             <param name="sortOrder">Direzione dell'ordinamento (asc, desc)</param>
             <returns>Risultati della ricerca paginati con punteggio di rilevanza</returns>
         </member>
-        <member name="M:CardCollectionAPI.Controllers.PublicApiController.ApplyDynamicOrdering``1(System.Linq.IQueryable{``0},System.String,System.String)">
+        <member name="M:CardCollectionAPI.Controllers.PublicPokemonCardController.ApplyDynamicOrdering``1(System.Linq.IQueryable{``0},System.String,System.String)">
             <summary>
             Applica un ordinamento dinamico a una query in base ai parametri specificati
             </summary>
@@ -88,7 +88,7 @@
             <param name="sortOrder">Direzione dell'ordinamento (asc, desc)</param>
             <returns>Query ordinata</returns>
         </member>
-        <member name="M:CardCollectionAPI.Controllers.PublicApiController.GetCardById(System.String)">
+        <member name="M:CardCollectionAPI.Controllers.PublicPokemonCardController.GetCardById(System.String)">
             <summary>
             Ottiene i dettagli completi di una carta Pokémon tramite il suo ID
             </summary>
@@ -97,7 +97,7 @@
             <response code="200">Restituisce i dettagli della carta</response>
             <response code="404">Se la carta non viene trovata</response>
         </member>
-        <member name="M:CardCollectionAPI.Controllers.PublicApiController.GetSets">
+        <member name="M:CardCollectionAPI.Controllers.PublicPokemonCardController.GetSets">
             <summary>
             Ottiene l'elenco di tutti i set Pokémon disponibili
             </summary>
@@ -221,6 +221,42 @@
             <inheritdoc />
         </member>
         <member name="M:CardCollectionAPI.Migrations.FixPriceTablesIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.UpdateCardInheritance">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateCardInheritance.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateCardInheritance.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateCardInheritance.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.AddCardInventory">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.AddCardInventory.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.AddCardInventory.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.AddCardInventory.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.RemoveCardInheritance">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.RemoveCardInheritance.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.RemoveCardInheritance.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.RemoveCardInheritance.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="M:CardCollectionAPI.Services.Interfaces.IPokemonPriceService.UpdateCardPricesAsync">

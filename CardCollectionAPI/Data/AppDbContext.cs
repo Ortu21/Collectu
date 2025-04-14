@@ -6,6 +6,7 @@ namespace CardCollectionAPI.Data
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
         public required DbSet<PokemonCard> PokemonCards { get; set; }
+        public required DbSet<CardInventory> CardInventories { get; set; }
         public required DbSet<PokemonSet> PokemonSets { get; set; }
         public required DbSet<PokemonAttack> PokemonAttacks { get; set; }
         public required DbSet<PokemonWeakness> PokemonWeaknesses { get; set; }
@@ -22,6 +23,12 @@ namespace CardCollectionAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+            
+            // Configurazione per l'inventario
+            modelBuilder.Entity<CardInventory>(entity =>
+            {
+                entity.HasIndex(i => new { i.UserId, i.CardId, i.CardType }).IsUnique();
+            });
             
             // Configurazione CardMarket Prices
             modelBuilder.Entity<PokemonCardMarketPrices>(entity =>

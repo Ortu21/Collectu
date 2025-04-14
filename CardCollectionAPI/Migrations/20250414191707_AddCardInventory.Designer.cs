@@ -3,6 +3,7 @@ using System;
 using CardCollectionAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250414191707_AddCardInventory")]
+    partial class AddCardInventory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,35 @@ namespace CardCollectionAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CardCollectionAPI.Models.Card", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CardType")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Cards");
+
+                    b.HasDiscriminator<string>("CardType").HasValue("Card");
+
+                    b.UseTphMappingStrategy();
+                });
 
             modelBuilder.Entity("CardCollectionAPI.Models.CardInventory", b =>
                 {
@@ -49,6 +81,8 @@ namespace CardCollectionAPI.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CardId");
 
                     b.HasIndex("UserId", "CardId", "CardType")
                         .IsUnique();
@@ -92,50 +126,6 @@ namespace CardCollectionAPI.Migrations
                     b.HasIndex("PokemonCardId");
 
                     b.ToTable("PokemonAttacks");
-                });
-
-            modelBuilder.Entity("CardCollectionAPI.Models.PokemonCard", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EvolvesFrom")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Hp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LargeImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Number")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Rarity")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SetId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SmallImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Supertype")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SetId");
-
-                    b.ToTable("PokemonCards");
                 });
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonCardMarketPriceDetails", b =>
@@ -348,6 +338,54 @@ namespace CardCollectionAPI.Migrations
                     b.ToTable("PokemonWeaknesses");
                 });
 
+            modelBuilder.Entity("CardCollectionAPI.Models.PokemonCard", b =>
+                {
+                    b.HasBaseType("CardCollectionAPI.Models.Card");
+
+                    b.Property<string>("EvolvesFrom")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LargeImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Number")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Rarity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SetId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SmallImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Supertype")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasIndex("SetId");
+
+                    b.HasDiscriminator().HasValue("Pokemon");
+                });
+
+            modelBuilder.Entity("CardCollectionAPI.Models.CardInventory", b =>
+                {
+                    b.HasOne("CardCollectionAPI.Models.Card", "Card")
+                        .WithMany()
+                        .HasForeignKey("CardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Card");
+                });
+
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonAttack", b =>
                 {
                     b.HasOne("CardCollectionAPI.Models.PokemonCard", "PokemonCard")
@@ -357,15 +395,6 @@ namespace CardCollectionAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("PokemonCard");
-                });
-
-            modelBuilder.Entity("CardCollectionAPI.Models.PokemonCard", b =>
-                {
-                    b.HasOne("CardCollectionAPI.Models.PokemonSet", "Set")
-                        .WithMany("Cards")
-                        .HasForeignKey("SetId");
-
-                    b.Navigation("Set");
                 });
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonCardMarketPriceDetails", b =>
@@ -436,15 +465,11 @@ namespace CardCollectionAPI.Migrations
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonCard", b =>
                 {
-                    b.Navigation("Attacks");
+                    b.HasOne("CardCollectionAPI.Models.PokemonSet", "Set")
+                        .WithMany("Cards")
+                        .HasForeignKey("SetId");
 
-                    b.Navigation("CardMarketPrices");
-
-                    b.Navigation("Resistances");
-
-                    b.Navigation("TcgPlayerPrices");
-
-                    b.Navigation("Weaknesses");
+                    b.Navigation("Set");
                 });
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonCardMarketPrices", b =>
@@ -460,6 +485,19 @@ namespace CardCollectionAPI.Migrations
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonTcgPlayerPrices", b =>
                 {
                     b.Navigation("PriceDetails");
+                });
+
+            modelBuilder.Entity("CardCollectionAPI.Models.PokemonCard", b =>
+                {
+                    b.Navigation("Attacks");
+
+                    b.Navigation("CardMarketPrices");
+
+                    b.Navigation("Resistances");
+
+                    b.Navigation("TcgPlayerPrices");
+
+                    b.Navigation("Weaknesses");
                 });
 #pragma warning restore 612, 618
         }

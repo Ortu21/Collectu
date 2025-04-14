@@ -9,7 +9,7 @@ namespace CardCollectionAPI.Controllers
     /// </summary>
     [Route("api/public")]
     [ApiController]
-    public class PublicApiController(AppDbContext dbContext) : ControllerBase
+    public class PublicPokemonCardController(AppDbContext dbContext) : ControllerBase
     {
         private readonly AppDbContext _dbContext = dbContext;
 
