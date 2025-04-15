@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -6,18 +6,34 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCardInventory : Migration
+    public partial class CreateUserAndInventoryTables_Manual : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Crea la tabella Users
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserName = table.Column<string>(type: "text", nullable: false),
+                    RegistrationDate = table.Column<DateOnly>(type: "date", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            // Crea la tabella CardInventories
             migrationBuilder.CreateTable(
                 name: "CardInventories",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
                     CardId = table.Column<string>(type: "text", nullable: false),
                     CardType = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
@@ -27,25 +43,24 @@ namespace CardCollectionAPI.Migrations
                 {
                     table.PrimaryKey("PK_CardInventories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CardInventories_Cards_CardId",
-                        column: x => x.CardId,
-                        principalTable: "Cards",
+                        name: "FK_CardInventories_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            // Crea gli indici necessari
             migrationBuilder.CreateIndex(
-                name: "IX_CardInventories_CardId",
-                table: "CardInventories",
-                column: "CardId");
+                name: "IX_Users_Id",
+                table: "Users",
+                column: "Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CardInventories_UserId_CardId_CardType",
                 table: "CardInventories",
                 columns: new[] { "UserId", "CardId", "CardType" },
                 unique: true);
-
-            migrationBuilder.Sql("ALTER TABLE \"CardInventories\" ALTER COLUMN \"UserId\" TYPE integer USING \"UserId\"::integer;");
         }
 
         /// <inheritdoc />
@@ -54,7 +69,8 @@ namespace CardCollectionAPI.Migrations
             migrationBuilder.DropTable(
                 name: "CardInventories");
 
-            migrationBuilder.Sql("ALTER TABLE \"CardInventories\" ALTER COLUMN \"UserId\" TYPE text USING \"UserId\"::text;");
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
-}
+} 

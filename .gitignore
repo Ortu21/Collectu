@@ -56,5 +56,4 @@ expo-env.d.ts
 appsettings.json
 firebase-config.json
 appsettings.Development.json
-firebase/config.ts
 .qodo

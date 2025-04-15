@@ -6,7 +6,7 @@ namespace CardCollectionAPI.Models
     {
         [Key]
         public int Id { get; set; }
-        public required string UserId { get; set; }
+        public required int UserId { get; set; }
         public required string CardId { get; set; }
         public required string CardType { get; set; } // "Pokemon", "YuGiOh", ecc.
         public int Quantity { get; set; }

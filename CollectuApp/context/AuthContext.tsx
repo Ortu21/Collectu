@@ -35,46 +35,48 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    setError(null);
     try {
+      setError(null);
       return await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('An unknown error occurred');
+        setError('Si è verificato un errore sconosciuto');
       }
       throw error;
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    setError(null);
     try {
+      setError(null);
       return await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('An unknown error occurred');
+        setError('Si è verificato un errore sconosciuto');
       }
       throw error;
     }
   };
 
   const signOut = async () => {
-    setError(null);
     try {
+      setError(null);
       await firebaseSignOut(auth);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('An unknown error occurred');
+        setError('Si è verificato un errore sconosciuto');
       }
       throw error;
     }
@@ -89,13 +91,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     error
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth deve essere utilizzato all\'interno di un AuthProvider');
   }
   return context;
 };

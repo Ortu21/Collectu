@@ -25,7 +25,7 @@ namespace CardCollectionAPI.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<List<CardInventoryResponseDto>>> GetInventory(string userId)
+        public async Task<ActionResult<List<CardInventoryResponseDto>>> GetInventory(int userId)
         {
             try
             {

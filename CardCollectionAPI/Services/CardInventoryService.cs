@@ -34,7 +34,7 @@ namespace CardCollectionAPI.Services
             };
         }
 
-        public async Task<List<CardInventoryResponseDto>> GetUserInventory(string userId)
+        public async Task<List<CardInventoryResponseDto>> GetUserInventory(int userId)
         {
             var inventories = await _context.CardInventories
                 .Where(i => i.UserId == userId)

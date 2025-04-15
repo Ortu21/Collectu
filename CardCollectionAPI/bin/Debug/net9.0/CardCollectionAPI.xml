@@ -271,6 +271,18 @@
         <member name="M:CardCollectionAPI.Migrations.addUser.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CardCollectionAPI.Migrations.CreateUserAndInventoryTables_Manual">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CreateUserAndInventoryTables_Manual.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CreateUserAndInventoryTables_Manual.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.CreateUserAndInventoryTables_Manual.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="M:CardCollectionAPI.Services.Interfaces.IPokemonPriceService.UpdateCardPricesAsync">
             <summary>
             Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database
