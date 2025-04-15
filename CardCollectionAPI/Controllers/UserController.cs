@@ -46,5 +46,22 @@ namespace CardCollectionAPI.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("firebase/{firebaseUid}")]
+        public async Task<ActionResult<UserResponseDto>> GetUserByFirebaseUid(string firebaseUid)
+        {
+            try
+            {
+                var user = await _userService.GetUserByFirebaseUidAsync(firebaseUid);
+                if (user == null)
+                    return NotFound(new { message = "Utente non trovato" });
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 } 

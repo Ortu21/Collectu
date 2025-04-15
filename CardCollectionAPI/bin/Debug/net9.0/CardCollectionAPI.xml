@@ -283,6 +283,30 @@
         <member name="M:CardCollectionAPI.Migrations.CreateUserAndInventoryTables_Manual.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:CardCollectionAPI.Migrations.UpdateUserModel">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateUserModel.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateUserModel.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateUserModel.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:CardCollectionAPI.Migrations.UpdateUserIdType3">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateUserIdType3.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateUserIdType3.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:CardCollectionAPI.Migrations.UpdateUserIdType3.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="M:CardCollectionAPI.Services.Interfaces.IPokemonPriceService.UpdateCardPricesAsync">
             <summary>
             Aggiorna i prezzi di tutte le carte Pokémon esistenti nel database

@@ -18,16 +18,23 @@ namespace CardCollectionAPI.Services
         {
             // Verifica se l'utente esiste già
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == registerDto.UserName);
+                .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
 
             if (existingUser != null)
-                throw new Exception("Username già in uso");
+                throw new Exception("Email già in uso");
 
             // Crea il nuovo utente
             var user = new User
             {
-                UserName = registerDto.UserName,
-                RegistrationDate = DateOnly.FromDateTime(DateTime.UtcNow)
+                FirebaseUid = registerDto.FirebaseUid,
+                Email = registerDto.Email,
+                DisplayName = registerDto.DisplayName,
+                PhotoUrl = registerDto.PhotoUrl,
+                EmailVerified = registerDto.EmailVerified,
+                PhoneNumber = registerDto.PhoneNumber,
+                ProviderId = registerDto.ProviderId,
+                CreationTime = registerDto.CreationTime,
+                LastSignInTime = registerDto.LastSignInTime
             };
 
             _context.Users.Add(user);
@@ -37,8 +44,12 @@ namespace CardCollectionAPI.Services
             return new UserResponseDto
             {
                 Id = user.Id,
-                UserName = user.UserName,
-                RegistrationDate = user.RegistrationDate
+                Email = user.Email,
+                DisplayName = user.DisplayName,
+                PhotoUrl = user.PhotoUrl,
+                EmailVerified = user.EmailVerified,
+                CreationTime = user.CreationTime,
+                LastSignInTime = user.LastSignInTime
             };
         }
 
@@ -51,8 +62,32 @@ namespace CardCollectionAPI.Services
             return new UserResponseDto
             {
                 Id = user.Id,
-                UserName = user.UserName,
-                RegistrationDate = user.RegistrationDate
+                Email = user.Email,
+                DisplayName = user.DisplayName,
+                PhotoUrl = user.PhotoUrl,
+                EmailVerified = user.EmailVerified,
+                CreationTime = user.CreationTime,
+                LastSignInTime = user.LastSignInTime
+            };
+        }
+
+        public async Task<UserResponseDto?> GetUserByFirebaseUidAsync(string firebaseUid)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.FirebaseUid == firebaseUid);
+
+            if (user == null)
+                return null;
+
+            return new UserResponseDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                DisplayName = user.DisplayName,
+                PhotoUrl = user.PhotoUrl,
+                EmailVerified = user.EmailVerified,
+                CreationTime = user.CreationTime,
+                LastSignInTime = user.LastSignInTime
             };
         }
     }

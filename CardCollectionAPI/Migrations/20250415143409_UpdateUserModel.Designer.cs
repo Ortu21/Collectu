@@ -3,6 +3,7 @@ using System;
 using CardCollectionAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CardCollectionAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250415143409_UpdateUserModel")]
+    partial class UpdateUserModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,7 +50,7 @@ namespace CardCollectionAPI.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId1")
+                    b.Property<int?>("UserId1")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -57,7 +60,7 @@ namespace CardCollectionAPI.Migrations
                     b.HasIndex("UserId", "CardId", "CardType")
                         .IsUnique();
 
-                    b.ToTable("CardInventory");
+                    b.ToTable("CardInventories");
                 });
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonAttack", b =>
@@ -410,13 +413,9 @@ namespace CardCollectionAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CardCollectionAPI.Models.User.User", "User")
+                    b.HasOne("CardCollectionAPI.Models.User.User", null)
                         .WithMany("CardInventory")
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                        .HasForeignKey("UserId1");
                 });
 
             modelBuilder.Entity("CardCollectionAPI.Models.PokemonAttack", b =>
