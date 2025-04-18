@@ -57,15 +57,17 @@ builder.Services.AddCors(options =>
         {
             if (builder.Environment.IsDevelopment())
             {
-                corsBuilder.AllowAnyOrigin()
+                corsBuilder.WithOrigins("http://192.168.1.9:5193", "http://localhost:5193", "http://localhost:8081")
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .AllowCredentials();
             }
             else
             {
                 corsBuilder.WithOrigins("https://app.collectu.com", "https://collectu.com")
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .AllowCredentials();
             }
         });
 });

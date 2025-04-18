@@ -10,24 +10,26 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { Link, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import Checkbox from 'expo-checkbox'; 
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false); // Stato per la checkbox
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
-  const { signIn, error, user } = useAuth();
+  const { login, error, user } = useAuth();
   const router = useRouter();
 
   // Aggiungiamo un effetto per reindirizzare l'utente se è già autenticato
   useEffect(() => {
-    if (user) {
+    if (!isLoading && user) {
       router.replace("/");
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -39,8 +41,14 @@ export default function Login() {
     setLoginError("");
 
     try {
-      await signIn(email, password);
-      // Auth state changes will trigger the useEffect for redirection
+      await login(email, password, rememberMe); // Passa lo stato rememberMe
+      // Utilizziamo setTimeout per evitare problemi di navigazione rapida
+      // dopo l'autenticazione, dando tempo al sistema di aggiornare lo stato
+      setTimeout(() => {
+        if (user) router.replace("/");
+      }, 300);
+    } catch (e) {
+      console.error("Errore durante il login:", e);
     } finally {
       setIsLoading(false);
     }
@@ -86,6 +94,26 @@ export default function Login() {
               onChangeText={setPassword}
               secureTextEntry
             />
+          </View>
+
+          {/* Checkbox Ricordami */}
+          <View style={styles.checkboxContainer}>
+            <Checkbox
+              style={styles.checkbox}
+              value={rememberMe}
+              onValueChange={setRememberMe}
+              color={rememberMe ? '#007AFF' : undefined}
+            />
+            <Text style={styles.checkboxLabel}>Remember Me</Text>
+          </View>
+
+          {/* Link per password dimenticata */}
+          <View style={styles.forgotPasswordContainer}>
+            <Link href="/forgot-password" asChild>
+              <TouchableOpacity>
+                <Text style={styles.forgotPasswordLink}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
 
           <TouchableOpacity
@@ -190,5 +218,28 @@ const styles = StyleSheet.create({
   registerLink: {
     color: "#007AFF",
     fontWeight: "bold",
+  },
+  // Stili per il link "Forgot Password?"
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 15,
+  },
+  forgotPasswordLink: {
+    color: '#007AFF',
+    fontSize: 14,
+  },
+  // Stili per la checkbox
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    alignSelf: 'flex-start', // Allinea a sinistra
+  },
+  checkbox: {
+    marginRight: 8,
+  },
+  checkboxLabel: {
+    color: '#fff',
+    fontSize: 14,
   },
 });

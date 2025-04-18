@@ -24,10 +24,15 @@ module.exports = {
             }
         },
         web: {
-            favicon: "./assets/favicon.png"
+            favicon: "./assets/favicon.png",
+            bundler: "metro",
+            backgroundColor: "#25292e",
+            themeColor: "#25292e",
+            navigationMode: "hash"
         },
         plugins: [
             "expo-router"
-        ]
+        ],
+        scheme: "collectu"
     }
-}; 
+};

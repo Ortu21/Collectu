@@ -4,7 +4,7 @@ import { PokemonSet } from '../types/pokemon';
 
 interface UsePokemonSetsProps {
   user: any; // Firebase user object
-  isInitialized: boolean;
+  // isInitialized: boolean; // Rimosso
 }
 
 interface UsePokemonSetsReturn {
@@ -17,18 +17,18 @@ interface UsePokemonSetsReturn {
 
 export const usePokemonSets = ({
   user,
-  isInitialized
+  // isInitialized // Rimosso
 }: UsePokemonSetsProps): UsePokemonSetsReturn => {
   const [sets, setSets] = useState<PokemonSet[]>([]);
   const [isLoadingSets, setIsLoadingSets] = useState(false);
   const [isSetModalVisible, setIsSetModalVisible] = useState(false);
 
-  // Load Pokemon sets when initialized and user is authenticated
+  // Load Pokemon sets when user is authenticated
   useEffect(() => {
-    if (isInitialized && user) {
+    if (user) { // Rimosso controllo isInitialized
       loadPokemonSets();
     }
-  }, [isInitialized, user]);
+  }, [user]); // Rimosso isInitialized dalle dipendenze
 
   const loadPokemonSets = async () => {
     setIsLoadingSets(true);

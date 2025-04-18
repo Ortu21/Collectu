@@ -4,7 +4,7 @@ import {
   extractObject
 } from "../utils/circularReferenceHandler";
 
-export const API_BASE_URL = "http://192.168.1.9:5193/api/public";
+export const API_BASE_URL = "http://192.168.1.8:5193/api/public";
 
 export const fetchPokemonCards = async (
   pageSize: number = 20,

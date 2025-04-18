@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, SafeAreaView, StatusBar as RNStatusBar, useWindowDimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { PokemonCard } from "../types/pokemon";
 import { usePokemonCards } from "../hooks/usePokemonCards";
 import { usePokemonSets } from "../hooks/usePokemonSets";
@@ -13,7 +13,7 @@ import { SetFilterModal } from "../components/collectibles/SetFilterModal";
 export default function CollectiblesScreen() {
   const { user } = useAuth();
   const router = useRouter();
-  const [isInitialized, setIsInitialized] = useState(false);
+  // Rimosso isInitialized state
   const { width } = useWindowDimensions();
   
   // Determine number of columns based on screen width
@@ -26,23 +26,7 @@ export default function CollectiblesScreen() {
   
   const numColumns = getNumColumns();
   
-  // Initialize the app
-  useEffect(() => {
-    setIsInitialized(true);
-  }, []);
-  
-  // Handle authentication redirect
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    if (!user) {
-      const timer = setTimeout(() => {
-        router.replace("/login");
-      }, 0);
-
-      return () => clearTimeout(timer);
-    }
-  }, [user, router, isInitialized]);
+  // Rimosso useEffect per isInitialized e redirect autenticazione
   
   // Use custom hooks for Pokemon cards and sets
   const {
@@ -61,8 +45,8 @@ export default function CollectiblesScreen() {
     handleRefresh
   } = usePokemonCards({
     initialPageSize: 100,
-    user,
-    isInitialized
+    user
+    // Rimosso isInitialized dalle dipendenze
   });
   
   const {
@@ -71,8 +55,8 @@ export default function CollectiblesScreen() {
     isSetModalVisible,
     setIsSetModalVisible
   } = usePokemonSets({
-    user,
-    isInitialized
+    user
+    // Rimosso isInitialized dalle dipendenze
   });
   
   const handleCardPress = (card: PokemonCard) => {
@@ -80,10 +64,7 @@ export default function CollectiblesScreen() {
     router.push(`/card/${card.id}`);
   };
   
-  // If user is not authenticated, don't render anything
-  if (!user) {
-    return null;
-  }
+  // Rimosso controllo !user, gestito dal layout
 
   return (
     <SafeAreaView style={styles.container}>

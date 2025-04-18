@@ -10,7 +10,7 @@ import { PokemonCard, PokemonSet } from "../types/pokemon";
 interface UsePokemonCardsProps {
   initialPageSize?: number;
   user: any; // Firebase user object
-  isInitialized: boolean;
+  // isInitialized: boolean; // Rimosso
 }
 
 interface UsePokemonCardsReturn {
@@ -36,7 +36,7 @@ interface UsePokemonCardsReturn {
 export const usePokemonCards = ({
   initialPageSize = 20,
   user,
-  isInitialized,
+  // isInitialized, // Rimosso
 }: UsePokemonCardsProps): UsePokemonCardsReturn => {
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -208,7 +208,7 @@ export const usePokemonCards = ({
 
   // Single unified effect for search query changes
   useEffect(() => {
-    if (isInitialized && user) {
+    if (user) { // Removed isInitialized check
       // Only trigger search when query changes, not on initial mount
         // This prevents duplicate API calls
       if (!isInitialMount.current) {
@@ -224,14 +224,14 @@ export const usePokemonCards = ({
         searchTimeoutRef.current = null;
       }
     };
-  }, [searchQuery, isInitialized, user, handleSearch]);
+  }, [searchQuery, user, handleSearch]); // Removed isInitialized from dependencies
   
   // Create a ref to track initial mount
   const isInitialMount = useRef(true);
   
   // Effect for initial load and authentication changes
   useEffect(() => {
-    if (isInitialized && user && !isLoadingRef.current) {
+    if (user && !isLoadingRef.current) { // Removed isInitialized check
       // Only load cards on initial mount or when auth changes
       // This prevents duplicate API calls
       if (isInitialMount.current) {
@@ -244,7 +244,7 @@ export const usePokemonCards = ({
         return () => clearTimeout(timer);
       }
     }
-  }, [isInitialized, user, loadPokemonCards]);
+  }, [user, loadPokemonCards]); // Removed isInitialized from dependencies
   
   // Debug logging for tracking component lifecycle
   useEffect(() => {

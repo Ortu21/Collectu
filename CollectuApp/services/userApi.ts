@@ -1,11 +1,18 @@
 import axios from "axios";
 
-export const API_BASE_URL = "http://192.168.1.9:5193/api/public";
+export const API_BASE_URL = "http://192.168.1.8:5193/api";
 
 // Interfacce per la gestione degli utenti
 export interface RegisterUserDto {
   firebaseUid: string;
-  userName: string;
+  email: string;
+  displayName?: string;
+  photoUrl?: string;
+  emailVerified: boolean;
+  phoneNumber?: string;
+  providerId?: string;
+  creationTime: Date;
+  lastSignInTime: Date;
 }
 
 export interface UserResponseDto {
@@ -17,8 +24,9 @@ export interface UserResponseDto {
 // Funzioni per la gestione degli utenti
 export const registerUser = async (data: RegisterUserDto): Promise<UserResponseDto> => {
   try {
+    console.log('Tentativo di registrazione utente:', { ...data, firebaseUid: '***' });
     const response = await axios.post<UserResponseDto>(
-      `${API_BASE_URL}/api/user/register`,
+      `${API_BASE_URL}/user/register`,
       data,
       {
         headers: {
@@ -26,8 +34,10 @@ export const registerUser = async (data: RegisterUserDto): Promise<UserResponseD
         },
       }
     );
+    console.log('Risposta registrazione:', response.data);  
     return response.data;
   } catch (error: any) {
+    console.error('Errore durante la registrazione:', error.response || error);
     if (error?.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
@@ -47,4 +57,4 @@ export const getUserById = async (id: number): Promise<UserResponseDto> => {
     }
     throw new Error('Errore nel recupero dei dati utente');
   }
-}; 
+};

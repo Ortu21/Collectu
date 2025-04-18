@@ -1,45 +1,41 @@
-import { Text, View, StyleSheet, Pressable } from 'react-native';
+import { Text, View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Index() {
-  const { user, loading, signOut } = useAuth();
+  const { user, logout, isAuthLoading } = useAuth(); // Aggiunto user e isAuthLoading
   const router = useRouter();
 
-  console.log('User:', user);
-
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/login');
+    // Non fare nulla mentre l'autenticazione sta caricando
+    if (isAuthLoading) {
+      return;
     }
-  }, [user, loading, router]);
 
-  if (loading || !user) {
-    return null;
+    // Se l'utente non è loggato, reindirizza al login
+    if (!user) {
+      router.replace('/login');
+    } else {
+      // Se l'utente è loggato, reindirizza alla nuova home
+      router.replace('/home');
+    }
+  }, [user, isAuthLoading, router]);
+
+  // Mostra un indicatore di caricamento mentre si controlla lo stato di autenticazione
+  if (isAuthLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
   }
+
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Home screen</Text>
-      <Link href="/collectibles" asChild>
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>View Collection</Text>
-        </Pressable>
-      </Link>
-      <Pressable 
-        style={styles.logoutButton}
-        onPress={async () => {
-          try {
-            await signOut();
-            router.replace('/login');
-          } catch (error) {
-            console.error('Logout error:', error);
-          }
-        }}
-      >
-        <Text style={styles.buttonText}>Logout</Text>
-      </Pressable>
+      <Text style={styles.text}>Loading...</Text>
+      {/* Potresti voler rimuovere i pulsanti qui se il reindirizzamento è garantito */}
     </View>
   );
 }

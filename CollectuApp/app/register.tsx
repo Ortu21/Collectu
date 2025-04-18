@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { Link, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
@@ -8,13 +8,13 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [userName, setUserName] = useState('');
   const [registerError, setRegisterError] = useState('');
-  const { signUp, error } = useAuth();
+  const { register, loading: isLoading, error, user } = useAuth();
   const router = useRouter();
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !userName) {
       setRegisterError('All fields are required');
       return;
     }
@@ -29,19 +29,26 @@ export default function Register() {
       return;
     }
 
-    setIsLoading(true);
     setRegisterError('');
 
     try {
-      await signUp(email, password);
-      router.replace('/');
+      await register(email, password, userName);
+      // Utilizziamo setTimeout per evitare problemi di navigazione rapida
+      // dopo la registrazione, dando tempo al sistema di aggiornare lo stato
+      setTimeout(() => {
+        router.replace('/');
+      }, 300);
     } catch (error) {
-      // Error is already handled in AuthContext
-    } finally {
-      setIsLoading(false);
+      console.error('Errore durante la registrazione:', error);
+      // Error is already handled in useAuth hook
     }
   };
 
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.replace("/");
+    }
+  }, [user, isLoading, router]);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -68,6 +75,18 @@ export default function Register() {
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your username"
+              placeholderTextColor="#666"
+              value={userName}
+              onChangeText={setUserName}
               autoCapitalize="none"
             />
           </View>
