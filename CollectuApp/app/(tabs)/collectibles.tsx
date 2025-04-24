@@ -2,18 +2,17 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, SafeAreaView, StatusBar as RNStatusBar, useWindowDimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import { useAuth } from "../hooks/useAuth";
-import { PokemonCard } from "../types/pokemon";
-import { usePokemonCards } from "../hooks/usePokemonCards";
-import { usePokemonSets } from "../hooks/usePokemonSets";
-import { CardList } from "../components/collectibles/CardList";
-import { SearchFilterBar } from "../components/collectibles/SearchFilterBar";
-import { SetFilterModal } from "../components/collectibles/SetFilterModal";
+import { useAuth } from "../../hooks/useAuth";
+import { PokemonCard } from "../../types/pokemon";
+import { usePokemonCards } from "../../hooks/usePokemonCards";
+import { usePokemonSets } from "../../hooks/usePokemonSets";
+import { CardList } from "../../components/collectibles/CardList";
+import { SearchFilterBar } from "../../components/collectibles/SearchFilterBar";
+import { SetFilterModal } from "../../components/collectibles/SetFilterModal";
 
-export default function CollectiblesScreen() {
+const CollectiblesScreen = () => {
   const { user } = useAuth();
   const router = useRouter();
-  // Rimosso isInitialized state
   const { width } = useWindowDimensions();
   
   // Determine number of columns based on screen width
@@ -26,9 +25,6 @@ export default function CollectiblesScreen() {
   
   const numColumns = getNumColumns();
   
-  // Rimosso useEffect per isInitialized e redirect autenticazione
-  
-  // Use custom hooks for Pokemon cards and sets
   const {
     cards,
     isLoading,
@@ -46,7 +42,6 @@ export default function CollectiblesScreen() {
   } = usePokemonCards({
     initialPageSize: 100,
     user
-    // Rimosso isInitialized dalle dipendenze
   });
   
   const {
@@ -56,15 +51,12 @@ export default function CollectiblesScreen() {
     setIsSetModalVisible
   } = usePokemonSets({
     user
-    // Rimosso isInitialized dalle dipendenze
   });
   
   const handleCardPress = (card: PokemonCard) => {
-    // Navigate to card detail view
     router.push(`/card/${card.id}`);
   };
   
-  // Rimosso controllo !user, gestito dal layout
 
   return (
     <SafeAreaView style={styles.container}>
@@ -350,3 +342,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
+export default CollectiblesScreen

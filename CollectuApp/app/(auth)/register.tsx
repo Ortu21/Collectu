@@ -10,50 +10,54 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 import { Link, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import Checkbox from 'expo-checkbox'; 
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false); // Stato per la checkbox
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const { login, error, user } = useAuth();
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [userName, setUserName] = useState("");
+  const [registerError, setRegisterError] = useState("");
+  const { register, loading: isLoading, error, user } = useAuth();
   const router = useRouter();
 
-  // Aggiungiamo un effetto per reindirizzare l'utente se è già autenticato
+  const handleRegister = async () => {
+    if (!email || !password || !confirmPassword || !userName) {
+      setRegisterError("All fields are required");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setRegisterError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setRegisterError("Password must be at least 6 characters");
+      return;
+    }
+
+    setRegisterError("");
+
+    try {
+      await register(email, password, userName);
+
+      setTimeout(() => {
+        router.replace("/");
+      }, 300);
+    } catch (error) {
+      console.error("Errore durante la registrazione:", error);
+
+    }
+  };
+
   useEffect(() => {
     if (!isLoading && user) {
       router.replace("/");
     }
   }, [user, isLoading, router]);
-
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setLoginError("Email and password are required");
-      return;
-    }
-
-    setIsLoading(true);
-    setLoginError("");
-
-    try {
-      await login(email, password, rememberMe); // Passa lo stato rememberMe
-      // Utilizziamo setTimeout per evitare problemi di navigazione rapida
-      // dopo l'autenticazione, dando tempo al sistema di aggiornare lo stato
-      setTimeout(() => {
-        if (user) router.replace("/");
-      }, 300);
-    } catch (e) {
-      console.error("Errore durante il login:", e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -63,11 +67,11 @@ export default function Login() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <Text style={styles.title}>Collectu</Text>
-          <Text style={styles.subtitle}>Sign in to your account</Text>
+          <Text style={styles.subtitle}>Create your account</Text>
 
-          {(loginError || error) && (
+          {(registerError || error) && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{loginError || error}</Text>
+              <Text style={styles.errorText}>{registerError || error}</Text>
             </View>
           )}
 
@@ -85,6 +89,18 @@ export default function Login() {
           </View>
 
           <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your username"
+              placeholderTextColor="#666"
+              value={userName}
+              onChangeText={setUserName}
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <TextInput
               style={styles.input}
@@ -96,43 +112,35 @@ export default function Login() {
             />
           </View>
 
-          {/* Checkbox Ricordami */}
-          <View style={styles.checkboxContainer}>
-            <Checkbox
-              style={styles.checkbox}
-              value={rememberMe}
-              onValueChange={setRememberMe}
-              color={rememberMe ? '#007AFF' : undefined}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm your password"
+              placeholderTextColor="#666"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
             />
-            <Text style={styles.checkboxLabel}>Remember Me</Text>
-          </View>
-
-          {/* Link per password dimenticata */}
-          <View style={styles.forgotPasswordContainer}>
-            <Link href="/forgot-password" asChild>
-              <TouchableOpacity>
-                <Text style={styles.forgotPasswordLink}>Forgot Password?</Text>
-              </TouchableOpacity>
-            </Link>
           </View>
 
           <TouchableOpacity
             style={styles.button}
-            onPress={handleLogin}
+            onPress={handleRegister}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Sign In</Text>
+              <Text style={styles.buttonText}>Sign Up</Text>
             )}
           </TouchableOpacity>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
-            <Link href="/register" asChild>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account?</Text>
+            <Link href="/login" asChild>
               <TouchableOpacity>
-                <Text style={styles.registerLink}>Sign Up</Text>
+                <Text style={styles.loginLink}>Sign In</Text>
               </TouchableOpacity>
             </Link>
           </View>
@@ -207,39 +215,18 @@ const styles = StyleSheet.create({
     color: "#ff6b6b",
     textAlign: "center",
   },
-  registerContainer: {
+  loginContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 20,
+    alignItems: "center",
   },
-  registerText: {
+  loginText: {
     color: "#aaa",
+    marginRight: 4,
   },
-  registerLink: {
+  loginLink: {
     color: "#007AFF",
     fontWeight: "bold",
-  },
-  // Stili per il link "Forgot Password?"
-  forgotPasswordContainer: {
-    alignItems: 'flex-end',
-    marginBottom: 15,
-  },
-  forgotPasswordLink: {
-    color: '#007AFF',
-    fontSize: 14,
-  },
-  // Stili per la checkbox
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-    alignSelf: 'flex-start', // Allinea a sinistra
-  },
-  checkbox: {
-    marginRight: 8,
-  },
-  checkboxLabel: {
-    color: '#fff',
-    fontSize: 14,
   },
 });

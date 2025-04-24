@@ -103,7 +103,6 @@ export const useAuth = (): UseAuthReturn => {
       setLoading(true);
       setError(null);
       await signOut(auth);
-      // Rimuovi la preferenza "ricordami" al logout
       try {
         await AsyncStorage.removeItem(REMEMBER_ME_KEY);
       } catch (e) {

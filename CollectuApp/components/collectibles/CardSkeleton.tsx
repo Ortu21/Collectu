@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import LinearGradient from 'react-native-linear-gradient';
 
 interface CardSkeletonProps {
   cardDimensions?: {
@@ -75,35 +76,35 @@ export const CardSkeleton = ({
             cardDimensions ? { height: cardDimensions.height * 0.6 } : null,
           ]}
         >
-          <View style={styles.shimmerContainer}>
+          <View style={styles.shimmer}>
             <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
           </View>
         </View>
       </View>
       <View style={styles.cardInfo}>
         <View style={styles.cardName}>
-          <View style={styles.shimmerContainer}>
+          <View style={styles.shimmer}>
             <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
           </View>
         </View>
         <View style={styles.cardRarity}>
-          <View style={styles.shimmerContainer}>
+          <View style={styles.shimmer}>
             <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
           </View>
         </View>
         <View style={styles.cardDetails}>
           <View style={styles.cardSet}>
-            <View style={styles.shimmerContainer}>
+            <View style={styles.shimmer}>
               <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
+            </View>
             </View>
           </View>
           <View style={styles.cardNumber}>
-            <View style={styles.shimmerContainer}>
+            <View style={styles.shimmer}>
               <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
             </View>
+            </View>
           </View>
-        </View>
-      </View>
     </Animated.View>
   );
 };
@@ -176,12 +177,8 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   shimmer: {
-    width: "300%", // Ridotto per adattarsi meglio all'animazione
-    height: "100%",
-    backgroundImage:
-      "linear-gradient(to right, #444 0%, #555 20%, #444 40%, #444 60%, #555 80%, #444 100%)",
-    backgroundSize: "100% 100%", // Adattato per un effetto più fluido
-    backgroundColor: "#444",
+    width: '300%',
+    height: '100%',
     opacity: 0.8,
   },
 });

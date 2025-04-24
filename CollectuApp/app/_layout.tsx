@@ -1,27 +1,52 @@
 import { Stack } from 'expo-router';
-export default function RootLayout() {
+import { useAuth } from '../hooks/useAuth';
+import { useEffect } from 'react';
+import { useRouter, useSegments } from 'expo-router';
+
+function useProtectedRoute(user: any, isAuthLoading: boolean) {
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+    const isIndexPage = segments[0] === 'index';
+
+    if (!user && !inAuthGroup) {
+      // Reindirizza alla pagina di login se l'utente non è autenticato
+      router.replace('/login');
+    } else if (user && inAuthGroup) {
+      // Reindirizza alla home se l'utente è già autenticato
+      router.replace('/home');
+    } else if (user && isIndexPage) {
+      // Reindirizza alla home se l'utente è sulla pagina index
+      router.replace('/home');
+    }
+  }, [user, isAuthLoading, segments, router]);
+}
+
+function RootLayoutNav() {
+  const { user, isAuthLoading } = useAuth();
+  useProtectedRoute(user ?? null, isAuthLoading);
   return (
-      <Stack screenOptions={{
-        headerShown: false, 
-        headerStyle: {
-          backgroundColor: '#333', 
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-      }}>
-        {/* Nasconde l'header per le schermate principali come login, register, index */}
-        <Stack.Screen name="index" />
-        <Stack.Screen name="login" />
-        <Stack.Screen name="register" />
-        <Stack.Screen name="forgot-password" />
-
-        <Stack.Screen name="home" options={{ title: 'Home', headerShown: true }} /> 
-        <Stack.Screen name="collectibles" options={{ title: 'Ricerca Carte', headerShown: true }} /> /
-        <Stack.Screen name="card/[id]" options={{ title: 'Dettaglio Carta', headerShown: true }} /> 
-
-        <Stack.Screen name="profile" options={{ title: 'Profilo Utente', headerShown: true }} />
-      </Stack>
+    <Stack screenOptions={{
+      headerStyle: {
+        backgroundColor: '#333',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+    }}>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
   );
+}
+
+
+export default function RootLayout() {
+  return <RootLayoutNav />;
 }

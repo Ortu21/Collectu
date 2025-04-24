@@ -13,11 +13,11 @@ import {
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring, withDelay, FadeIn, FadeInDown } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { fetchPokemonCardById } from "../../services/api";
-import { PokemonCard } from "../../types/pokemon";
+import { fetchPokemonCardById } from "../../../services/api";
+import { PokemonCard } from "../../../types/pokemon";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { CardMarketPrices } from "../../components/collectibles/CardMarketPrices";
-import { TCGPlayerPrices } from "../../components/collectibles/TCGPlayerPrices";
+import { CardMarketPrices } from "../../../components/collectibles/CardMarketPrices";
+import { TCGPlayerPrices } from "../../../components/collectibles/TCGPlayerPrices";
 
 export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -132,11 +132,7 @@ export default function CardDetailScreen() {
   const AnimatedImage = Animated.createAnimatedComponent(Image);
 
   const handleGoBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.push("/");
-    }
+    router.push("collectibles");
   };
 
   if (isLoading) {
