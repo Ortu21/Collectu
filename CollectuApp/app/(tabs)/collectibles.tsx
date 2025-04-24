@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {  } from "react";
 import { StyleSheet, SafeAreaView, StatusBar as RNStatusBar, useWindowDimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -33,7 +33,6 @@ const CollectiblesScreen = () => {
     searchQuery,
     setSearchQuery,
     totalCount,
-    hasMoreCards,
     selectedSet,
     handleSetSelect,
     clearSetFilter,
@@ -60,7 +59,7 @@ const CollectiblesScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       
       <SearchFilterBar
         searchQuery={searchQuery}
@@ -98,7 +97,7 @@ const CollectiblesScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: "#25292e",
     paddingTop: RNStatusBar.currentHeight,
   },
   header: {
