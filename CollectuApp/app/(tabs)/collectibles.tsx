@@ -60,7 +60,7 @@ const CollectiblesScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       
       <SearchFilterBar
         searchQuery={searchQuery}
@@ -98,7 +98,7 @@ const CollectiblesScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#25292e",
+    backgroundColor: "#000000",
     paddingTop: RNStatusBar.currentHeight,
   },
   header: {

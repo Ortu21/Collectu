@@ -23,8 +23,17 @@ export const SearchFilterBar = ({
 }: SearchFilterBarProps) => {
   return (
     <View style={styles.header}>
-      <Text style={styles.title}>Collection</Text>
       
+      
+      <TextInput
+          style={[styles.searchInput, { flex: 1 }]}
+          placeholder="Search cards..."
+          placeholderTextColor="#666"
+          value={searchQuery}
+          onChangeText={onSearchChange}
+        />
+
+
       <View style={styles.filterContainer}>
         <TextInput
           style={[styles.searchInput, { flex: 1 }]}

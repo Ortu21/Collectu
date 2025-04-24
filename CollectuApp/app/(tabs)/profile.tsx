@@ -9,9 +9,6 @@ const ProfileScreen = () => {
 
   const handleLogout = async () => {
     await logout();
-    // Il reindirizzamento dovrebbe avvenire automaticamente tramite l'hook useAuth
-    // o il layout principale che controlla lo stato dell'utente.
-    // router.replace('/login'); // Potrebbe non essere necessario se gestito altrove
   };
 
   return (
