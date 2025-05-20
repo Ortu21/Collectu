@@ -10,7 +10,15 @@ import {
   useWindowDimensions,
   Platform,
 } from "react-native";
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring, withDelay, FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withDelay,
+  FadeIn,
+  FadeInDown,
+} from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { fetchPokemonCardById } from "../../../services/api";
@@ -18,6 +26,7 @@ import { PokemonCard } from "../../../types/pokemon";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { CardMarketPrices } from "../../../components/collectibles/CardMarketPrices";
 import { TCGPlayerPrices } from "../../../components/collectibles/TCGPlayerPrices";
+import { CardAction } from "../../../components/collectibles/CardAction";
 
 export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -26,77 +35,77 @@ export default function CardDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { width, height } = useWindowDimensions();
-  
+
   // Shared values for animations
   const cardOpacity = useSharedValue(0);
   const cardScale = useSharedValue(0.9);
   const detailsOpacity = useSharedValue(0);
-  
+
   // Animated styles for card image
   const cardAnimatedStyle = useAnimatedStyle(() => {
     return {
       opacity: cardOpacity.value,
-      transform: [{ scale: cardScale.value }]
+      transform: [{ scale: cardScale.value }],
     };
   });
-  
+
   // Animated styles for details container
   const detailsAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: detailsOpacity.value
+      opacity: detailsOpacity.value,
     };
   });
-  
+
   // Function to trigger animations when card loads
   const triggerAnimations = () => {
     // Reset animation values when loading a new card
     cardOpacity.value = 0;
     cardScale.value = 0.9;
     detailsOpacity.value = 0;
-    
+
     // Animate card with spring effect
     setTimeout(() => {
       cardOpacity.value = withTiming(1, { duration: 600 });
       cardScale.value = withSpring(1, { damping: 15, stiffness: 100 });
-      
+
       // Animate details with a delay
       setTimeout(() => {
         detailsOpacity.value = withTiming(1, { duration: 500 });
       }, 300);
     }, 100);
   };
-  
+
   // Determine if we should use desktop layout
   const isDesktopLayout = width >= 768;
-  
+
   // Calculate optimal card dimensions based on screen size
   const getCardDimensions = () => {
     // Card aspect ratio is approximately 1:1.4 (width:height)
     const cardAspectRatio = 1.4;
-    
+
     if (isDesktopLayout) {
       // For desktop, use 40% of the screen width (matching the desktopImageContainer width)
       const containerWidth = width * 0.4 - 40; // 40% of screen width minus padding
       const cardWidth = Math.min(containerWidth, 500); // Cap at 500px max width
       const cardHeight = cardWidth * cardAspectRatio;
-      
+
       return {
         width: cardWidth,
-        height: cardHeight
+        height: cardHeight,
       };
     } else {
       // For mobile, use 90% of the screen width
       const containerWidth = width * 0.9;
       const cardWidth = Math.min(containerWidth, 400); // Cap at 400px max width
       const cardHeight = cardWidth * cardAspectRatio;
-      
+
       return {
         width: cardWidth,
-        height: cardHeight
+        height: cardHeight,
       };
     }
   };
-  
+
   // Get the optimal card dimensions
   const cardDimensions = getCardDimensions();
 
@@ -126,13 +135,26 @@ export default function CardDetailScreen() {
 
     loadCard();
   }, [id]);
-  
+
   // Create animated components for better platform compatibility
-  const AnimatedView = Platform.OS === 'web' ? Animated.createAnimatedComponent(View) : Animated.View;
+  const AnimatedView =
+    Platform.OS === "web"
+      ? Animated.createAnimatedComponent(View)
+      : Animated.View;
   const AnimatedImage = Animated.createAnimatedComponent(Image);
 
   const handleGoBack = () => {
     router.push("collectibles");
+  };
+
+  // Handler for add/remove actions (for now just log)
+  const handleAddCard = (qty: number, quality: string) => {
+    // TODO: implement backend call
+    console.log(`Aggiungi ${qty} carta/e (${quality})`);
+  };
+  const handleRemoveCard = (qty: number, quality: string) => {
+    // TODO: implement backend call
+    console.log(`Rimuovi ${qty} carta/e (${quality})`);
   };
 
   if (isLoading) {
@@ -223,7 +245,6 @@ export default function CardDetailScreen() {
   return (
     <ScrollView style={styles.container}>
       <StatusBar style="light" />
-
       {/* Header with back button and card name */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -237,208 +258,241 @@ export default function CardDetailScreen() {
         )}
       </View>
 
+      {/* --- CardAction component: Desktop layout --- */}
+      {isDesktopLayout && (
+        <View style={{ marginHorizontal: 12 }}>
+          <CardAction onAdd={handleAddCard} onRemove={handleRemoveCard} />
+        </View>
+      )}
+
       {isDesktopLayout ? (
         /* Desktop layout - Horizontal layout for larger screens */
         <View style={styles.desktopContainer}>
           {/* Card image with shadow effect - Left side */}
-          <AnimatedView style={[styles.desktopImageContainer, cardAnimatedStyle]}>
+          <AnimatedView
+            style={[styles.desktopImageContainer, cardAnimatedStyle]}
+          >
             <View style={styles.cardImageWrapper}>
               <AnimatedImage
                 source={{ uri: card.largeImageUrl }}
-                style={[styles.cardImage, { width: cardDimensions.width, height: cardDimensions.height }]}
+                style={[
+                  styles.cardImage,
+                  {
+                    width: cardDimensions.width,
+                    height: cardDimensions.height,
+                  },
+                ]}
                 resizeMode="contain"
               />
             </View>
           </AnimatedView>
-          
+
           {/* Card details - Right side */}
-          <AnimatedView style={[styles.desktopDetailsContainer, detailsAnimatedStyle]}>
-            {/* Basic card information - Desktop */}
-          <View style={styles.cardInfoSection}>
+          <AnimatedView
+            style={[styles.desktopDetailsContainer, detailsAnimatedStyle]}
+          >
             {/* Basic card information - Desktop */}
             <View style={styles.cardInfoSection}>
-              <Text style={styles.sectionTitle}>Card Information</Text>
-              <View style={styles.cardInfo}>
-                <View style={styles.infoRow}>
-                  <View style={styles.infoLabelContainer}>
-                    <Ionicons
-                      name="albums-outline"
-                      size={18}
-                      color="#aaa"
-                      style={styles.infoIcon}
-                    />
-                    <Text style={styles.infoLabel}>Set:</Text>
-                  </View>
-                  <Text style={styles.infoValue}>{card.setName || "Unknown"}</Text>
-                </View>
-
-                <View style={styles.infoRow}>
-                  <View style={styles.infoLabelContainer}>
-                    <Ionicons
-                      name="pricetag-outline"
-                      size={18}
-                      color="#aaa"
-                      style={styles.infoIcon}
-                    />
-                    <Text style={styles.infoLabel}>Number:</Text>
-                  </View>
-                  <Text style={styles.infoValue}>{card.number || "Unknown"}</Text>
-                </View>
-
-                <View style={styles.infoRow}>
-                  <View style={styles.infoLabelContainer}>
-                    <Ionicons
-                      name="star-outline"
-                      size={18}
-                      color="#aaa"
-                      style={styles.infoIcon}
-                    />
-                    <Text style={styles.infoLabel}>Rarity:</Text>
-                  </View>
-                  <Text style={styles.infoValue}>{card.rarity || "Unknown"}</Text>
-                </View>
-
-                <View style={styles.infoRow}>
-                  <View style={styles.infoLabelContainer}>
-                    <MaterialCommunityIcons
-                      name="cards"
-                      size={18}
-                      color="#aaa"
-                      style={styles.infoIcon}
-                    />
-                    <Text style={styles.infoLabel}>Type:</Text>
-                  </View>
-                  <Text style={styles.infoValue}>{card.supertype || "Unknown"}</Text>
-                </View>
-
-                {card.evolvesFrom && (
+              {/* Basic card information - Desktop */}
+              <View style={styles.cardInfoSection}>
+                <Text style={styles.sectionTitle}>Card Information</Text>
+                <View style={styles.cardInfo}>
                   <View style={styles.infoRow}>
                     <View style={styles.infoLabelContainer}>
-                      <MaterialCommunityIcons
-                        name="arrow-up-bold"
+                      <Ionicons
+                        name="albums-outline"
                         size={18}
                         color="#aaa"
                         style={styles.infoIcon}
                       />
-                      <Text style={styles.infoLabel}>Evolves From:</Text>
+                      <Text style={styles.infoLabel}>Set:</Text>
                     </View>
-                    <Text style={styles.infoValue}>{card.evolvesFrom}</Text>
+                    <Text style={styles.infoValue}>
+                      {card.setName || "Unknown"}
+                    </Text>
                   </View>
-                )}
-              </View>
-            </View>
-            
-            {/* Market Prices Section - Desktop */}
-            {(card.cardMarketPrices || card.tcgPlayerPrices) && (
-              <View style={styles.cardInfoSection}>
-                <Text style={styles.sectionTitle}>CardMarket Prices</Text>
 
-                {/* CardMarket Prices - Using the CardMarketPrices component */}
-                {card.cardMarketPrices && (
-                  <CardMarketPrices
-                    prices={card.cardMarketPrices}
-                    formatPrice={formatPrice}
-                  />
-                )}
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoLabelContainer}>
+                      <Ionicons
+                        name="pricetag-outline"
+                        size={18}
+                        color="#aaa"
+                        style={styles.infoIcon}
+                      />
+                      <Text style={styles.infoLabel}>Number:</Text>
+                    </View>
+                    <Text style={styles.infoValue}>
+                      {card.number || "Unknown"}
+                    </Text>
+                  </View>
 
-                {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
-                {card.tcgPlayerPrices && (
-                  <TCGPlayerPrices
-                    prices={card.tcgPlayerPrices}
-                    formatPrice={formatPrice}
-                  />
-                )}
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoLabelContainer}>
+                      <Ionicons
+                        name="star-outline"
+                        size={18}
+                        color="#aaa"
+                        style={styles.infoIcon}
+                      />
+                      <Text style={styles.infoLabel}>Rarity:</Text>
+                    </View>
+                    <Text style={styles.infoValue}>
+                      {card.rarity || "Unknown"}
+                    </Text>
+                  </View>
 
-                {!card.cardMarketPrices && !card.tcgPlayerPrices && (
-                  <Text style={styles.noDataText}>No price data available</Text>
-                )}
-              </View>
-            )}
-            
-            {/* Attacks section - Desktop */}
-            {card.attacks && card.attacks.length > 0 && (
-              <View style={styles.cardInfoSection}>
-                <Text style={styles.sectionTitle}>Attacks</Text>
-                {card.attacks.map((attack, index) => (
-                  <View key={`attack-${index}`} style={styles.attackContainer}>
-                    <View style={styles.attackHeader}>
-                      <View style={styles.attackNameContainer}>
-                        {renderEnergyCost(attack.cost)}
-                        <Text style={styles.attackName}>{attack.name}</Text>
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoLabelContainer}>
+                      <MaterialCommunityIcons
+                        name="cards"
+                        size={18}
+                        color="#aaa"
+                        style={styles.infoIcon}
+                      />
+                      <Text style={styles.infoLabel}>Type:</Text>
+                    </View>
+                    <Text style={styles.infoValue}>
+                      {card.supertype || "Unknown"}
+                    </Text>
+                  </View>
+
+                  {card.evolvesFrom && (
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoLabelContainer}>
+                        <MaterialCommunityIcons
+                          name="arrow-up-bold"
+                          size={18}
+                          color="#aaa"
+                          style={styles.infoIcon}
+                        />
+                        <Text style={styles.infoLabel}>Evolves From:</Text>
                       </View>
-                      {attack.damage && (
-                        <Text style={styles.attackDamage}>{attack.damage}</Text>
-                      )}
+                      <Text style={styles.infoValue}>{card.evolvesFrom}</Text>
                     </View>
-                    <Text style={styles.attackText}>{attack.text}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-            
-            {/* Battle Attributes - Desktop */}
-            <View style={styles.cardInfoSection}>
-              <Text style={styles.sectionTitle}>Battle Attributes</Text>
-              <View style={styles.battleAttributesContainer}>
-                {/* Weaknesses */}
-                <View style={styles.attributeSection}>
-                  <Text style={styles.attributeTitle}>Weaknesses</Text>
-                  {card.weaknesses && card.weaknesses.length > 0 ? (
-                    <View style={styles.attributeList}>
-                      {card.weaknesses.map((weakness, index) => (
-                        <View key={`weakness-${index}`} style={styles.attributeItem}>
-                          <Text
-                            style={[
-                              styles.attributeType,
-                              { color: getTypeColor(weakness.type) },
-                            ]}
-                          >
-                            {weakness.type}
-                          </Text>
-                          <Text style={styles.attributeValue}>{weakness.value}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  ) : (
-                    <Text style={styles.noDataText}>None</Text>
                   )}
                 </View>
+              </View>
 
-                {/* Resistances */}
-                <View style={styles.attributeSection}>
-                  <Text style={styles.attributeTitle}>Resistances</Text>
-                  {card.resistances && card.resistances.length > 0 ? (
-                    <View style={styles.attributeList}>
-                      {card.resistances.map((resistance, index) => (
-                        <View
-                          key={`resistance-${index}`}
-                          style={styles.attributeItem}
-                        >
-                          <Text
-                            style={[
-                              styles.attributeType,
-                              { color: getTypeColor(resistance.type) },
-                            ]}
-                          >
-                            {resistance.type}
-                          </Text>
-                          <Text style={styles.attributeValue}>
-                            {resistance.value}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  ) : (
-                    <Text style={styles.noDataText}>None</Text>
+              {/* Market Prices Section - Desktop */}
+              {(card.cardMarketPrices || card.tcgPlayerPrices) && (
+                <View style={styles.cardInfoSection}>
+                  <Text style={styles.sectionTitle}>CardMarket Prices</Text>
+
+                  {/* CardMarket Prices - Using the CardMarketPrices component */}
+                  {card.cardMarketPrices && (
+                    <CardMarketPrices
+                      prices={card.cardMarketPrices}
+                      formatPrice={formatPrice}
+                    />
                   )}
+
+                  {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
+                  {card.tcgPlayerPrices && (
+                    <TCGPlayerPrices
+                      prices={card.tcgPlayerPrices}
+                      formatPrice={formatPrice}
+                    />
+                  )}
+
+                  {!card.cardMarketPrices && !card.tcgPlayerPrices && (
+                    <Text style={styles.noDataText}>
+                      No price data available
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              {/* Attacks section - Desktop */}
+              {card.attacks && card.attacks.length > 0 && (
+                <View style={styles.cardInfoSection}>
+                  <Text style={styles.sectionTitle}>Attacks</Text>
+                  {card.attacks.map((attack, index) => (
+                    <View
+                      key={`attack-${index}`}
+                      style={styles.attackContainer}
+                    >
+                      <View style={styles.attackHeader}>
+                        <View style={styles.attackNameContainer}>
+                          {renderEnergyCost(attack.cost)}
+                          <Text style={styles.attackName}>{attack.name}</Text>
+                        </View>
+                        {attack.damage && (
+                          <Text style={styles.attackDamage}>
+                            {attack.damage}
+                          </Text>
+                        )}
+                      </View>
+                      <Text style={styles.attackText}>{attack.text}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Battle Attributes - Desktop */}
+              <View style={styles.cardInfoSection}>
+                <Text style={styles.sectionTitle}>Battle Attributes</Text>
+                <View style={styles.battleAttributesContainer}>
+                  {/* Weaknesses */}
+                  <View style={styles.attributeSection}>
+                    <Text style={styles.attributeTitle}>Weaknesses</Text>
+                    {card.weaknesses && card.weaknesses.length > 0 ? (
+                      <View style={styles.attributeList}>
+                        {card.weaknesses.map((weakness, index) => (
+                          <View
+                            key={`weakness-${index}`}
+                            style={styles.attributeItem}
+                          >
+                            <Text
+                              style={[
+                                styles.attributeType,
+                                { color: getTypeColor(weakness.type) },
+                              ]}
+                            >
+                              {weakness.type}
+                            </Text>
+                            <Text style={styles.attributeValue}>
+                              {weakness.value}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <Text style={styles.noDataText}>None</Text>
+                    )}
+                  </View>
+
+                  {/* Resistances */}
+                  <View style={styles.attributeSection}>
+                    <Text style={styles.attributeTitle}>Resistances</Text>
+                    {card.resistances && card.resistances.length > 0 ? (
+                      <View style={styles.attributeList}>
+                        {card.resistances.map((resistance, index) => (
+                          <View
+                            key={`resistance-${index}`}
+                            style={styles.attributeItem}
+                          >
+                            <Text
+                              style={[
+                                styles.attributeType,
+                                { color: getTypeColor(resistance.type) },
+                              ]}
+                            >
+                              {resistance.type}
+                            </Text>
+                            <Text style={styles.attributeValue}>
+                              {resistance.value}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <Text style={styles.noDataText}>None</Text>
+                    )}
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
-
-
-
-
           </AnimatedView>
         </View>
       ) : (
@@ -449,14 +503,23 @@ export default function CardDetailScreen() {
             <View style={styles.cardImageWrapper}>
               <AnimatedImage
                 source={{ uri: card.largeImageUrl }}
-                style={[styles.cardImage, { width: cardDimensions.width, height: cardDimensions.height }]}
+                style={[
+                  styles.cardImage,
+                  {
+                    width: cardDimensions.width,
+                    height: cardDimensions.height,
+                  },
+                ]}
                 resizeMode="contain"
               />
             </View>
           </AnimatedView>
 
           {/* Basic card information - Mobile */}
-          <Animated.View entering={FadeInDown.delay(300).duration(500)} style={styles.cardInfoSection}>
+          <Animated.View
+            entering={FadeInDown.delay(300).duration(500)}
+            style={styles.cardInfoSection}
+          >
             <Text style={styles.sectionTitle}>Card Information</Text>
             <View style={styles.cardInfo}>
               <View style={styles.infoRow}>
@@ -469,7 +532,9 @@ export default function CardDetailScreen() {
                   />
                   <Text style={styles.infoLabel}>Set:</Text>
                 </View>
-                <Text style={styles.infoValue}>{card.setName || "Unknown"}</Text>
+                <Text style={styles.infoValue}>
+                  {card.setName || "Unknown"}
+                </Text>
               </View>
 
               <View style={styles.infoRow}>
@@ -508,7 +573,9 @@ export default function CardDetailScreen() {
                   />
                   <Text style={styles.infoLabel}>Type:</Text>
                 </View>
-                <Text style={styles.infoValue}>{card.supertype || "Unknown"}</Text>
+                <Text style={styles.infoValue}>
+                  {card.supertype || "Unknown"}
+                </Text>
               </View>
 
               {card.evolvesFrom && (
@@ -527,10 +594,13 @@ export default function CardDetailScreen() {
               )}
             </View>
           </Animated.View>
-          
+
           {/* Market Prices Section - Mobile */}
           {(card.cardMarketPrices || card.tcgPlayerPrices) && (
-            <Animated.View entering={FadeInDown.delay(400).duration(500)} style={styles.cardInfoSection}>
+            <Animated.View
+              entering={FadeInDown.delay(400).duration(500)}
+              style={styles.cardInfoSection}
+            >
               <Text style={styles.sectionTitle}>CardMarket Prices</Text>
 
               {/* CardMarket Prices - Using the CardMarketPrices component */}
@@ -554,10 +624,13 @@ export default function CardDetailScreen() {
               )}
             </Animated.View>
           )}
-          
+
           {/* Attacks section - Mobile */}
           {card.attacks && card.attacks.length > 0 && (
-            <Animated.View entering={FadeInDown.delay(500).duration(500)} style={styles.cardInfoSection}>
+            <Animated.View
+              entering={FadeInDown.delay(500).duration(500)}
+              style={styles.cardInfoSection}
+            >
               <Text style={styles.sectionTitle}>Attacks</Text>
               {card.attacks.map((attack, index) => (
                 <View key={`attack-${index}`} style={styles.attackContainer}>
@@ -575,9 +648,12 @@ export default function CardDetailScreen() {
               ))}
             </Animated.View>
           )}
-          
+
           {/* Battle Attributes - Mobile */}
-          <Animated.View entering={FadeInDown.delay(600).duration(500)} style={styles.cardInfoSection}>
+          <Animated.View
+            entering={FadeInDown.delay(600).duration(500)}
+            style={styles.cardInfoSection}
+          >
             <Text style={styles.sectionTitle}>Battle Attributes</Text>
             <View style={styles.battleAttributesContainer}>
               {/* Weaknesses */}
@@ -586,7 +662,10 @@ export default function CardDetailScreen() {
                 {card.weaknesses && card.weaknesses.length > 0 ? (
                   <View style={styles.attributeList}>
                     {card.weaknesses.map((weakness, index) => (
-                      <View key={`weakness-${index}`} style={styles.attributeItem}>
+                      <View
+                        key={`weakness-${index}`}
+                        style={styles.attributeItem}
+                      >
                         <Text
                           style={[
                             styles.attributeType,
@@ -595,7 +674,9 @@ export default function CardDetailScreen() {
                         >
                           {weakness.type}
                         </Text>
-                        <Text style={styles.attributeValue}>{weakness.value}</Text>
+                        <Text style={styles.attributeValue}>
+                          {weakness.value}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -632,6 +713,12 @@ export default function CardDetailScreen() {
                   <Text style={styles.noDataText}>None</Text>
                 )}
               </View>
+            </View>
+          </Animated.View>
+          <Animated.View entering={FadeInDown.delay(700).duration(500)}>
+            {/* --- CardAction component: Mobile layout --- */}
+            <View style={{ marginHorizontal: 12 }}>
+              <CardAction onAdd={handleAddCard} onRemove={handleRemoveCard} />
             </View>
           </Animated.View>
         </>
