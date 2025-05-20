@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth'; // Aggiunti setPersistence e tipi
 import { auth } from '../firebase/config';
@@ -17,7 +17,23 @@ interface UseAuthReturn {
 
 const REMEMBER_ME_KEY = '@rememberMe';
 
-export const useAuth = (): UseAuthReturn => {
+// Definisci il tipo per il valore del contesto
+interface AuthContextType extends UseAuthReturn {}
+
+// Crea il contesto di autenticazione
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Hook per utilizzare il contesto di autenticazione
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+// Hook interno che contiene la logica di autenticazione effettiva
+const useFirebaseAuth = (): UseAuthReturn => {
   const [loading, setLoading] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true); // Inizializza a true
   const [error, setError] = useState<string | null>(null);
@@ -142,4 +158,18 @@ export const useAuth = (): UseAuthReturn => {
   };
 };
 
-// Rimuovo la definizione esterna di sendPasswordReset
+// Definisci il tipo per le props del provider
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+// Crea il componente AuthProvider
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const authValues = useFirebaseAuth(); // Usa l'hook interno per ottenere i valori
+
+  return (
+    <AuthContext.Provider value={authValues}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

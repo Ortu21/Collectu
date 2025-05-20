@@ -1,6 +1,13 @@
-import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native';
-import { PokemonSet } from '../../types/pokemon';
+import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { PokemonSet } from "../../types/pokemon";
 
 interface SearchFilterBarProps {
   searchQuery: string;
@@ -19,22 +26,11 @@ export const SearchFilterBar = ({
   selectedSet,
   onClearFilter,
   totalCount,
-  isLoading
+  isLoading,
 }: SearchFilterBarProps) => {
   return (
     <View style={styles.header}>
-      
-      
-      <TextInput
-          style={[styles.searchInput, { flex: 1 }]}
-          placeholder="Search cards..."
-          placeholderTextColor="#666"
-          value={searchQuery}
-          onChangeText={onSearchChange}
-        />
-
-
-      <View style={styles.filterContainer}>
+      <View style={styles.searchContainer}>
         <TextInput
           style={[styles.searchInput, { flex: 1 }]}
           placeholder="Search cards..."
@@ -42,37 +38,40 @@ export const SearchFilterBar = ({
           value={searchQuery}
           onChangeText={onSearchChange}
         />
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={onFilterPress}
-        >
-          <Text style={styles.filterButtonText}>Filter</Text>
-        </TouchableOpacity>
       </View>
-      
+
+      <View style={styles.filterContainer}>
+        <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
+          <Text style={styles.filterButtonText}>Set</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.resultCountContainer}>
+          {totalCount > 0 && !isLoading && (
+            <Text style={styles.resultCount}>
+              Found {totalCount} card{totalCount !== 1 ? "s" : ""}
+            </Text>
+          )}
+        </View>
+      </View>
+
       {selectedSet && (
         <View style={styles.selectedSetContainer}>
           <View style={styles.selectedSetInfo}>
-            <Image 
-              source={{ uri: selectedSet.logoUrl }} 
-              style={styles.selectedSetLogo} 
+            <Image
+              source={{ uri: selectedSet.logoUrl }}
+              style={styles.selectedSetLogo}
               resizeMode="contain"
             />
             <Text style={styles.selectedSetName}>{selectedSet.setName}</Text>
           </View>
-          <TouchableOpacity onPress={onClearFilter} style={styles.clearFilterButton}>
+          <TouchableOpacity
+            onPress={onClearFilter}
+            style={styles.clearFilterButton}
+          >
             <Text style={styles.clearFilterText}>Clear</Text>
           </TouchableOpacity>
         </View>
       )}
-      
-      <View style={styles.resultCountContainer}>
-        {totalCount > 0 && !isLoading && (
-          <Text style={styles.resultCount}>
-            Found {totalCount} card{totalCount !== 1 ? "s" : ""}
-          </Text>
-        )}
-      </View>
     </View>
   );
 };
@@ -90,10 +89,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
-  filterContainer: {
+  searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
+  },
+  filterContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: 10,
   },
   searchInput: {

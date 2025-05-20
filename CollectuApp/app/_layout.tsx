@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useAuth } from '../hooks/useAuth';
+import { AuthProvider, useAuth } from '../hooks/useAuth';
 import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 
@@ -8,20 +8,31 @@ function useProtectedRoute(user: any, isAuthLoading: boolean) {
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthLoading) return;
+    if (isAuthLoading) {
+      return; // Mostra la schermata di caricamento (es. index.tsx) mentre lo stato di autenticazione viene caricato
+    }
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const isIndexPage = segments[0] === 'index';
+    const numSegments: number = segments.length;
 
-    if (!user && !inAuthGroup) {
-      // Reindirizza alla pagina di login se l'utente non è autenticato
-      router.replace('/login');
-    } else if (user && inAuthGroup) {
-      // Reindirizza alla home se l'utente è già autenticato
-      router.replace('/home');
-    } else if (user && isIndexPage) {
-      // Reindirizza alla home se l'utente è sulla pagina index
-      router.replace('/home');
+    const inAuthGroup = numSegments > 0 && segments[0] === '(auth)';
+    // Per la route radice (app/index.tsx), segments è un array vuoto []
+    const isRootIndexPage = numSegments === 0;
+
+    if (!user) { // Utente non autenticato
+      if (!inAuthGroup) {
+        // Se non autenticato e non nel gruppo auth (es. sulla pagina index o una pagina protetta)
+        router.replace('/login'); // Reindirizza a login
+      }
+      // Se è nel gruppo auth (es. /login, /register), non fare nulla, l'utente rimane lì
+    } else { // Utente autenticato
+      if (inAuthGroup) {
+        // Se autenticato e nel gruppo auth (es. è finito per qualche motivo su /login)
+        router.replace('/home'); // Reindirizza a home
+      } else if (isRootIndexPage) {
+        // Se autenticato e sulla pagina index radice
+        router.replace('/home'); // Reindirizza a home
+      }
+      // Se autenticato e su un'altra pagina protetta (es. /home, /profilo), non fare nulla
     }
   }, [user, isAuthLoading, segments, router]);
 }
@@ -48,5 +59,9 @@ function RootLayoutNav() {
 
 
 export default function RootLayout() {
-  return <RootLayoutNav />;
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
+  );
 }
