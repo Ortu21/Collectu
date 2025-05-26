@@ -1,7 +1,12 @@
-import { Stack } from 'expo-router';
-import { AuthProvider, useAuth } from '../hooks/useAuth';
-import { useEffect } from 'react';
-import { useRouter, useSegments } from 'expo-router';
+import { Stack } from "expo-router";
+import { AuthProvider, useAuth } from "../hooks/useAuth";
+import { useEffect } from "react";
+import { useRouter, useSegments } from "expo-router";
+import { DarkTheme ,DefaultTheme, ThemeProvider } from "@react-navigation/native";  
+import { TamaguiProvider } from "tamagui";
+import { tamaguiConfig } from "../tamagui.config";
+import { Platform, useColorScheme } from "react-native";
+import { useFonts } from 'expo-font'
 
 function useProtectedRoute(user: any, isAuthLoading: boolean) {
   const segments = useSegments();
@@ -9,30 +14,24 @@ function useProtectedRoute(user: any, isAuthLoading: boolean) {
 
   useEffect(() => {
     if (isAuthLoading) {
-      return; // Mostra la schermata di caricamento (es. index.tsx) mentre lo stato di autenticazione viene caricato
+      return;
     }
 
     const numSegments: number = segments.length;
 
-    const inAuthGroup = numSegments > 0 && segments[0] === '(auth)';
-    // Per la route radice (app/index.tsx), segments è un array vuoto []
+    const inAuthGroup = numSegments > 0 && segments[0] === "(auth)";
     const isRootIndexPage = numSegments === 0;
 
-    if (!user) { // Utente non autenticato
+    if (!user) {
       if (!inAuthGroup) {
-        // Se non autenticato e non nel gruppo auth (es. sulla pagina index o una pagina protetta)
-        router.replace('/login'); // Reindirizza a login
+        router.replace("/login");
       }
-      // Se è nel gruppo auth (es. /login, /register), non fare nulla, l'utente rimane lì
-    } else { // Utente autenticato
+    } else {
       if (inAuthGroup) {
-        // Se autenticato e nel gruppo auth (es. è finito per qualche motivo su /login)
-        router.replace('/home'); // Reindirizza a home
+        router.replace("/home"); 
       } else if (isRootIndexPage) {
-        // Se autenticato e sulla pagina index radice
-        router.replace('/home'); // Reindirizza a home
+        router.replace("/home"); 
       }
-      // Se autenticato e su un'altra pagina protetta (es. /home, /profilo), non fare nulla
     }
   }, [user, isAuthLoading, segments, router]);
 }
@@ -41,27 +40,45 @@ function RootLayoutNav() {
   const { user, isAuthLoading } = useAuth();
   useProtectedRoute(user ?? null, isAuthLoading);
   return (
-    <Stack screenOptions={{
-      headerStyle: {
-        backgroundColor: '#333',
-      },
-      headerTintColor: '#fff',
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}>
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: "#333",
+        },
+        headerTintColor: "#fff",
+        headerTitleStyle: {
+          fontWeight: "bold",
+        },
+      }}
+    >
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      
+
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
 }
 
-
 export default function RootLayout() {
+  const [loaded] = useFonts({
+    Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
+    InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
+  })
+
+  useEffect(() => {
+    if (loaded) {
+      // Puoi nascondere lo splash screen qui, se lo usi
+    }
+  }, [loaded])
+
+  if (!loaded) {
+    return null // oppure uno splash screen custom
+  }
+
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <TamaguiProvider config={tamaguiConfig}>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </TamaguiProvider>
   );
 }

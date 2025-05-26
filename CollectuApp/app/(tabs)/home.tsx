@@ -1,16 +1,71 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../../hooks/useAuth';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  YStack,
+  XStack,
+  Text,
+  Button,
+  Card,
+  Image,
+  Theme,
+  Separator,
+  ScrollView,
+} from "tamagui";
 
 // Dati fittizi per le carte più costose (mantenuti per esempio)
 const dummyExpensiveCards = [
-  { id: '1', name: 'Charizard VMAX', price: 120.50, smallImageUrl: 'https://images.pokemontcg.io/swsh35/19_hires.png' }, // Esempio con URL reale
-  { id: '2', name: 'Pikachu Illustrator', price: 900000.00, smallImageUrl: 'https://images.pokemontcg.io/si1/1_hires.png' }, // Esempio con URL reale
-  { id: '3', name: 'Blastoise #009/165R', price: 85.00, smallImageUrl: 'https://images.pokemontcg.io/xy12/12_hires.png' }, // Esempio con URL reale
-  { id: '4', name: 'Umbreon Gold Star', price: 70000.00, smallImageUrl: 'https://images.pokemontcg.io/pop5/17_hires.png' }, // Esempio con URL reale
-  { id: '5', name: 'Lugia Neo Genesis', price: 144000.00, smallImageUrl: 'https://images.pokemontcg.io/neo1/9_hires.png' }, // Esempio con URL reale
+  {
+    id: "1",
+    name: "Charizard VMAX",
+    price: 120.5,
+    smallImageUrl: "https://images.pokemontcg.io/swsh35/19_hires.png",
+  },
+  {
+    id: "2",
+    name: "Pikachu Illustrator",
+    price: 900000.0,
+    smallImageUrl: "https://images.pokemontcg.io/si1/1_hires.png",
+  },
+  {
+    id: "3",
+    name: "Blastoise #009/165R",
+    price: 85.0,
+    smallImageUrl: "https://images.pokemontcg.io/xy12/12_hires.png",
+  },
+  {
+    id: "4",
+    name: "Umbreon Gold Star",
+    price: 70000.0,
+    smallImageUrl: "https://images.pokemontcg.io/pop5/17_hires.png",
+  },
+  {
+    id: "5",
+    name: "Lugia Neo Genesis",
+    price: 144000.0,
+    smallImageUrl: "https://images.pokemontcg.io/neo1/9_hires.png",
+  },
+];
+
+const stats = [
+  {
+    label: "Ungraded",
+    value: 33,
+    icon: "layers-outline" as const,
+    color: "#4CAF50",
+  },
+  {
+    label: "Sealed",
+    value: 0,
+    icon: "cube-outline" as const,
+    color: "#00BFFF",
+  },
+  {
+    label: "Graded",
+    value: 0,
+    icon: "star-outline" as const,
+    color: "#FFD700",
+  },
 ];
 
 const HomeScreen = () => {
@@ -20,198 +75,220 @@ const HomeScreen = () => {
   const paidValue = 174.69;
   const percentageChange = -38.18;
 
-  const stats = {
-    ungraded: 33,
-    sealed: 0,
-    graded: 0
-  };
-
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Viewing All Groups</Text>
-          <TouchableOpacity style={styles.currencyButton}>
-            <Text style={styles.currencyText}>EUR</Text>
-          </TouchableOpacity>
-        </View>
+    <Theme name="dark">
+      <YStack flex={1} style={{ backgroundColor: "#101014" }}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <YStack
+            style={{
+              paddingHorizontal: 20,
+              paddingTop: 32,
+              paddingBottom: 32,
+              width: "90%",
+              maxWidth: 1200,
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            {/* HEADER */}
+            <YStack style={{ alignItems: "center", marginBottom: 32 }}>
+              <Text
+                fontSize={36}
+                fontWeight="900"
+                style={{
+                  textAlign: "center",
+                  letterSpacing: 0.5,
+                  lineHeight: 44,
+                  background:
+                    "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  marginBottom: 8,
+                }}
+              >
+                La tua collezione
+              </Text>
+              <Text
+                fontSize={15}
+                color="#aaa"
+                style={{ textAlign: "center", maxWidth: 340 }}
+              >
+                Statistiche, cards e valore sempre a portata di mano.
+              </Text>
+            </YStack>
 
-        <View style={styles.valueContainer}>
-          <Text style={styles.valueLabel}>La tua collezione vale</Text>
-          <Text style={styles.valueAmount}>€{collectionValue.toFixed(2)}</Text>
-          <View style={styles.paidContainer}>
-            <Text style={styles.paidText}>Pagato €{paidValue.toFixed(2)}</Text>
-            <Text style={[styles.changeText, { color: percentageChange >= 0 ? '#4CAF50' : '#FF3B30' }]}>
-              ({percentageChange.toFixed(2)}%)
-            </Text>
-          </View>
-        </View>
+            {/* VALORE COLLEZIONE */}
+            <Card
+              elevate
+              backgroundColor="#18181b"
+              borderRadius={24}
+              style={{
+                alignItems: "center",
+                paddingVertical: 32,
+                marginBottom: 32,
+                boxShadow: "0 4px 32px 0 #0004",
+              }}
+            >
+              <Text fontSize={16} color="#aaa" style={{ marginBottom: 8 }}>
+                Valore collezione
+              </Text>
+              <Text
+                fontSize={40}
+                fontWeight="900"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  marginBottom: 10,
+                  letterSpacing: 0.5,
+                }}
+              >
+                €{collectionValue.toFixed(2)}
+              </Text>
+              <XStack style={{ alignItems: "center", gap: 8 }}>
+                <Text color="#999" fontSize={16}>
+                  Pagato €{paidValue.toFixed(2)}
+                </Text>
+                <Text
+                  color={percentageChange >= 0 ? "#4CAF50" : "#FF3B30"}
+                  fontWeight="700"
+                  fontSize={16}
+                >
+                  ({percentageChange.toFixed(2)}%)
+                </Text>
+              </XStack>
+            </Card>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.ungraded}</Text>
-            <Text style={styles.statLabel}>Ungraded</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.sealed}</Text>
-            <Text style={styles.statLabel}>Sealed</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.graded}</Text>
-            <Text style={styles.statLabel}>Graded</Text>
-          </View>
-        </View>
+            {/* STATISTICHE */}
+            <XStack
+              style={{
+                justifyContent: "center",
+                gap: 16,
+                marginBottom: 36,
+              }}
+            >
+              {stats.map((stat) => (
+                <Card
+                  key={stat.label}
+                  elevate
+                  backgroundColor="#18181b"
+                  borderRadius={18}
+                  padded
+                  style={{
+                    alignItems: "center",
+                    flex: 1,
+                    minWidth: 100,
+                    maxWidth: 120,
+                    width: "100%",
+                  }}
+                >
+                  <Ionicons
+                    name={stat.icon}
+                    size={26}
+                    color={stat.color}
+                    style={{ marginBottom: 4 }}
+                  />
+                  <Text
+                    fontSize={22}
+                    fontWeight="900"
+                    style={{ color: stat.color, marginBottom: 2 }}
+                  >
+                    {stat.value}
+                  </Text>
+                  <Text color="#aaa" fontSize={14}>
+                    {stat.label}
+                  </Text>
+                </Card>
+              ))}
+            </XStack>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Top 5 Most Valuable</Text>
-            <TouchableOpacity>
-              <Ionicons name="ellipsis-horizontal" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.cardList}>
-            {dummyExpensiveCards.map(card => (
-              <TouchableOpacity key={card.id} style={styles.cardItem} onPress={() => router.push(`/card/${card.id}`)}>
-                <Image source={{ uri: card.smallImageUrl }} style={styles.cardImage} />
-                <View style={styles.cardInfo}>
-                  <Text style={styles.cardName}>{card.name}</Text>
-                  <Text style={styles.cardPrice}>€{card.price.toFixed(2)}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={24} color="#666" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </ScrollView>
-    </View>
+            {/* SEPARATORE */}
+            <Separator style={{ marginVertical: 18 }} />
+
+            {/* TOP 5 */}
+            <YStack style={{ marginTop: 12 }}>
+              <XStack
+                style={{
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 16,
+                }}
+              >
+                <Text fontSize={18} color="#fff" fontWeight="700">
+                  Top 5 Most Valuable
+                </Text>
+                <Button size="$2" chromeless>
+                  <Ionicons name="ellipsis-horizontal" size={22} color="#fff" />
+                </Button>
+              </XStack>
+              <YStack style={{ gap: 16 }}>
+                {dummyExpensiveCards.map((card) => (
+                  <Card
+                    key={card.id}
+                    backgroundColor="#18181b"
+                    borderRadius={14}
+                    elevate
+                    pressStyle={{ backgroundColor: "#23232b" }}
+                    hoverStyle={{ backgroundColor: "#23232b" }}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 0,
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                      minHeight: 110,
+                    }}
+                    onPress={() => router.push(`/card/${card.id}`)}
+                  >
+                    <YStack
+                      style={{
+                        width: 86,
+                        height: 116,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "#23232b",
+                        borderRadius: 12,
+                        marginRight: 20,
+                        borderWidth: 2,
+                        borderColor: "#fff2",
+                        boxShadow: "0 2px 12px 0 #0006",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: card.smallImageUrl }}
+                        style={{
+                          width: 80,
+                          height: 110,
+                          borderRadius: 8,
+                          backgroundColor: "#222",
+                        }}
+                        resizeMode="cover"
+                      />
+                    </YStack>
+                    <YStack style={{ flex: 1, justifyContent: "center" }}>
+                      <Text
+                        color="#fff"
+                        fontSize={18}
+                        fontWeight="700"
+                        style={{ marginBottom: 2 }}
+                      >
+                        {card.name}
+                      </Text>
+                      <Text color="#4CAF50" fontSize={17} fontWeight="700">
+                        €{card.price.toFixed(2)}
+                      </Text>
+                    </YStack>
+                    <Ionicons name="chevron-forward" size={22} color="#666" />
+                  </Card>
+                ))}
+              </YStack>
+            </YStack>
+          </YStack>
+        </ScrollView>
+      </YStack>
+    </Theme>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  headerTitle: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '500',
-  },
-  currencyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1C1C1E',
-    padding: 8,
-    borderRadius: 8,
-  },
-  currencyText: {
-    color: '#fff',
-    fontWeight: '600',
-    marginRight: 4,
-  },
-  valueContainer: {
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  valueLabel: {
-    fontSize: 16,
-    color: '#fff',
-    marginBottom: 8,
-  },
-  valueAmount: {
-    fontSize: 48,
-    color: '#4CAF50',
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  paidContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  paidText: {
-    color: '#999',
-    marginRight: 4,
-  },
-  changeText: {
-    fontWeight: '500',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 24,
-    paddingHorizontal: 16,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    color: '#4CAF50',
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  statLabel: {
-    color: '#999',
-    fontSize: 14,
-  },
-  section: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 12,
-    margin: 16,
-    overflow: 'hidden',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  cardList: {
-    padding: 8,
-  },
-  cardItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  cardImage: {
-    width: 50,
-    height: 70,
-    borderRadius: 4,
-    marginRight: 12,
-  },
-  cardInfo: {
-    flex: 1,
-  },
-  cardName: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  cardPrice: {
-    color: '#4CAF50',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
 
 export default HomeScreen;

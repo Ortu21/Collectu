@@ -258,114 +258,61 @@ export default function CardDetailScreen() {
         )}
       </View>
 
-      {/* --- CardAction component: Desktop layout --- */}
-      {isDesktopLayout && (
-        <View style={{ marginHorizontal: 12 }}>
-          <CardAction onAdd={handleAddCard} onRemove={handleRemoveCard} />
-        </View>
-      )}
-
       {isDesktopLayout ? (
-        /* Desktop layout - Horizontal layout for larger screens */
         <View style={styles.desktopContainer}>
-          {/* Card image with shadow effect - Left side */}
-          <AnimatedView
-            style={[styles.desktopImageContainer, cardAnimatedStyle]}
-          >
-            <View style={styles.cardImageWrapper}>
-              <AnimatedImage
-                source={{ uri: card.largeImageUrl }}
-                style={[
-                  styles.cardImage,
-                  {
-                    width: cardDimensions.width,
-                    height: cardDimensions.height,
-                  },
-                ]}
-                resizeMode="contain"
-              />
-            </View>
-          </AnimatedView>
-
-          {/* Card details - Right side */}
-          <AnimatedView
-            style={[styles.desktopDetailsContainer, detailsAnimatedStyle]}
-          >
-            {/* Basic card information - Desktop */}
-            <View style={styles.cardInfoSection}>
-              {/* Basic card information - Desktop */}
+          {/* Sezione superiore: immagine a sinistra, info brevi a destra */}
+          <View style={styles.desktopTopRow}>
+            <AnimatedView style={[styles.desktopImageContainer, cardAnimatedStyle]}>
+              <View style={styles.cardImageWrapper}>
+                <AnimatedImage
+                  source={{ uri: card.largeImageUrl }}
+                  style={[
+                    styles.cardImage,
+                    {
+                      width: cardDimensions.width,
+                      height: cardDimensions.height,
+                    },
+                  ]}
+                  resizeMode="contain"
+                />
+              </View>
+            </AnimatedView>
+            <View style={styles.desktopShortInfoContainer}>
               <View style={styles.cardInfoSection}>
                 <Text style={styles.sectionTitle}>Card Information</Text>
                 <View style={styles.cardInfo}>
                   <View style={styles.infoRow}>
                     <View style={styles.infoLabelContainer}>
-                      <Ionicons
-                        name="albums-outline"
-                        size={18}
-                        color="#aaa"
-                        style={styles.infoIcon}
-                      />
+                      <Ionicons name="albums-outline" size={18} color="#aaa" style={styles.infoIcon} />
                       <Text style={styles.infoLabel}>Set:</Text>
                     </View>
-                    <Text style={styles.infoValue}>
-                      {card.setName || "Unknown"}
-                    </Text>
+                    <Text style={styles.infoValue}>{card.setName || "Unknown"}</Text>
                   </View>
-
                   <View style={styles.infoRow}>
                     <View style={styles.infoLabelContainer}>
-                      <Ionicons
-                        name="pricetag-outline"
-                        size={18}
-                        color="#aaa"
-                        style={styles.infoIcon}
-                      />
+                      <Ionicons name="pricetag-outline" size={18} color="#aaa" style={styles.infoIcon} />
                       <Text style={styles.infoLabel}>Number:</Text>
                     </View>
-                    <Text style={styles.infoValue}>
-                      {card.number || "Unknown"}
-                    </Text>
+                    <Text style={styles.infoValue}>{card.number || "Unknown"}</Text>
                   </View>
-
                   <View style={styles.infoRow}>
                     <View style={styles.infoLabelContainer}>
-                      <Ionicons
-                        name="star-outline"
-                        size={18}
-                        color="#aaa"
-                        style={styles.infoIcon}
-                      />
+                      <Ionicons name="star-outline" size={18} color="#aaa" style={styles.infoIcon} />
                       <Text style={styles.infoLabel}>Rarity:</Text>
                     </View>
-                    <Text style={styles.infoValue}>
-                      {card.rarity || "Unknown"}
-                    </Text>
+                    <Text style={styles.infoValue}>{card.rarity || "Unknown"}</Text>
                   </View>
-
                   <View style={styles.infoRow}>
                     <View style={styles.infoLabelContainer}>
-                      <MaterialCommunityIcons
-                        name="cards"
-                        size={18}
-                        color="#aaa"
-                        style={styles.infoIcon}
-                      />
+                      <MaterialCommunityIcons name="cards" size={18} color="#aaa" style={styles.infoIcon} />
                       <Text style={styles.infoLabel}>Type:</Text>
                     </View>
-                    <Text style={styles.infoValue}>
-                      {card.supertype || "Unknown"}
-                    </Text>
+                    <Text style={styles.infoValue}>{card.supertype || "Unknown"}</Text>
                   </View>
-
                   {card.evolvesFrom && (
                     <View style={styles.infoRow}>
                       <View style={styles.infoLabelContainer}>
-                        <MaterialCommunityIcons
-                          name="arrow-up-bold"
-                          size={18}
-                          color="#aaa"
-                          style={styles.infoIcon}
-                        />
+                        <MaterialCommunityIcons name="arrow-up-bold" size={18} color="#aaa" style={styles.infoIcon} />
                         <Text style={styles.infoLabel}>Evolves From:</Text>
                       </View>
                       <Text style={styles.infoValue}>{card.evolvesFrom}</Text>
@@ -373,127 +320,82 @@ export default function CardDetailScreen() {
                   )}
                 </View>
               </View>
-
-              {/* Market Prices Section - Desktop */}
-              {(card.cardMarketPrices || card.tcgPlayerPrices) && (
-                <View style={styles.cardInfoSection}>
-                  <Text style={styles.sectionTitle}>CardMarket Prices</Text>
-
-                  {/* CardMarket Prices - Using the CardMarketPrices component */}
-                  {card.cardMarketPrices && (
-                    <CardMarketPrices
-                      prices={card.cardMarketPrices}
-                      formatPrice={formatPrice}
-                    />
-                  )}
-
-                  {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
-                  {card.tcgPlayerPrices && (
-                    <TCGPlayerPrices
-                      prices={card.tcgPlayerPrices}
-                      formatPrice={formatPrice}
-                    />
-                  )}
-
-                  {!card.cardMarketPrices && !card.tcgPlayerPrices && (
-                    <Text style={styles.noDataText}>
-                      No price data available
-                    </Text>
-                  )}
-                </View>
-              )}
-
-              {/* Attacks section - Desktop */}
-              {card.attacks && card.attacks.length > 0 && (
-                <View style={styles.cardInfoSection}>
-                  <Text style={styles.sectionTitle}>Attacks</Text>
-                  {card.attacks.map((attack, index) => (
-                    <View
-                      key={`attack-${index}`}
-                      style={styles.attackContainer}
-                    >
-                      <View style={styles.attackHeader}>
-                        <View style={styles.attackNameContainer}>
-                          {renderEnergyCost(attack.cost)}
-                          <Text style={styles.attackName}>{attack.name}</Text>
-                        </View>
-                        {attack.damage && (
-                          <Text style={styles.attackDamage}>
-                            {attack.damage}
-                          </Text>
-                        )}
-                      </View>
-                      <Text style={styles.attackText}>{attack.text}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* Battle Attributes - Desktop */}
+            </View>
+          </View>
+          {/* Sezione inferiore: tutte le sezioni lunghe a tutta larghezza */}
+          <View style={styles.desktopBottomRow}>
+            {(card.cardMarketPrices || card.tcgPlayerPrices) && (
               <View style={styles.cardInfoSection}>
-                <Text style={styles.sectionTitle}>Battle Attributes</Text>
-                <View style={styles.battleAttributesContainer}>
-                  {/* Weaknesses */}
-                  <View style={styles.attributeSection}>
-                    <Text style={styles.attributeTitle}>Weaknesses</Text>
-                    {card.weaknesses && card.weaknesses.length > 0 ? (
-                      <View style={styles.attributeList}>
-                        {card.weaknesses.map((weakness, index) => (
-                          <View
-                            key={`weakness-${index}`}
-                            style={styles.attributeItem}
-                          >
-                            <Text
-                              style={[
-                                styles.attributeType,
-                                { color: getTypeColor(weakness.type) },
-                              ]}
-                            >
-                              {weakness.type}
-                            </Text>
-                            <Text style={styles.attributeValue}>
-                              {weakness.value}
-                            </Text>
-                          </View>
-                        ))}
+                <Text style={styles.sectionTitle}>CardMarket Prices</Text>
+                {card.cardMarketPrices && (
+                  <CardMarketPrices prices={card.cardMarketPrices} formatPrice={formatPrice} />
+                )}
+                {card.tcgPlayerPrices && (
+                  <TCGPlayerPrices prices={card.tcgPlayerPrices} formatPrice={formatPrice} />
+                )}
+                {!card.cardMarketPrices && !card.tcgPlayerPrices && (
+                  <Text style={styles.noDataText}>No price data available</Text>
+                )}
+              </View>
+            )}
+            {card.attacks && card.attacks.length > 0 && (
+              <View style={styles.cardInfoSection}>
+                <Text style={styles.sectionTitle}>Attacks</Text>
+                {card.attacks.map((attack, index) => (
+                  <View key={`attack-${index}`} style={styles.attackContainer}>
+                    <View style={styles.attackHeader}>
+                      <View style={styles.attackNameContainer}>
+                        {renderEnergyCost(attack.cost)}
+                        <Text style={styles.attackName}>{attack.name}</Text>
                       </View>
-                    ) : (
-                      <Text style={styles.noDataText}>None</Text>
-                    )}
+                      {attack.damage && (
+                        <Text style={styles.attackDamage}>{attack.damage}</Text>
+                      )}
+                    </View>
+                    <Text style={styles.attackText}>{attack.text}</Text>
                   </View>
-
-                  {/* Resistances */}
-                  <View style={styles.attributeSection}>
-                    <Text style={styles.attributeTitle}>Resistances</Text>
-                    {card.resistances && card.resistances.length > 0 ? (
-                      <View style={styles.attributeList}>
-                        {card.resistances.map((resistance, index) => (
-                          <View
-                            key={`resistance-${index}`}
-                            style={styles.attributeItem}
-                          >
-                            <Text
-                              style={[
-                                styles.attributeType,
-                                { color: getTypeColor(resistance.type) },
-                              ]}
-                            >
-                              {resistance.type}
-                            </Text>
-                            <Text style={styles.attributeValue}>
-                              {resistance.value}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
-                    ) : (
-                      <Text style={styles.noDataText}>None</Text>
-                    )}
-                  </View>
+                ))}
+              </View>
+            )}
+            <View style={styles.cardInfoSection}>
+              <Text style={styles.sectionTitle}>Battle Attributes</Text>
+              <View style={styles.battleAttributesContainer}>
+                <View style={styles.attributeSection}>
+                  <Text style={styles.attributeTitle}>Weaknesses</Text>
+                  {card.weaknesses && card.weaknesses.length > 0 ? (
+                    <View style={styles.attributeList}>
+                      {card.weaknesses.map((weakness, index) => (
+                        <View key={`weakness-${index}`} style={styles.attributeItem}>
+                          <Text style={[styles.attributeType, { color: getTypeColor(weakness.type) }]}>{weakness.type}</Text>
+                          <Text style={styles.attributeValue}>{weakness.value}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.noDataText}>None</Text>
+                  )}
+                </View>
+                <View style={styles.attributeSection}>
+                  <Text style={styles.attributeTitle}>Resistances</Text>
+                  {card.resistances && card.resistances.length > 0 ? (
+                    <View style={styles.attributeList}>
+                      {card.resistances.map((resistance, index) => (
+                        <View key={`resistance-${index}`} style={styles.attributeItem}>
+                          <Text style={[styles.attributeType, { color: getTypeColor(resistance.type) }]}>{resistance.type}</Text>
+                          <Text style={styles.attributeValue}>{resistance.value}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.noDataText}>None</Text>
+                  )}
                 </View>
               </View>
             </View>
-          </AnimatedView>
+            <View style={styles.cardInfoSection}>
+              <CardAction onAdd={handleAddCard} onRemove={handleRemoveCard} />
+            </View>
+          </View>
         </View>
       ) : (
         /* Mobile layout - Original vertical layout */
@@ -760,27 +662,44 @@ const getTypeColor = (type: string): string => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#25292e",
+    backgroundColor: "#1a1d21",
   },
   desktopContainer: {
+    flex: 1,
+    flexDirection: "column",
+    padding: 24,
+    gap: 0,
+    minHeight: "100%",
+  },
+  desktopTopRow: {
     flexDirection: "row",
-    padding: 20,
+    alignItems: "flex-start",
+    marginBottom: 24,
+    gap: 24,
   },
   desktopImageContainer: {
     width: "40%",
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
+    justifyContent: "flex-start",
+    padding: 24,
+    backgroundColor: "rgba(37, 41, 46, 0.7)",
+    borderRadius: 16,
   },
-  desktopDetailsContainer: {
+  desktopShortInfoContainer: {
     width: "60%",
-    paddingLeft: 20,
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  },
+  desktopBottomRow: {
+    flexDirection: "column",
+    gap: 24,
+    width: "100%",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#25292e",
+    backgroundColor: "#1a1d21",
   },
   loadingText: {
     marginTop: 16,
@@ -791,7 +710,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#25292e",
+    backgroundColor: "#1a1d21",
     padding: 20,
   },
   errorText: {
@@ -803,223 +722,246 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: 20,
+    backgroundColor: "rgba(37, 41, 46, 0.7)",
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    backgroundColor: "#1a1d21",
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
   },
   backButton: {
     padding: 8,
+    backgroundColor: "rgba(51, 51, 51, 0.5)",
+    borderRadius: 8,
   },
   backButtonText: {
     color: "#007AFF",
     fontSize: 16,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
     marginLeft: 16,
     flex: 1,
   },
   hpContainer: {
-    backgroundColor: "#e74c3c",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: "rgba(231, 76, 60, 0.8)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   hpText: {
     color: "#fff",
     fontWeight: "bold",
+    fontSize: 16,
   },
   cardImageContainer: {
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#333",
+    padding: 24,
+    backgroundColor: "rgba(37, 41, 46, 0.7)",
     width: "100%",
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   cardImageWrapper: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 8,
-    backgroundColor: "#444",
-    borderRadius: 10,
-    overflow: "hidden",
+    backgroundColor: "rgba(51, 51, 51, 0.5)",
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
+    padding: 8,
   },
   cardImage: {
-    backgroundColor: "#444",
-    borderRadius: 10,
+    backgroundColor: "transparent",
+    borderRadius: 12,
   },
   cardInfoSection: {
     marginVertical: 16,
-    backgroundColor: "#1a1d21",
-    borderRadius: 10,
-    overflow: "hidden",
-    marginHorizontal: 12,
+    backgroundColor: "rgba(37, 41, 46, 0.7)",
+    borderRadius: 16,
+    marginHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
-    backgroundColor: "#2c3e50",
-    padding: 12,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    backgroundColor: "rgba(44, 62, 80, 0.8)",
+    padding: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   cardInfo: {
-    padding: 16,
+    padding: 20,
   },
   infoRow: {
     flexDirection: "row",
-    marginBottom: 12,
+    marginBottom: 16,
+    alignItems: "center",
   },
   infoLabelContainer: {
     flexDirection: "row",
     alignItems: "center",
-    width: 120,
+    width: 140,
+    backgroundColor: "rgba(51, 51, 51, 0.5)",
+    padding: 8,
+    borderRadius: 8,
   },
   infoIcon: {
     marginRight: 8,
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#aaa",
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#fff",
     flex: 1,
+    marginLeft: 12,
   },
   energyContainer: {
     flexDirection: "row",
     marginRight: 8,
   },
   energyIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 4,
+    marginRight: 6,
+    backgroundColor: "rgba(51, 51, 51, 0.5)",
   },
   energyText: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "bold",
   },
   attackContainer: {
-    padding: 16,
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
   },
   attackHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   attackNameContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
   attackName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
   },
   attackDamage: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#e74c3c",
+    backgroundColor: "rgba(51, 51, 51, 0.5)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
   attackText: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#ddd",
-    marginTop: 4,
+    marginTop: 8,
+    lineHeight: 22,
   },
   battleAttributesContainer: {
-    padding: 16,
+    padding: 20,
     flexDirection: "row",
+    gap: 24,
   },
   attributeSection: {
     flex: 1,
+    backgroundColor: "rgba(51, 51, 51, 0.5)",
+    padding: 16,
+    borderRadius: 12,
   },
   attributeTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   attributeList: {
-    marginTop: 8,
+    marginTop: 12,
   },
   attributeItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 12,
+    backgroundColor: "rgba(68, 68, 68, 0.5)",
+    padding: 8,
+    borderRadius: 8,
   },
   attributeType: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "bold",
-    marginRight: 8,
+    marginRight: 12,
   },
   attributeValue: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#fff",
   },
   noDataText: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#aaa",
     fontStyle: "italic",
+    textAlign: "center",
+    padding: 16,
   },
   priceSection: {
-    padding: 16,
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
   },
   priceSourceTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 8,
   },
   priceUpdated: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#aaa",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   priceTable: {
-    marginTop: 8,
+    marginTop: 12,
   },
   priceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  priceDetailContainer: {
     marginBottom: 16,
   },
+  priceDetailContainer: {
+    marginBottom: 20,
+  },
   foilTypeText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#3498db",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   priceItem: {
     flex: 1,
     alignItems: "center",
+    backgroundColor: "rgba(51, 51, 51, 0.5)",
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 4,
   },
   priceLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#aaa",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   priceValue: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#2ecc71",
   },

@@ -5,6 +5,7 @@
     "react-native-linear-gradient": "^2.8.3"
   },
   "devDependencies": {
+    "@tamagui/babel-plugin": "^1.126.13",
     "react-native-dotenv": "^3.4.11"
   }
 }

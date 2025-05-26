@@ -1,9 +1,19 @@
-module.exports = function (api) {
+export default function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      'module:react-native-dotenv'
-    ]
+      'module:react-native-dotenv',
+      [
+        '@tamagui/babel-plugin',
+        {
+          components: ['tamagui'],
+          config: './tamagui.config.ts',
+          logTimings: true,
+          disableExtraction: process.env.NODE_ENV === 'development',
+        },
+      ],
+      'react-native-reanimated/plugin',
+    ],
   };
-};
+}

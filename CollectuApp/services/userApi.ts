@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_BASE_URL = "http://192.168.1.8:5193/api";
+export const API_BASE_URL = "http://192.168.1.2:5193/api";
 
 // Interfacce per la gestione degli utenti
 export interface RegisterUserDto {
