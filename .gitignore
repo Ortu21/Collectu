@@ -52,8 +52,3 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Configuration files with sensitive data
-appsettings.json
-firebase-config.json
-appsettings.Development.json
-.qodo
