@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth'; // Aggiunti setPersistence e tipi
-import { auth } from '../firebase/config';
+import { auth } from '../firebase/firebaseConfig';
 import { registerUser } from '../services/userApi';
 
 interface UseAuthReturn {
