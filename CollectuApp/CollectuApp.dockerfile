@@ -22,6 +22,8 @@ RUN if [ -f yarn.lock ]; then yarn install; \
     elif [ -f pnpm-lock.yaml ]; then npm install -g pnpm && pnpm install; \
     else echo "No lockfile found." && exit 1; fi
 
+RUN npm install -g @expo/ngrok@^4.1.0
+
 # Espone la porta Expo
 EXPOSE 8081 19000 19001 19002
 
