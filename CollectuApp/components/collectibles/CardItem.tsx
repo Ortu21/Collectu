@@ -2,7 +2,7 @@ import React, { useEffect, useState, memo, useRef } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
 import { PokemonCard } from '../../types/pokemon';
-import { ImageSkeleton } from './ImageSkeleton';
+import { Skeleton } from './Skeleton';
 
 interface CardItemProps {
   card: PokemonCard;
@@ -66,11 +66,13 @@ export const CardItem = memo(({ card, onPress, cardDimensions, animationDelay = 
         ]}
       >
         {isImageLoading && (
-          <ImageSkeleton 
+          <Skeleton 
+            variant="image"
             style={[
               styles.cardImage,
               cardDimensions ? { height: cardDimensions.height * 0.6 } : null
             ]}
+            cardDimensions={cardDimensions}
           />
         )}
         <Image

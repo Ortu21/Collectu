@@ -1,15 +1,12 @@
 import { PokemonCard, PokemonCardResponse, PokemonSet } from "../types/pokemon";
-import {
-  extractArray,
-  extractObject
-} from "../utils/circularReferenceHandler";
+import { extractArray, extractObject } from "../utils/circularReferenceHandler";
 
-export const API_BASE_URL = "http://192.168.1.2:5193/api/public";
+export const API_BASE_URL = "http://192.168.1.10:5193/api/public";
 
 export const fetchPokemonCards = async (
   pageSize: number = 20,
   page: number = 1,
-  search?: string
+  search?: string,
 ): Promise<PokemonCardResponse> => {
   try {
     let url = `${API_BASE_URL}/cards?pageSize=${pageSize}&page=${page}`;
@@ -29,7 +26,7 @@ export const fetchPokemonCards = async (
     // Log the structure of the result to debug
     console.log(
       "API Response structure:",
-      JSON.stringify(result).substring(0, 200)
+      JSON.stringify(result).substring(0, 200),
     );
 
     // Check if result.data exists and handle different response structures
@@ -85,12 +82,11 @@ export const fetchPokemonCards = async (
 export const searchPokemonCards = async (
   query: string,
   pageSize: number = 20,
-  page: number = 1
+  page: number = 1,
 ): Promise<PokemonCardResponse> => {
   try {
     if (!query || query.trim() === "") {
       return await fetchPokemonCards(pageSize, page);
-
     }
 
     // Normalize the query and prepare for elastic search
@@ -99,7 +95,7 @@ export const searchPokemonCards = async (
     // Enhanced URL with elastic search capabilities
     // The backend will handle searching across name, set, and card number
     const url = `${API_BASE_URL}/cards?search=${encodeURIComponent(
-      normalizedQuery
+      normalizedQuery,
     )}&pageSize=${pageSize}&page=${page}&elasticSearch=true`;
 
     console.log("Elastic search query:", normalizedQuery);
@@ -119,13 +115,13 @@ export const searchPokemonCards = async (
       Array.isArray(result.data.$values)
     ) {
       console.log(
-        "Detected $values array structure in search results, extracting data"
+        "Detected $values array structure in search results, extracting data",
       );
       cardData = result.data.$values;
     } else if (!Array.isArray(result.data)) {
       console.error(
         "Invalid API response structure in search results:",
-        result
+        result,
       );
       return {
         data: [],
@@ -186,7 +182,7 @@ export const searchPokemonCards = async (
 };
 
 export const fetchPokemonCardById = async (
-  id: string
+  id: string,
 ): Promise<PokemonCard> => {
   try {
     const response = await fetch(`${API_BASE_URL}/cards/${id}`);
@@ -222,7 +218,7 @@ export const fetchPokemonCardById = async (
     }
 
     // Map attacks if they exist, handling circular references
-    const attacks = rawData.Attacks?.$values 
+    const attacks = rawData.Attacks?.$values
       ? rawData.Attacks.$values.map((attack: any) => ({
           name: attack.Name || "",
           damage: attack.Damage || "",
@@ -253,14 +249,17 @@ export const fetchPokemonCardById = async (
       ? {
           url: rawData.CardMarketPrices.Url || "",
           updatedAt: rawData.CardMarketPrices.UpdatedAt || "",
-          priceDetails: rawData.CardMarketPrices.PriceDetails?.$values?.map((price: any) => ({
-            foilType: "",
-            averageSellPrice: price.AverageSellPrice || 0,
-            low: price.LowPrice || 0,
-            high: price.High || 0,
-            trendPrice: price.TrendPrice || 0,
-            suggestedPrice: price.SuggestedPrice || 0
-          })) || [],
+          priceDetails:
+            rawData.CardMarketPrices.PriceDetails?.$values?.map(
+              (price: any) => ({
+                foilType: "",
+                averageSellPrice: price.AverageSellPrice || 0,
+                low: price.LowPrice || 0,
+                high: price.High || 0,
+                trendPrice: price.TrendPrice || 0,
+                suggestedPrice: price.SuggestedPrice || 0,
+              }),
+            ) || [],
         }
       : undefined;
 
@@ -269,14 +268,17 @@ export const fetchPokemonCardById = async (
       ? {
           url: rawData.TcgPlayerPrices.Url || "",
           updatedAt: rawData.TcgPlayerPrices.UpdatedAt || "",
-          priceDetails: rawData.TcgPlayerPrices.PriceDetails?.$values?.map((price: any) => ({
-            foilType: price.FoilType || "",
-            low: price.Low || 0,
-            mid: price.Mid || 0,
-            high: price.High || 0,
-            market: price.Market || 0,
-            directLow: price.DirectLow || 0
-          })) || [],
+          priceDetails:
+            rawData.TcgPlayerPrices.PriceDetails?.$values?.map(
+              (price: any) => ({
+                foilType: price.FoilType || "",
+                low: price.Low || 0,
+                mid: price.Mid || 0,
+                high: price.High || 0,
+                market: price.Market || 0,
+                directLow: price.DirectLow || 0,
+              }),
+            ) || [],
         }
       : undefined;
 
@@ -290,7 +292,6 @@ export const fetchPokemonCardById = async (
     const rarity = card.rarity || rawData?.Rarity || "";
     const setName = card.set?.setName || rawData?.Set?.SetName || "";
     const number = card.number || rawData?.Number || "";
-    
 
     // Log the extracted card data for debugging
     console.log("Detailed Extracted Card Data:", {
@@ -307,7 +308,9 @@ export const fetchPokemonCardById = async (
       attacks: attacks.length > 0 ? attacks : "None",
       weaknesses: weaknesses.length > 0 ? weaknesses : "None",
       resistances: resistances.length > 0 ? resistances : "None",
-      cardMarketPrices: cardMarketPrices ? cardMarketPrices.priceDetails : "None",
+      cardMarketPrices: cardMarketPrices
+        ? cardMarketPrices.priceDetails
+        : "None",
       tcgPlayerPrices: tcgPlayerPrices ? tcgPlayerPrices.priceDetails : "None",
     });
 
@@ -386,14 +389,14 @@ export const fetchPokemonSets = async (): Promise<PokemonSet[]> => {
         // Handle potential circular reference format
         console.log(
           "Response has $values array with length:",
-          data.$values.length
+          data.$values.length,
         );
         sets = data.$values;
       } else {
         // If we can't find an array, log the structure and return an empty array
         console.error(
           "Unexpected data structure for sets:",
-          JSON.stringify(data).substring(0, 500)
+          JSON.stringify(data).substring(0, 500),
         );
         return [];
       }
@@ -427,12 +430,12 @@ export const fetchPokemonCardsBySet = async (
   setId: string,
   pageSize: number = 20,
   page: number = 1,
-  search?: string
+  search?: string,
 ): Promise<PokemonCardResponse> => {
   try {
     // Base URL with set ID filter
     let url = `${API_BASE_URL}/cards?setId=${encodeURIComponent(
-      setId
+      setId,
     )}&pageSize=${pageSize}&page=${page}`;
 
     // Add search parameter if present and enable elastic search

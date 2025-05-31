@@ -106,29 +106,32 @@ const HomeScreen = () => {
                   marginBottom: 8,
                 }}
               >
-                La tua collezione
+                Collectu
               </Text>
               <Text
                 fontSize={15}
                 color="#aaa"
-                style={{ textAlign: "center", maxWidth: 340 }}
+                style={{ textAlign: "center", maxWidth: 400 }}
               >
-                Statistiche, cards e valore sempre a portata di mano.
+                Statistiche, cards e valori sempre a portata di mano.
               </Text>
             </YStack>
 
             {/* VALORE COLLEZIONE */}
-            <Card
-              elevate
-              backgroundColor="#18181b"
-              borderRadius={24}
-              style={{
-                alignItems: "center",
-                paddingVertical: 32,
-                marginBottom: 32,
-                boxShadow: "0 4px 32px 0 #0004",
-              }}
-            >
+            <YStack style={{ alignItems: "center", marginBottom: 32 }}>
+              <Card
+                elevate
+                backgroundColor="#18181b"
+                borderRadius={24}
+                padded
+                style={{
+                  alignItems: "center",
+                  paddingVertical: 32,
+                  boxShadow: "0 4px 32px 0 #0004",
+                  maxWidth: 400,
+                  width: "100%",
+                }}
+              >
               <Text fontSize={16} color="#aaa" style={{ marginBottom: 8 }}>
                 Valore collezione
               </Text>
@@ -158,7 +161,8 @@ const HomeScreen = () => {
                   ({percentageChange.toFixed(2)}%)
                 </Text>
               </XStack>
-            </Card>
+              </Card>
+            </YStack>
 
             {/* STATISTICHE */}
             <XStack

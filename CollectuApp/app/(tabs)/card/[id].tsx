@@ -24,8 +24,7 @@ import { StatusBar } from "expo-status-bar";
 import { fetchPokemonCardById } from "../../../services/api";
 import { PokemonCard } from "../../../types/pokemon";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { CardMarketPrices } from "../../../components/collectibles/CardMarketPrices";
-import { TCGPlayerPrices } from "../../../components/collectibles/TCGPlayerPrices";
+import { PriceSection } from "../../../components/collectibles/PriceSection";
 import { CardAction } from "../../../components/collectibles/CardAction";
 
 export default function CardDetailScreen() {
@@ -326,12 +325,20 @@ export default function CardDetailScreen() {
           <View style={styles.desktopBottomRow}>
             {(card.cardMarketPrices || card.tcgPlayerPrices) && (
               <View style={styles.cardInfoSection}>
-                <Text style={styles.sectionTitle}>CardMarket Prices</Text>
+                <Text style={styles.sectionTitle}>Prices</Text>
                 {card.cardMarketPrices && (
-                  <CardMarketPrices prices={card.cardMarketPrices} formatPrice={formatPrice} />
+                  <PriceSection 
+                    prices={card.cardMarketPrices} 
+                    title="CardMarket" 
+                    formatPrice={formatPrice} 
+                  />
                 )}
                 {card.tcgPlayerPrices && (
-                  <TCGPlayerPrices prices={card.tcgPlayerPrices} formatPrice={formatPrice} />
+                  <PriceSection 
+                    prices={card.tcgPlayerPrices} 
+                    title="TCGPlayer" 
+                    formatPrice={formatPrice} 
+                  />
                 )}
                 {!card.cardMarketPrices && !card.tcgPlayerPrices && (
                   <Text style={styles.noDataText}>No price data available</Text>
@@ -503,20 +510,22 @@ export default function CardDetailScreen() {
               entering={FadeInDown.delay(400).duration(500)}
               style={styles.cardInfoSection}
             >
-              <Text style={styles.sectionTitle}>CardMarket Prices</Text>
+              <Text style={styles.sectionTitle}>Prices</Text>
 
-              {/* CardMarket Prices - Using the CardMarketPrices component */}
+              {/* CardMarket Prices */}
               {card.cardMarketPrices && (
-                <CardMarketPrices
+                <PriceSection
                   prices={card.cardMarketPrices}
+                  title="CardMarket"
                   formatPrice={formatPrice}
                 />
               )}
 
-              {/* TCGPlayer Prices - Using the TCGPlayerPrices component */}
+              {/* TCGPlayer Prices */}
               {card.tcgPlayerPrices && (
-                <TCGPlayerPrices
+                <PriceSection
                   prices={card.tcgPlayerPrices}
+                  title="TCGPlayer"
                   formatPrice={formatPrice}
                 />
               )}

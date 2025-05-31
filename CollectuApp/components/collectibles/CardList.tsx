@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, useWindowDimensions, Animated } from 'react-native';
 import { PokemonCard } from '../../types/pokemon';
 import { CardItem } from './CardItem';
-import { CardSkeleton } from './CardSkeleton';
+import { Skeleton } from './Skeleton';
 
 interface CardListProps {
   cards: PokemonCard[];
@@ -67,7 +67,7 @@ export const CardList = ({
       >
         {isSkeletonItem ? (
           <Animated.View style={[styles.container, { opacity: 1 }]}>
-            <CardSkeleton cardDimensions={cardDimensions} animationDelay={itemDelay} />
+            <Skeleton variant="card" cardDimensions={cardDimensions} animationDelay={itemDelay} />
           </Animated.View>
         ) : (
           <CardItem 

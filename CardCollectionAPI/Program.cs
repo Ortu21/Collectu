@@ -49,7 +49,6 @@ builder.Services
         };
     });
 
-// Configura CORS - spostato qui prima di app.Build()
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -57,10 +56,39 @@ builder.Services.AddCors(options =>
         {
             if (builder.Environment.IsDevelopment())
             {
-                corsBuilder.WithOrigins("http://192.168.1.9:5193", "http://localhost:5193", "http://localhost:8081")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
+                corsBuilder.SetIsOriginAllowed(origin =>
+                {
+                    Console.WriteLine($"CORS: Checking origin: {origin}");
+
+                    if (string.IsNullOrEmpty(origin))
+                    {
+                        Console.WriteLine("CORS: Origin is null or empty - DENIED");
+                        return false;
+                    }
+
+                    try
+                    {
+                        var uri = new Uri(origin);
+                        Console.WriteLine($"CORS: Parsed URI - Host: {uri.Host}, Port: {uri.Port}");
+
+                        // Allow localhost and any 192.168.x.x address on common development ports
+                        bool isAllowed = (uri.Host == "localhost" ||
+                                        uri.Host.StartsWith("192.168.") ||
+                                        uri.Host == "127.0.0.1") &&
+                                       (uri.Port == 5193 || uri.Port == 8081 || uri.Port == 3000 || uri.Port == 5000 || uri.Port == 8080);
+
+                        Console.WriteLine($"CORS: Origin {origin} - {(isAllowed ? "ALLOWED" : "DENIED")}");
+                        return isAllowed;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"CORS: Error parsing origin {origin}: {ex.Message} - DENIED");
+                        return false;
+                    }
+                })
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
             }
             else
             {
@@ -71,6 +99,7 @@ builder.Services.AddCors(options =>
             }
         });
 });
+
 
 
 // Configurazione per limitare la dimensione delle richieste HTTP e prevenire attacchi DoS

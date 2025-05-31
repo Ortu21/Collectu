@@ -9,22 +9,25 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
+# Installa Expo CLI globalmente
+RUN npm install -g @expo/ngrok@^4.1.0 @expo/cli
+
 # Imposta la directory di lavoro
 WORKDIR /app
 
-# Copia i file di progetto
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-COPY . .
+# Copia prima solo i file di dipendenze per ottimizzare la cache Docker
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
 
 # Installa le dipendenze
-RUN if [ -f yarn.lock ]; then yarn install; \
-    elif [ -f package-lock.json ]; then npm install; \
-    elif [ -f pnpm-lock.yaml ]; then npm install -g pnpm && pnpm install; \
+RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then npm ci; \
+    elif [ -f pnpm-lock.yaml ]; then npm install -g pnpm && pnpm install --frozen-lockfile; \
     else echo "No lockfile found." && exit 1; fi
 
-RUN npm install -g @expo/ngrok@^4.1.0
+# Copia tutti i file del progetto (incluso .env)
+COPY . .
 
-# Espone la porta Expo
+# Espone le porte Expo
 EXPOSE 8081 19000 19001 19002
 
 # Comando di default: avvia Expo
