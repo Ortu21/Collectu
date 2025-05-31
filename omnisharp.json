@@ -1,0 +1,9 @@
+{
+  "fileOptions": {
+    "systemExcludeSearchPatterns": [
+      "**/appsettings*.json",
+      "**/firebase-config.json",
+      "**/*.json"
+    ]
+  }
+}

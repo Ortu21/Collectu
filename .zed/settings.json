@@ -1,0 +1,10 @@
+{
+  "languages": {
+    "JSON": {
+      "language_servers": ["json-language-server"]
+    }
+  },
+  "file_types": {
+    "JSON": ["*.json"]
+  }
+}
