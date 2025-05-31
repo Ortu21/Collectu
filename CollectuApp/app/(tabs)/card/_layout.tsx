@@ -7,7 +7,14 @@ export default function Layout() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="id" />
+      <Stack.Screen 
+        name="[id]" 
+        options={{
+          headerShown: false,
+          title: "",
+          presentation: "card"
+        }}
+      />
     </Stack>
   );
 }

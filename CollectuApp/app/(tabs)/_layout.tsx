@@ -45,6 +45,13 @@ export default function TabLayout() {
           headerShown: false, // Mostra l'header per questa tab
         }}
       />
+      <Tabs.Screen
+        name="card"
+        options={{
+          href: null, // Nasconde dalla tab bar
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }

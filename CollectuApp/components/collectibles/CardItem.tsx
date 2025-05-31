@@ -1,8 +1,21 @@
-import React, { useEffect, useState, memo, useRef } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Platform } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
-import { PokemonCard } from '../../types/pokemon';
-import { Skeleton } from './Skeleton';
+import React, { useEffect, useState, memo, useRef } from "react";
+import { TouchableOpacity, Platform } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
+import { YStack, XStack, Text, Image } from "tamagui";
+import { PokemonCard } from "../../types/pokemon";
+// Rimuovi l'import di Skeleton da qui
+// import { Skeleton } from './Skeleton';
+// Importa gli stili glassmorphic centralizzati
+import {
+  getPlatformGlassmorphicStyle,
+  glassmorphicImageContainerStyles,
+  glassmorphicInfoContainerStyles,
+} from "../../styles/glassmorphicStyles";
 
 interface CardItemProps {
   card: PokemonCard;
@@ -14,171 +27,166 @@ interface CardItemProps {
   animationDelay?: number;
 }
 
-export const CardItem = memo(({ card, onPress, cardDimensions, animationDelay = 0 }: CardItemProps) => {
-  // Reanimated shared values for animations
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.95);
+export const CardItem = memo(
+  ({ card, onPress, cardDimensions, animationDelay = 0 }: CardItemProps) => {
+    // Reanimated shared values for animations
+    const opacity = useSharedValue(0);
+    const scale = useSharedValue(0.95);
 
-  // Create animated styles
-  const animatedStyles = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ scale: scale.value }]
-    };
-  });
+    // Create animated styles
+    const animatedStyles = useAnimatedStyle(() => {
+      return {
+        opacity: opacity.value,
+        transform: [{ scale: scale.value }],
+      };
+    });
 
-  useEffect(() => {
-    // Start animations when component mounts with delay based on position
-    setTimeout(() => {
-      opacity.value = withTiming(1, { duration: 500 });
-      scale.value = withSpring(1, { damping: 20, stiffness: 90 });
-    }, animationDelay);
-  }, [animationDelay]);
+    useEffect(() => {
+      // Applica sempre l'animazione con ritardo all'apparizione del CardItem
+      setTimeout(() => {
+        opacity.value = withTiming(1, { duration: 500 });
+        scale.value = withSpring(1, { damping: 20, stiffness: 90 });
+      }, animationDelay);
+    }, [animationDelay]);
 
-  // State to track image loading status with a ref to avoid unnecessary re-renders
-  const [isImageLoading, setIsImageLoading] = useState(true);
-  const imageLoadingRef = useRef(true);
-  const cardIdRef = useRef(card.id);
-  
-  // Only reset loading state when card ID actually changes
-  useEffect(() => {
-    if (cardIdRef.current !== card.id) {
-      setIsImageLoading(true);
-      imageLoadingRef.current = true;
-      cardIdRef.current = card.id;
-    }
-  }, [card.id]);
+    // Non abbiamo più bisogno dello stato di caricamento dell'immagine qui
+    // const [isImageLoading, setIsImageLoading] = useState(true);
+    // const imageLoadingRef = useRef(true);
+    const cardIdRef = useRef(card.id);
 
-  // Use a regular View with animated styles for web compatibility
-  const AnimatedContainer = Platform.OS === 'web' ? Animated.createAnimatedComponent(View) : Animated.View;
+    // Aggiorna il ref dell'ID carta se cambia
+    useEffect(() => {
+      if (cardIdRef.current !== card.id) {
+        cardIdRef.current = card.id;
+      }
+    }, [card.id]);
 
-  return (
-    <AnimatedContainer 
-      style={[
-        styles.container, 
-        animatedStyles
-      ]}
-    >
-      <View
-        style={[
-          styles.cardImageContainer,
-          cardDimensions ? { height: cardDimensions.height * 0.6 } : null
-        ]}
-      >
-        {isImageLoading && (
-          <Skeleton 
-            variant="image"
-            style={[
-              styles.cardImage,
-              cardDimensions ? { height: cardDimensions.height * 0.6 } : null
-            ]}
-            cardDimensions={cardDimensions}
+    // Use a regular YStack with animated styles for web compatibility
+    const AnimatedContainer =
+      Platform.OS === "web"
+        ? Animated.createAnimatedComponent(YStack)
+        : Animated.View;
+
+    const imageHeight = cardDimensions ? cardDimensions.height * 0.6 : 180;
+
+    // Ottieni gli stili glassmorphic per i contenitori immagine e info dalla centralizzazione
+    const imageContainerGlassStyles = getPlatformGlassmorphicStyle(
+      glassmorphicImageContainerStyles,
+    );
+    const infoContainerGlassStyles = getPlatformGlassmorphicStyle(
+      glassmorphicInfoContainerStyles,
+    );
+
+    return (
+      <AnimatedContainer style={animatedStyles} flex={1}>
+        {/* Applica gli stili glassmorphic centralizzati al contenitore dell'immagine */}
+        <YStack
+          style={{
+            ...imageContainerGlassStyles, // Applica gli stili glassmorphic di base per il contenitore immagine
+            width: "100%", // Mantieni larghezza specifica
+            height: imageHeight, // Mantieni altezza calcolata
+            position: "relative", // Mantieni posizionamento
+            overflow: "hidden", // Mantieni overflow hidden per i bordi arrotondati
+            // backgroundColor, borderWidth, borderColor, borderTopLeftRadius, borderTopRightRadius, borderBottomWidth, boxShadow/elevation sono inclusi
+          }}
+        >
+          <Image
+            source={{ uri: card.smallImageUrl || card.largeImageUrl }}
+            style={{
+              width: "100%",
+              height: imageHeight,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderRadius: 8, // Manteniamo un leggero raggio per l'immagine stessa
+            }}
+            resizeMode="contain"
+            // Rimuovi i gestori onLoad e onError, l'immagine gestirà la sua visibilità automaticamente
           />
-        )}
-        <Image
-          source={{ uri: card.smallImageUrl || card.largeImageUrl }}
-          style={[
-            styles.cardImage,
-            isImageLoading ? styles.hiddenImage : null,
-            cardDimensions ? { height: cardDimensions.height * 0.6 } : null
-          ]}
-          resizeMode="contain"
-          defaultSource={require('../../assets/images/card-placeholder.png')}
-          // These handlers ensure proper loading state management
-          onLoad={() => {
-            if (imageLoadingRef.current) {
-              imageLoadingRef.current = false;
-              setIsImageLoading(false);
-            }
-          }}
-          onError={() => {
-            if (imageLoadingRef.current) {
-              imageLoadingRef.current = false;
-              setIsImageLoading(false);
-            }
-          }}
-        />
-      </View>
-      <View style={styles.cardInfo}>
-        <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">
-          {card.name}
-        </Text>
-        <Text style={styles.cardRarity} numberOfLines={1} ellipsizeMode="tail">
-          {card.rarity || 'Common'}
-        </Text>
-        <View style={styles.cardDetails}>
-          <Text style={styles.cardSet} numberOfLines={1} ellipsizeMode="tail">
-            {card.setName || 'Unknown Set'}
-          </Text>
-          <Text style={styles.cardNumber}>
-            {card.number || '?'}
-          </Text>
-        </View>
-      </View>
-    </AnimatedContainer>
-  );
-}, (prevProps, nextProps) => {
-  // Only re-render if the card ID changes or dimensions change
-  return (
-    prevProps.card.id === nextProps.card.id &&
-    prevProps.cardDimensions?.width === nextProps.cardDimensions?.width &&
-    prevProps.cardDimensions?.height === nextProps.cardDimensions?.height
-  );
-});
+        </YStack>
 
-// Styles remain the same
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+        {/* Applica gli stili glassmorphic centralizzati al contenitore delle informazioni */}
+        <YStack
+          style={{
+            ...infoContainerGlassStyles, // Applica gli stili glassmorphic di base per il contenitore info
+            padding: 12, // Mantieni padding specifici
+            // borderTopWidth, borderTopColor, borderBottomLeftRadius, borderBottomRightRadius, borderLeftWidth, borderRightWidth, borderBottomWidth, borderColor, boxShadow/elevation sono inclusi
+            overflow: "hidden", // Imposta un overflow hidden per ritagliare correttamente gli angoli inferiori
+          }}
+        >
+          <Text
+            fontSize={16}
+            fontWeight="bold"
+            color="rgba(255, 255, 255, 0.95)"
+            style={{
+              marginBottom: 4,
+              textShadow: "0 0 8px rgba(255, 255, 255, 0.1)",
+            }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {card.name}
+          </Text>
+
+          <Text
+            fontSize={12}
+            color="#007AFF"
+            style={{
+              marginBottom: 4,
+              textShadow: "0 0 6px rgba(0, 122, 255, 0.3)",
+            }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {card.rarity || "Common"}
+          </Text>
+
+          <XStack
+            style={{
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              fontSize={12}
+              color="rgba(255, 255, 255, 0.6)"
+              style={{ flex: 1 }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {card.setName || "Unknown Set"}
+            </Text>
+
+            <YStack
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                borderRadius: 6,
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                marginLeft: 8,
+              }}
+            >
+              <Text
+                fontSize={11}
+                color="rgba(255, 255, 255, 0.8)"
+                fontWeight="500"
+              >
+                #{card.number || "?"}
+              </Text>
+            </YStack>
+          </XStack>
+        </YStack>
+      </AnimatedContainer>
+    );
   },
-  cardImageContainer: {
-    width: '100%',
-    height: 180,
-    position: 'relative',
+  (prevProps, nextProps) => {
+    // La memoizzazione si basa solo sull'ID carta e sulle dimensioni
+    return (
+      prevProps.card.id === nextProps.card.id &&
+      prevProps.cardDimensions?.width === nextProps.cardDimensions?.width &&
+      prevProps.cardDimensions?.height === nextProps.cardDimensions?.height
+    );
   },
-  cardImage: {
-    width: '100%',
-    height: 180,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  hiddenImage: {
-    opacity: 0,
-  },
-  cardInfo: {
-    padding: 12,
-  },
-  cardName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  cardType: {
-    fontSize: 14,
-    color: '#aaa',
-    marginBottom: 4,
-  },
-  cardRarity: {
-    fontSize: 12,
-    color: '#007AFF',
-    marginBottom: 4,
-  },
-  cardDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardSet: {
-    fontSize: 12,
-    color: '#6c757d',
-    flex: 1,
-  },
-  cardNumber: {
-    fontSize: 12,
-    color: '#6c757d',
-  },
-});
+);
