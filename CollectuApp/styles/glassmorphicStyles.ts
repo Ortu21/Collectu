@@ -353,3 +353,58 @@ export const glassmorphicSetItemStyles: PlatformStyles = {
     shadowRadius: 20,
   },
 };
+
+// Card Detail Screen Styles
+export const glassmorphicHeaderStyles: PlatformStyles = {
+  web: {
+    backgroundColor: "rgba(24, 24, 27, 0.6)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+    boxShadow: "0 4px 24px 0 rgba(0, 0, 0, 0.3)",
+  },
+  native: {
+    backgroundColor: "rgba(24, 24, 27, 0.6)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+  },
+};
+
+export const glassmorphicCardHeaderStyles: PlatformStyles = {
+  web: {
+    backgroundColor: "rgba(44, 62, 80, 0.8)",
+    backdropFilter: "blur(15px)",
+    WebkitBackdropFilter: "blur(15px)",
+  },
+  native: {
+    backgroundColor: "rgba(44, 62, 80, 0.8)",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+};
+
+export const glassmorphicSectionStyles: PlatformStyles = {
+  web: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
+  },
+  native: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+  },
+};

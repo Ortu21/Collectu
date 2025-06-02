@@ -58,18 +58,13 @@ builder.Services.AddCors(options =>
             {
                 corsBuilder.SetIsOriginAllowed(origin =>
                 {
-                    Console.WriteLine($"CORS: Checking origin: {origin}");
-
                     if (string.IsNullOrEmpty(origin))
                     {
-                        Console.WriteLine("CORS: Origin is null or empty - DENIED");
                         return false;
                     }
-
                     try
                     {
                         var uri = new Uri(origin);
-                        Console.WriteLine($"CORS: Parsed URI - Host: {uri.Host}, Port: {uri.Port}");
 
                         // Allow localhost and any 192.168.x.x address on common development ports
                         bool isAllowed = (uri.Host == "localhost" ||
@@ -77,12 +72,11 @@ builder.Services.AddCors(options =>
                                         uri.Host == "127.0.0.1") &&
                                        (uri.Port == 5193 || uri.Port == 8081 || uri.Port == 3000 || uri.Port == 5000 || uri.Port == 8080);
 
-                        Console.WriteLine($"CORS: Origin {origin} - {(isAllowed ? "ALLOWED" : "DENIED")}");
                         return isAllowed;
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"CORS: Error parsing origin {origin}: {ex.Message} - DENIED");
+                        Console.WriteLine(ex.Message);
                         return false;
                     }
                 })
