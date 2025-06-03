@@ -4183,24 +4183,32 @@
     ]
   },
   "packageFolders": {
-    "/home/ortu/.nuget/packages/": {}
+    "C:\\Users\\ortux_4dxgfz\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ortu/Documenti/Progetti/Collectu/CardCollectionAPI/CardCollectionAPI.csproj",
+      "projectUniqueName": "S:\\Progetti\\Collectu\\CardCollectionAPI\\CardCollectionAPI.csproj",
       "projectName": "CardCollectionAPI",
-      "projectPath": "/home/ortu/Documenti/Progetti/Collectu/CardCollectionAPI/CardCollectionAPI.csproj",
-      "packagesPath": "/home/ortu/.nuget/packages/",
-      "outputPath": "/home/ortu/Documenti/Progetti/Collectu/CardCollectionAPI/obj/",
+      "projectPath": "S:\\Progetti\\Collectu\\CardCollectionAPI\\CardCollectionAPI.csproj",
+      "packagesPath": "C:\\Users\\ortux_4dxgfz\\.nuget\\packages\\",
+      "outputPath": "S:\\Progetti\\Collectu\\CardCollectionAPI\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "/home/ortu/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\ortux_4dxgfz\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -4271,12 +4279,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[9.0.4, 9.0.4]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -4285,7 +4287,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.105/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

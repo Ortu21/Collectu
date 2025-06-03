@@ -1,7 +1,7 @@
 import { PokemonCard, PokemonCardResponse, PokemonSet } from "../types/pokemon";
 import { extractArray, extractObject } from "../utils/circularReferenceHandler";
 
-export const API_BASE_URL = "http://192.168.1.10:5193/api/public";
+export const API_BASE_URL = "http://192.168.1.6:5193/api/public";
 
 export const fetchPokemonCards = async (
   pageSize: number = 20,

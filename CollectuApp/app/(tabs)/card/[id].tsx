@@ -12,8 +12,11 @@ import { StatusBar } from "expo-status-bar";
 import { fetchPokemonCardById } from "../../../services/api";
 import { PokemonCard } from "../../../types/pokemon";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { PriceSection } from "../../../components/collectibles/PriceSection";
-import { CardAction } from "../../../components/collectibles/CardAction";
+import { PriceSection } from "../../../components/id/PriceSection";
+import { CardAction } from "../../../components/id/CardAction";
+import { CardInformationSection } from "../../../components/id/CardInformationSection";
+import { AttacksSection } from "../../../components/id/AttacksSection";
+import { BattleAttributesSection } from "../../../components/id/BattleAttributesSection";
 import {
   YStack,
   XStack,
@@ -256,7 +259,7 @@ export default function CardDetailScreen() {
             borderRadius={16}
             style={getPlatformGlassmorphicStyle(glassmorphicErrorCardStyles)}
           >
-            <YStack space={16} style={{ alignItems: "center" }}>
+            <YStack style={{ alignItems: "center" }}>
               <Text
                 style={{ color: "#FF3B30", textAlign: "center", fontSize: 24 }}
               >
@@ -292,7 +295,7 @@ export default function CardDetailScreen() {
         {/* Header */}
         <XStack
           style={[
-            { alignItems: "center" },
+            { alignItems: "center", padding: 16, gap: 16 },
             getPlatformGlassmorphicStyle(glassmorphicHeaderStyles),
           ]}
         >
@@ -300,10 +303,7 @@ export default function CardDetailScreen() {
             size="$3"
             chromeless
             onPress={handleGoBack}
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              borderRadius: 8,
-            }}
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </Button>
@@ -317,12 +317,8 @@ export default function CardDetailScreen() {
           </Text>
           {card.hp && (
             <Card
-              style={{
-                backgroundColor: "rgba(231, 76, 60, 0.8)",
-                borderRadius: 16,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-              }}
+              padding={10}
+              style={{ backgroundColor: "rgba(231, 76, 60, 0.8)" }}
             >
               <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}>
                 HP {card.hp}
@@ -332,16 +328,14 @@ export default function CardDetailScreen() {
         </XStack>
         <ScrollView showsVerticalScrollIndicator={false}>
           {isDesktopLayout ? (
-            <YStack space={24}>
+            <YStack style={{ padding: 16, gap: 24 }}>
               <XStack style={{ gap: 24, alignItems: "flex-start" }}>
                 <AnimatedView style={[{ width: "40%" }, cardAnimatedStyle]}>
                   <Card
                     style={{
                       alignItems: "center",
                       padding: 24,
-                      ...getPlatformGlassmorphicStyle(
-                        glassmorphicImageContainerStyles
-                      ),
+                      ...getPlatformGlassmorphicStyle(glassmorphicImageContainerStyles),
                     }}
                   >
                     <Card
@@ -364,309 +358,36 @@ export default function CardDetailScreen() {
                   </Card>
                 </AnimatedView>
                 <YStack flex={1}>
-                  <Card
-                    borderRadius={16}
-                    style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
-                  >
-                    <Text
-                      fontSize={24}
-                      fontWeight="bold"
-                      style={{
-                        color: "#fff",
-                        backgroundColor: "rgba(44, 62, 80, 0.8)",
-                        padding: 16,
-                        borderTopLeftRadius: 16,
-                        borderTopRightRadius: 16,
-                      }}
-                    >
-                      Card Information
-                    </Text>
-                    <YStack style={{ padding: 20 }} space={16}>
-                      <XStack style={{ alignItems: "center", gap: 12 }}>
-                        <Card
-                          style={{
-                            backgroundColor: "rgba(255, 255, 255, 0.05)",
-                            padding: 8,
-                            borderRadius: 8,
-                            width: 140,
-                          }}
-                        >
-                          <XStack style={{ alignItems: "center", gap: 8 }}>
-                            <Ionicons
-                              name="albums-outline"
-                              size={18}
-                              color="#aaa"
-                            />
-                          </XStack>
-                        </Card>
-                        <Text style={{ color: "#fff", fontSize: 16, flex: 1 }}>
-                          {card.setName || "Unknown"}
-                        </Text>
-                      </XStack>
-                      <XStack style={{ alignItems: "center", gap: 12 }}>
-                        <Card
-                          style={{
-                            backgroundColor: "rgba(255, 255, 255, 0.05)",
-                            padding: 8,
-                            borderRadius: 8,
-                            width: 140,
-                          }}
-                        >
-                          <XStack style={{ alignItems: "center", gap: 8 }}>
-                            <MaterialCommunityIcons
-                              name="numeric"
-                              size={18}
-                              color="#aaa"
-                            />
-                          </XStack>
-                        </Card>
-                        <Text style={{ color: "#fff", fontSize: 16, flex: 1 }}>
-                          {card.number || "-"}
-                        </Text>
-                      </XStack>
-                      <XStack style={{ alignItems: "center", gap: 12 }}>
-                        <Card
-                          style={{
-                            backgroundColor: "rgba(255, 255, 255, 0.05)",
-                            padding: 8,
-                            borderRadius: 8,
-                            width: 140,
-                          }}
-                        >
-                          <XStack style={{ alignItems: "center", gap: 8 }}>
-                            <MaterialCommunityIcons
-                              name="star-outline"
-                              size={18}
-                              color="#aaa"
-                            />
-                          </XStack>
-                        </Card>
-                        <Text style={{ color: "#fff", fontSize: 16, flex: 1 }}>
-                          {card.rarity || "-"}
-                        </Text>
-                      </XStack>
-                      <XStack style={{ alignItems: "center", gap: 12 }}>
-                        <Card
-                          style={{
-                            backgroundColor: "rgba(255, 255, 255, 0.05)",
-                            padding: 8,
-                            borderRadius: 8,
-                            width: 140,
-                          }}
-                        >
-                          <XStack style={{ alignItems: "center", gap: 8 }}>
-                            <MaterialCommunityIcons
-                              name="pokeball"
-                              size={18}
-                              color="#aaa"
-                            />
-                          </XStack>
-                        </Card>
-                        <Text style={{ color: "#fff", fontSize: 16, flex: 1 }}>
-                          {Array.isArray((card as any).types)
-                            ? (card as any).types.join(", ")
-                            : "-"}
-                        </Text>
-                      </XStack>
-                      {card.evolvesFrom && (
-                        <XStack style={{ alignItems: "center", gap: 12 }}>
-                          <Card
-                            style={{
-                              backgroundColor: "rgba(255, 255, 255, 0.05)",
-                              padding: 8,
-                              borderRadius: 8,
-                              width: 140,
-                            }}
-                          >
-                            <XStack style={{ alignItems: "center", gap: 8 }}>
-                              <MaterialCommunityIcons
-                                name="arrow-up-bold"
-                                size={18}
-                                color="#aaa"
-                              />
-                            </XStack>
-                          </Card>
-                          <Text
-                            style={{ color: "#fff", fontSize: 16, flex: 1 }}
-                          >
-                            Evolves from {card.evolvesFrom}
-                          </Text>
-                        </XStack>
-                      )}
-                    </YStack>
-                  </Card>
+                  {/* Card Information */}
+                  <CardInformationSection card={card} />
                 </YStack>
               </XStack>
+              {/* Prices Section */}
               {(card.cardMarketPrices || card.tcgPlayerPrices) && (
-                <Card
-                  borderRadius={16}
-                  style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
-                >
-                  <Text
-                    fontSize={24}
-                    fontWeight="bold"
-                    style={{
-                      color: "#fff",
-                      backgroundColor: "rgba(44, 62, 80, 0.8)",
-                      padding: 16,
-                      borderTopLeftRadius: 16,
-                      borderTopRightRadius: 16,
-                    }}
-                  >
-                    Prices
-                  </Text>
-                  <YStack>
-                    {card.cardMarketPrices && (
-                      <PriceSection
-                        prices={card.cardMarketPrices}
-                        title="CardMarket"
-                        formatPrice={formatPrice}
-                      />
-                    )}
-                    {card.tcgPlayerPrices && (
-                      <PriceSection
-                        prices={card.tcgPlayerPrices}
-                        title="TCGPlayer"
-                        formatPrice={formatPrice}
-                      />
-                    )}
-                  </YStack>
-                </Card>
+                <YStack>
+                  {card.cardMarketPrices && (
+                    <PriceSection
+                      prices={card.cardMarketPrices}
+                      title="CardMarket"
+                      formatPrice={formatPrice}
+                    />
+                  )}
+                  {card.tcgPlayerPrices && (
+                    <PriceSection
+                      prices={card.tcgPlayerPrices}
+                      title="TCGPlayer"
+                      formatPrice={formatPrice}
+                    />
+                  )}
+                </YStack>
               )}
+              {/* Attacks Section */}
               {card.attacks && card.attacks.length > 0 && (
-                <Card
-                  borderRadius={16}
-                  style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
-                >
-                  <Text
-                    fontSize={24}
-                    fontWeight="bold"
-                    style={{
-                      color: "#fff",
-                      backgroundColor: "rgba(44, 62, 80, 0.8)",
-                      padding: 16,
-                      borderTopLeftRadius: 16,
-                      borderTopRightRadius: 16,
-                    }}
-                  >
-                    Attacks
-                  </Text>
-                  <YStack>
-                    {card.attacks.map((attack, idx) => (
-                      <YStack key={idx} style={{ padding: 16, gap: 8 }}>
-                        <XStack style={{ alignItems: "center", gap: 8 }}>
-                          {attack.cost && renderEnergyCost(attack.cost)}
-                          <Text
-                            style={{
-                              color: "#fff",
-                              fontWeight: "bold",
-                              fontSize: 18,
-                            }}
-                          >
-                            {attack.name}
-                          </Text>
-                          <Text
-                            style={{
-                              color: "#fff",
-                              fontWeight: "bold",
-                              fontSize: 16,
-                            }}
-                          >
-                            {attack.damage}
-                          </Text>
-                        </XStack>
-                        <Text style={{ color: "#ccc", fontSize: 14 }}>
-                          {attack.text}
-                        </Text>
-                      </YStack>
-                    ))}
-                  </YStack>
-                </Card>
+                <AttacksSection attacks={card.attacks} renderEnergyCost={renderEnergyCost} />
               )}
-              <Card
-                borderRadius={16}
-                style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
-              >
-                <Text
-                  fontSize={24}
-                  fontWeight="bold"
-                  style={{
-                    color: "#fff",
-                    backgroundColor: "rgba(44, 62, 80, 0.8)",
-                    padding: 16,
-                    borderTopLeftRadius: 16,
-                    borderTopRightRadius: 16,
-                  }}
-                >
-                  Battle Attributes
-                </Text>
-                <XStack gap={24}>
-                  <YStack
-                    flex={1}
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.05)",
-                      padding: 16,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                      Weaknesses
-                    </Text>
-                    {card.weaknesses && card.weaknesses.length > 0 ? (
-                      card.weaknesses.map((w, i) => (
-                        <XStack
-                          key={i}
-                          style={{ alignItems: "center", gap: 8 }}
-                        >
-                          <Text
-                            style={{
-                              color: getTypeColor(w.type),
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {w.type}
-                          </Text>
-                          <Text style={{ color: "#fff" }}>x{w.value}</Text>
-                        </XStack>
-                      ))
-                    ) : (
-                      <Text style={{ color: "#ccc" }}>-</Text>
-                    )}
-                  </YStack>
-                  <YStack
-                    flex={1}
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.05)",
-                      padding: 16,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                      Resistances
-                    </Text>
-                    {card.resistances && card.resistances.length > 0 ? (
-                      card.resistances.map((r, i) => (
-                        <XStack
-                          key={i}
-                          style={{ alignItems: "center", gap: 8 }}
-                        >
-                          <Text
-                            style={{
-                              color: getTypeColor(r.type),
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {r.type}
-                          </Text>
-                          <Text style={{ color: "#fff" }}>x{r.value}</Text>
-                        </XStack>
-                      ))
-                    ) : (
-                      <Text style={{ color: "#ccc" }}>-</Text>
-                    )}
-                  </YStack>
-                </XStack>
-              </Card>
+              {/* Battle Attributes Section */}
+              <BattleAttributesSection weaknesses={card.weaknesses} resistances={card.resistances} getTypeColor={getTypeColor} />
+              {/* CardAction remains as is */}
               <YStack style={{ marginHorizontal: 12 }}>
                 <CardAction onAdd={handleAddCard} onRemove={handleRemoveCard} />
               </YStack>
@@ -705,10 +426,8 @@ export default function CardDetailScreen() {
                 </Card>
               </AnimatedView>
               <Animated.View entering={FadeInDown.delay(300).duration(500)}>
-                <Card
-                  marginVertical="$4"
-                  marginHorizontal="$4"
-                  borderRadius={16}
+                {/* Card Information - remove Card wrapper, use internal glassmorphic style in a new CardInformationSection if desired, else keep as YStack */}
+                <YStack
                   style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
                 >
                   <Text
@@ -725,300 +444,40 @@ export default function CardDetailScreen() {
                     Card Information
                   </Text>
                   <YStack space={16}>
-                    <XStack style={{ alignItems: "center", gap: 12 }}>
-                      <Card
-                        style={{
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
-                          padding: 8,
-                          borderRadius: 8,
-                          width: 120,
-                        }}
-                      >
-                        <XStack style={{ alignItems: "center", gap: 8 }}>
-                          <Ionicons
-                            name="albums-outline"
-                            size={18}
-                            color="#aaa"
-                          />
-                        </XStack>
-                      </Card>
-                      <Text style={{ color: "#fff" }} fontSize="$3" flex={1}>
-                        {card.setName || "Unknown"}
-                      </Text>
-                    </XStack>
-                    <XStack style={{ alignItems: "center", gap: 12 }}>
-                      <Card
-                        style={{
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
-                          padding: 8,
-                          borderRadius: 8,
-                          width: 120,
-                        }}
-                      >
-                        <XStack style={{ alignItems: "center", gap: 8 }}>
-                          <MaterialCommunityIcons
-                            name="numeric"
-                            size={18}
-                            color="#aaa"
-                          />
-                        </XStack>
-                      </Card>
-                      <Text style={{ color: "#fff" }} fontSize="$3" flex={1}>
-                        {card.number || "-"}
-                      </Text>
-                    </XStack>
-                    <XStack style={{ alignItems: "center", gap: 12 }}>
-                      <Card
-                        style={{
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
-                          padding: 8,
-                          borderRadius: 8,
-                          width: 120,
-                        }}
-                      >
-                        <XStack style={{ alignItems: "center", gap: 8 }}>
-                          <MaterialCommunityIcons
-                            name="star-outline"
-                            size={18}
-                            color="#aaa"
-                          />
-                        </XStack>
-                      </Card>
-                      <Text style={{ color: "#fff" }} fontSize="$3" flex={1}>
-                        {card.rarity || "-"}
-                      </Text>
-                    </XStack>
-                    <XStack style={{ alignItems: "center", gap: 12 }}>
-                      <Card
-                        style={{
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
-                          padding: 8,
-                          borderRadius: 8,
-                          width: 120,
-                        }}
-                      >
-                        <XStack style={{ alignItems: "center", gap: 8 }}>
-                          <MaterialCommunityIcons
-                            name="pokeball"
-                            size={18}
-                            color="#aaa"
-                          />
-                        </XStack>
-                      </Card>
-                      <Text style={{ color: "#fff" }} fontSize="$3" flex={1}>
-                        {Array.isArray((card as any).types)
-                          ? (card as any).types.join(", ")
-                          : "-"}
-                      </Text>
-                    </XStack>
-                    {card.evolvesFrom && (
-                      <XStack style={{ alignItems: "center", gap: 12 }}>
-                        <Card
-                          style={{
-                            backgroundColor: "rgba(255, 255, 255, 0.05)",
-                            padding: 8,
-                            borderRadius: 8,
-                            width: 120,
-                          }}
-                        >
-                          <XStack style={{ alignItems: "center", gap: 8 }}>
-                            <MaterialCommunityIcons
-                              name="arrow-up-bold"
-                              size={18}
-                              color="#aaa"
-                            />
-                          </XStack>
-                        </Card>
-                        <Text style={{ color: "#fff" }} fontSize="$3" flex={1}>
-                          Evolves from {card.evolvesFrom}
-                        </Text>
-                      </XStack>
-                    )}
+                    <CardInformationSection card={card} />
                   </YStack>
-                </Card>
+                </YStack>
               </Animated.View>
+              {/* Prices Section - remove Card wrapper, use only PriceSection (which applies its own glassmorphic style) */}
               {(card.cardMarketPrices || card.tcgPlayerPrices) && (
                 <Animated.View entering={FadeInDown.delay(400).duration(500)}>
-                  <Card
-                    marginVertical="$4"
-                    marginHorizontal="$4"
-                    borderRadius={16}
-                    style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
-                  >
-                    <Text
-                      fontSize={24}
-                      fontWeight="bold"
-                      style={{
-                        color: "#fff",
-                        backgroundColor: "rgba(44, 62, 80, 0.8)",
-                        padding: 16,
-                        borderTopLeftRadius: 16,
-                        borderTopRightRadius: 16,
-                      }}
-                    >
-                      Prices
-                    </Text>
-                    <YStack>
-                      {card.cardMarketPrices && (
-                        <PriceSection
-                          prices={card.cardMarketPrices}
-                          title="CardMarket"
-                          formatPrice={formatPrice}
-                        />
-                      )}
-                      {card.tcgPlayerPrices && (
-                        <PriceSection
-                          prices={card.tcgPlayerPrices}
-                          title="TCGPlayer"
-                          formatPrice={formatPrice}
-                        />
-                      )}
-                    </YStack>
-                  </Card>
+                  {card.cardMarketPrices && (
+                    <PriceSection
+                      prices={card.cardMarketPrices}
+                      title="CardMarket"
+                      formatPrice={formatPrice}
+                    />
+                  )}
+                  {card.tcgPlayerPrices && (
+                    <PriceSection
+                      prices={card.tcgPlayerPrices}
+                      title="TCGPlayer"
+                      formatPrice={formatPrice}
+                    />
+                  )}
                 </Animated.View>
               )}
+              {/* Attacks Section - remove Card wrapper, use internal glassmorphic style in a new AttacksSection if desired, else keep as YStack */}
               {card.attacks && card.attacks.length > 0 && (
                 <Animated.View entering={FadeInDown.delay(500).duration(500)}>
-                  <Card
-                    marginVertical="$4"
-                    marginHorizontal="$4"
-                    borderRadius={16}
-                    style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
-                  >
-                    <Text
-                      fontSize={24}
-                      fontWeight="bold"
-                      style={{
-                        color: "#fff",
-                        backgroundColor: "rgba(44, 62, 80, 0.8)",
-                        padding: 16,
-                        borderTopLeftRadius: 16,
-                        borderTopRightRadius: 16,
-                      }}
-                    >
-                      Attacks
-                    </Text>
-                    <YStack>
-                      {card.attacks.map((attack, idx) => (
-                        <YStack key={idx} style={{ padding: 16, gap: 8 }}>
-                          <XStack style={{ alignItems: "center", gap: 8 }}>
-                            {attack.cost && renderEnergyCost(attack.cost)}
-                            <Text
-                              style={{
-                                color: "#fff",
-                                fontWeight: "bold",
-                                fontSize: 18,
-                              }}
-                            >
-                              {attack.name}
-                            </Text>
-                            <Text
-                              style={{
-                                color: "#fff",
-                                fontWeight: "bold",
-                                fontSize: 16,
-                              }}
-                            >
-                              {attack.damage}
-                            </Text>
-                          </XStack>
-                          <Text style={{ color: "#ccc", fontSize: 14 }}>
-                            {attack.text}
-                          </Text>
-                        </YStack>
-                      ))}
-                    </YStack>
-                  </Card>
+                  <AttacksSection attacks={card.attacks} renderEnergyCost={renderEnergyCost} />
                 </Animated.View>
               )}
+              {/* Battle Attributes Section - remove Card wrapper, use internal glassmorphic style in a new BattleAttributesSection if desired, else keep as YStack */}
               <Animated.View entering={FadeInDown.delay(600).duration(500)}>
-                <Card
-                  marginVertical="$4"
-                  marginHorizontal="$4"
-                  borderRadius={16}
-                  style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
-                >
-                  <Text
-                    fontSize={24}
-                    fontWeight="bold"
-                    style={{
-                      color: "#fff",
-                      backgroundColor: "rgba(44, 62, 80, 0.8)",
-                      padding: 16,
-                      borderTopLeftRadius: 16,
-                      borderTopRightRadius: 16,
-                    }}
-                  >
-                    Battle Attributes
-                  </Text>
-                  <XStack gap={24}>
-                    <YStack
-                      flex={1}
-                      style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.05)",
-                        padding: 16,
-                        borderRadius: 12,
-                      }}
-                    >
-                      <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                        Weaknesses
-                      </Text>
-                      {card.weaknesses && card.weaknesses.length > 0 ? (
-                        card.weaknesses.map((w, i) => (
-                          <XStack
-                            key={i}
-                            style={{ alignItems: "center", gap: 8 }}
-                          >
-                            <Text
-                              style={{
-                                color: getTypeColor(w.type),
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {w.type}
-                            </Text>
-                            <Text style={{ color: "#fff" }}>x{w.value}</Text>
-                          </XStack>
-                        ))
-                      ) : (
-                        <Text style={{ color: "#ccc" }}>-</Text>
-                      )}
-                    </YStack>
-                    <YStack
-                      flex={1}
-                      style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.05)",
-                        padding: 16,
-                        borderRadius: 12,
-                      }}
-                    >
-                      <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                        Resistances
-                      </Text>
-                      {card.resistances && card.resistances.length > 0 ? (
-                        card.resistances.map((r, i) => (
-                          <XStack
-                            key={i}
-                            style={{ alignItems: "center", gap: 8 }}
-                          >
-                            <Text
-                              style={{
-                                color: getTypeColor(r.type),
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {r.type}
-                            </Text>
-                            <Text style={{ color: "#fff" }}>x{r.value}</Text>
-                          </XStack>
-                        ))
-                      ) : (
-                        <Text style={{ color: "#ccc" }}>-</Text>
-                      )}
-                    </YStack>
-                  </XStack>
-                </Card>
+                <BattleAttributesSection weaknesses={card.weaknesses} resistances={card.resistances} getTypeColor={getTypeColor} />
               </Animated.View>
+              {/* CardAction remains as is, already correct */}
               <Animated.View entering={FadeInDown.delay(700).duration(500)}>
                 <YStack style={{ marginHorizontal: 12, marginBottom: 24 }}>
                   <CardAction

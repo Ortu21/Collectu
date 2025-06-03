@@ -101,11 +101,12 @@ const HomeScreen = () => {
 
   return (
     <Theme name="dark">
-      <YStack 
-        flex={1} 
-        style={{ 
+      <YStack
+        flex={1}
+        style={{
           backgroundColor: "#0a0a0f",
-          backgroundImage: "radial-gradient(circle at 25% 25%, #1a1a2e 0%, transparent 70%), radial-gradient(circle at 75% 75%, #16213e 0%, transparent 70%)",
+          backgroundImage:
+            "radial-gradient(circle at 25% 25%, #1a1a2e 0%, transparent 70%), radial-gradient(circle at 75% 75%, #16213e 0%, transparent 70%)",
         }}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -162,40 +163,40 @@ const HomeScreen = () => {
                   width: "100%",
                 }}
               >
-              <Text 
-                fontSize={16} 
-                color="rgba(255, 255, 255, 0.6)" 
-                style={{ marginBottom: 8 }}
-              >
-                Valore collezione
-              </Text>
-              <Text
-                fontSize={40}
-                fontWeight="900"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  marginBottom: 10,
-                  letterSpacing: 0.5,
-                  filter: "drop-shadow(0 2px 8px rgba(255, 168, 0, 0.2))",
-                }}
-              >
-                €{collectionValue.toFixed(2)}
-              </Text>
-              <XStack style={{ alignItems: "center", gap: 8 }}>
-                <Text color="rgba(255, 255, 255, 0.5)" fontSize={16}>
-                  Pagato €{paidValue.toFixed(2)}
+                <Text
+                  fontSize={16}
+                  color="rgba(255, 255, 255, 0.6)"
+                  style={{ marginBottom: 8 }}
+                >
+                  Valore collezione
                 </Text>
                 <Text
-                  color={percentageChange >= 0 ? "#4CAF50" : "#FF3B30"}
-                  fontWeight="700"
-                  fontSize={16}
+                  fontSize={40}
+                  fontWeight="900"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    marginBottom: 10,
+                    letterSpacing: 0.5,
+                    filter: "drop-shadow(0 2px 8px rgba(255, 168, 0, 0.2))",
+                  }}
                 >
-                  ({percentageChange.toFixed(2)}%)
+                  €{collectionValue.toFixed(2)}
                 </Text>
-              </XStack>
+                <XStack style={{ alignItems: "center", gap: 8 }}>
+                  <Text color="rgba(255, 255, 255, 0.5)" fontSize={16}>
+                    Pagato €{paidValue.toFixed(2)}
+                  </Text>
+                  <Text
+                    color={percentageChange >= 0 ? "#4CAF50" : "#FF3B30"}
+                    fontWeight="700"
+                    fontSize={16}
+                  >
+                    ({percentageChange.toFixed(2)}%)
+                  </Text>
+                </XStack>
               </Card>
             </YStack>
 
@@ -226,7 +227,7 @@ const HomeScreen = () => {
                     name={stat.icon}
                     size={26}
                     color={stat.color}
-                    style={{ 
+                    style={{
                       marginBottom: 4,
                       filter: `drop-shadow(0 2px 4px ${stat.color}40)`,
                     }}
@@ -234,8 +235,8 @@ const HomeScreen = () => {
                   <Text
                     fontSize={22}
                     fontWeight="900"
-                    style={{ 
-                      color: stat.color, 
+                    style={{
+                      color: stat.color,
                       marginBottom: 2,
                       filter: `drop-shadow(0 1px 4px ${stat.color}40)`,
                     }}
@@ -250,11 +251,11 @@ const HomeScreen = () => {
             </XStack>
 
             {/* SEPARATORE */}
-            <Separator 
-              style={{ 
+            <Separator
+              style={{
                 marginVertical: 18,
                 backgroundColor: "rgba(255, 255, 255, 0.1)",
-              }} 
+              }}
             />
 
             {/* TOP 5 */}
@@ -266,15 +267,15 @@ const HomeScreen = () => {
                   marginBottom: 16,
                 }}
               >
-                <Text 
-                  fontSize={18} 
-                  color="rgba(255, 255, 255, 0.9)" 
+                <Text
+                  fontSize={18}
+                  color="rgba(255, 255, 255, 0.9)"
                   fontWeight="700"
                 >
                   Top 5 Most Valuable
                 </Text>
-                <Button 
-                  size="$2" 
+                <Button
+                  size="$2"
                   chromeless
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -282,7 +283,11 @@ const HomeScreen = () => {
                     borderRadius: 12,
                   }}
                 >
-                  <Ionicons name="ellipsis-horizontal" size={22} color="rgba(255, 255, 255, 0.7)" />
+                  <Ionicons
+                    name="ellipsis-horizontal"
+                    size={22}
+                    color="rgba(255, 255, 255, 0.7)"
+                  />
                 </Button>
               </XStack>
               <YStack style={{ gap: 16 }}>
@@ -291,11 +296,11 @@ const HomeScreen = () => {
                     key={card.id}
                     borderRadius={14}
                     elevate
-                    pressStyle={{ 
+                    pressStyle={{
                       backgroundColor: "rgba(255, 255, 255, 0.1)",
                       transform: "scale(0.98)",
                     }}
-                    hoverStyle={{ 
+                    hoverStyle={{
                       backgroundColor: "rgba(255, 255, 255, 0.08)",
                     }}
                     style={{
@@ -343,21 +348,22 @@ const HomeScreen = () => {
                       >
                         {card.name}
                       </Text>
-                      <Text 
-                        color="#4CAF50" 
-                        fontSize={17} 
+                      <Text
+                        color="#4CAF50"
+                        fontSize={17}
                         fontWeight="700"
                         style={{
-                          filter: "drop-shadow(0 1px 4px rgba(76, 175, 80, 0.3))",
+                          filter:
+                            "drop-shadow(0 1px 4px rgba(76, 175, 80, 0.3))",
                         }}
                       >
                         €{card.price.toFixed(2)}
                       </Text>
                     </YStack>
-                    <Ionicons 
-                      name="chevron-forward" 
-                      size={22} 
-                      color="rgba(255, 255, 255, 0.4)" 
+                    <Ionicons
+                      name="chevron-forward"
+                      size={22}
+                      color="rgba(255, 255, 255, 0.4)"
                     />
                   </Card>
                 ))}

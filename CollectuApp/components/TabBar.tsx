@@ -69,10 +69,10 @@ const TabBar = ({
     // Usa XStack per il contenitore principale e applica gli stili glassmorphic centralizzati
     <XStack
       style={{
-        ...tabBarGlassStyles, // Applica gli stili glassmorphic di base
-        paddingBottom: 20, // Mantieni padding specifici del layout
-        paddingTop: 12, // Mantieni padding specifici del layout
-        position: "absolute" as const, // Mantieni posizionamento fisso
+        ...tabBarGlassStyles,
+        paddingBottom: 20, 
+        paddingTop: 12, 
+        position: "absolute", 
         bottom: 0,
         left: 0,
         right: 0,
