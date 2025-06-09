@@ -1,30 +1,25 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth'; // Aggiunti setPersistence e tipi
-import { auth } from '../firebase/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 import { registerUser } from '../services/userApi';
 
 interface UseAuthReturn {
   loading: boolean;
   error: string | null;
   user: any | null;
-  isAuthLoading: boolean; // Stato per il caricamento iniziale dell'autenticazione
+  isAuthLoading: boolean;
   register: (email: string, password: string, userName: string) => Promise<void>;
-  login: (email: string, password: string, rememberMe: boolean) => Promise<void>; // Aggiunto rememberMe
+  login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
   logout: () => Promise<void>;
-  sendPasswordReset: (email: string) => Promise<void>; // Aggiunta funzione reset password
+  sendPasswordReset: (email: string) => Promise<void>;
 }
 
 const REMEMBER_ME_KEY = '@rememberMe';
 
-// Definisci il tipo per il valore del contesto
-interface AuthContextType extends UseAuthReturn {}
+const AuthContext = createContext<UseAuthReturn | undefined>(undefined);
 
-// Crea il contesto di autenticazione
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Hook per utilizzare il contesto di autenticazione
-export const useAuth = (): AuthContextType => {
+export const useAuth = (): UseAuthReturn => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
@@ -32,20 +27,17 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Hook interno che contiene la logica di autenticazione effettiva
 const useFirebaseAuth = (): UseAuthReturn => {
   const [loading, setLoading] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true); // Inizializza a true
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    // Controlla lo stato di autenticazione all'avvio
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setIsAuthLoading(false); // Imposta a false dopo il controllo iniziale
+      setIsAuthLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -53,11 +45,7 @@ const useFirebaseAuth = (): UseAuthReturn => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Registrazione con Firebase
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Registrazione nel backend
       await registerUser({
         firebaseUid: userCredential.user.uid,
         email: userCredential.user.email || '',
@@ -77,33 +65,17 @@ const useFirebaseAuth = (): UseAuthReturn => {
     }
   };
 
-  // Funzione per controllare se l'utente ha scelto "ricordami"
-  const checkRememberMe = async (): Promise<boolean> => {
-    try {
-      const value = await AsyncStorage.getItem(REMEMBER_ME_KEY);
-      return value === 'true';
-    } catch (e) {
-      console.error('Failed to fetch remember me status', e);
-      return false;
-    }
-  };
-
   const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
       setLoading(true);
       setError(null);
-
-      // Imposta la persistenza della sessione
       const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
-
       await signInWithEmailAndPassword(auth, email, password);
-
-      // Salva la preferenza "ricordami" in AsyncStorage
       try {
         await AsyncStorage.setItem(REMEMBER_ME_KEY, rememberMe.toString());
       } catch (e) {
-        console.error('Failed to save remember me status', e);
+        // ignore
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Si è verificato un errore durante il login');
@@ -113,7 +85,6 @@ const useFirebaseAuth = (): UseAuthReturn => {
     }
   };
 
-
   const logout = async () => {
     try {
       setLoading(true);
@@ -122,7 +93,7 @@ const useFirebaseAuth = (): UseAuthReturn => {
       try {
         await AsyncStorage.removeItem(REMEMBER_ME_KEY);
       } catch (e) {
-        console.error('Failed to remove remember me status', e);
+        // ignore
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Si è verificato un errore durante il logout');
@@ -132,10 +103,9 @@ const useFirebaseAuth = (): UseAuthReturn => {
     }
   };
 
-  // Sposto la definizione di sendPasswordReset qui dentro
   const sendPasswordReset = async (email: string) => {
     try {
-      setLoading(true); 
+      setLoading(true);
       setError(null);
       await sendPasswordResetEmail(auth, email);
     } catch (err) {
@@ -148,28 +118,17 @@ const useFirebaseAuth = (): UseAuthReturn => {
 
   return {
     loading,
-    isAuthLoading, // Esporta il nuovo stato
+    isAuthLoading,
     error,
     user,
     register,
     login,
     logout,
-    sendPasswordReset // Esporta la nuova funzione
+    sendPasswordReset
   };
 };
 
-// Definisci il tipo per le props del provider
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-// Crea il componente AuthProvider
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const authValues = useFirebaseAuth(); // Usa l'hook interno per ottenere i valori
-
-  return (
-    <AuthContext.Provider value={authValues}>
-      {children}
-    </AuthContext.Provider>
-  );
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const authValues = useFirebaseAuth();
+  return <AuthContext.Provider value={authValues}>{children}</AuthContext.Provider>;
 };

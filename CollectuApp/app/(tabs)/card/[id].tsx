@@ -28,18 +28,6 @@ import {
   ScrollView,
   View,
 } from "tamagui";
-import {
-  getPlatformGlassmorphicStyle,
-  glassmorphicCardStyles,
-  glassmorphicBarStyles,
-  glassmorphicHeaderStyles,
-  glassmorphicButtonStyles,
-  glassmorphicImageContainerStyles,
-  glassmorphicLoadingStyles,
-  glassmorphicErrorCardStyles,
-  glassmorphicCardHeaderStyles,
-  glassmorphicSectionStyles,
-} from "../../../styles/glassmorphicStyles";
 
 export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -228,7 +216,6 @@ export default function CardDetailScreen() {
           <Card
             elevate
             borderRadius={16}
-            style={getPlatformGlassmorphicStyle(glassmorphicLoadingStyles)}
           >
             <YStack space={16} style={{ alignItems: "center" }}>
               <ActivityIndicator size="large" color="#007AFF" />
@@ -257,7 +244,6 @@ export default function CardDetailScreen() {
           <Card
             elevate
             borderRadius={16}
-            style={getPlatformGlassmorphicStyle(glassmorphicErrorCardStyles)}
           >
             <YStack style={{ alignItems: "center" }}>
               <Text
@@ -267,7 +253,6 @@ export default function CardDetailScreen() {
                 {error || "Card not found"}{" "}
               </Text>
               <Button
-                style={getPlatformGlassmorphicStyle(glassmorphicButtonStyles)}
                 onPress={handleGoBack}
               >
                 <Text style={{ color: "#fff", fontWeight: "bold" }}>
@@ -296,7 +281,6 @@ export default function CardDetailScreen() {
         <XStack
           style={[
             { alignItems: "center", padding: 16, gap: 16 },
-            getPlatformGlassmorphicStyle(glassmorphicHeaderStyles),
           ]}
         >
           <Button
@@ -335,7 +319,6 @@ export default function CardDetailScreen() {
                     style={{
                       alignItems: "center",
                       padding: 24,
-                      ...getPlatformGlassmorphicStyle(glassmorphicImageContainerStyles),
                     }}
                   >
                     <Card
@@ -399,9 +382,6 @@ export default function CardDetailScreen() {
                   style={{
                     alignItems: "center",
                     padding: 24,
-                    ...getPlatformGlassmorphicStyle(
-                      glassmorphicImageContainerStyles
-                    ),
                     borderBottomLeftRadius: 24,
                     borderBottomRightRadius: 24,
                   }}
@@ -428,7 +408,6 @@ export default function CardDetailScreen() {
               <Animated.View entering={FadeInDown.delay(300).duration(500)}>
                 {/* Card Information - remove Card wrapper, use internal glassmorphic style in a new CardInformationSection if desired, else keep as YStack */}
                 <YStack
-                  style={getPlatformGlassmorphicStyle(glassmorphicCardStyles)}
                 >
                   <Text
                     fontSize={24}

@@ -2,15 +2,7 @@ import React from "react";
 import { TextInput, TouchableOpacity, Platform } from "react-native";
 import { YStack, XStack, Text, Image } from "tamagui";
 import { PokemonSet } from "../../types/pokemon";
-// Importa gli stili glassmorphic centralizzati
-import {
-  getPlatformGlassmorphicStyle,
-  glassmorphicBarStyles,
-  glassmorphicInputStyles,
-  glassmorphicButtonStyles,
-  glassmorphicSelectedItemStyles,
-  glassmorphicClearButtonStyles,
-} from "../../styles/glassmorphicStyles";
+
 
 interface SearchFilterBarProps {
   searchQuery: string;
@@ -31,83 +23,50 @@ export const SearchFilterBar = ({
   totalCount,
   isLoading,
 }: SearchFilterBarProps) => {
-  // Ottieni gli stili glassmorphic per i vari elementi dalla centralizzazione
-  const containerGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicBarStyles,
-  );
-  const inputGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicInputStyles,
-  );
-  const buttonGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicButtonStyles,
-  );
-  const selectedSetGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicSelectedItemStyles,
-  );
-  const clearButtonGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicClearButtonStyles,
-  );
-
+  // Usa solo variabili di tema Tamagui, elimina ogni glassmorphicStyles e colori custom RGBA
   return (
-    // Applica gli stili glassmorphic centralizzati al contenitore principale
     <YStack
-      style={{
-        ...containerGlassStyles,
-        padding: 16, // Mantieni padding specifici del layout
-        // borderBottomWidth e borderBottomColor sono già inclusi in glassmorphicBarStyles
-      }}
+      style={{ backgroundColor: 'var(--background)', padding: 16, borderRadius: 12 }}
     >
-      <XStack
-        style={{
-          alignItems: "center",
-          marginBottom: 10,
-        }}
-      >
-        {/* Applica gli stili glassmorphic centralizzati all'input */}
+      <XStack style={{ alignItems: 'center', marginBottom: 10 }}>
         <TextInput
           style={{
-            flex: 1, // Mantieni flex per il layout
-            padding: 12, // Mantieni padding specifici dell'input
-            fontSize: 16, // Mantieni font size specifico
-            color: "#fff", // Mantieni colore del testo
-            ...inputGlassStyles, // Applica gli stili glassmorphic di base per l'input
+            flex: 1,
+            padding: 12,
+            fontSize: 16,
+            color: 'var(--color1)',
+            backgroundColor: 'var(--backgroundStrong)',
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: 'var(--borderColor)',
           }}
           placeholder="Search cards..."
-          placeholderTextColor="rgba(255, 255, 255, 0.4)"
+          placeholderTextColor="var(--color6)"
           value={searchQuery}
           onChangeText={onSearchChange}
         />
       </XStack>
 
-      <XStack
-        style={{
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10, // Mantieni gap specifico
-        }}
-      >
-        {/* Applica gli stili glassmorphic centralizzati al bottone Set */}
+      <XStack style={{ alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <TouchableOpacity
           style={{
-            padding: 12, // Mantieni padding specifici del bottone
-            alignItems: "center",
-            justifyContent: "center",
-            width: 80, // Mantieni larghezza specifica
-            ...buttonGlassStyles, // Applica gli stili glassmorphic di base per il bottone
-            // borderRadius, borderWidth, borderColor, backdropFilter, boxShadow/elevation sono inclusi
+            padding: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 80,
+            backgroundColor: 'var(--backgroundStrong)',
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: 'var(--borderColor)',
           }}
           onPress={onFilterPress}
         >
           <Text
-            color="#fff"
+            color="var(--color1)"
             fontSize={16}
             fontWeight="bold"
             style={{
-              // Mantieni textShadow solo per web se necessario, altrimenti rimuovi la logica Platform.OS
-              textShadowColor:
-                Platform.OS === "web"
-                  ? "rgba(0, 122, 255, 0.5)"
-                  : "transparent",
+              textShadowColor: 'transparent',
               textShadowOffset: { width: 0, height: 0 },
               textShadowRadius: 8,
             }}
@@ -116,51 +75,40 @@ export const SearchFilterBar = ({
           </Text>
         </TouchableOpacity>
 
-        <YStack
-          style={{
-            height: 30, // Mantieni altezza specifica
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 5, // Mantieni margin specifici
-          }}
-        >
+        <YStack style={{ height: 30, justifyContent: 'center', alignItems: 'center', marginTop: 5 }}>
           {totalCount > 0 && !isLoading && (
             <Text
-              color="rgba(255, 255, 255, 0.7)"
+              color="var(--color7)"
               fontSize={13}
               fontWeight="500"
               style={{
-                textAlign: "center",
+                textAlign: 'center',
                 opacity: 0.9,
-                textShadowColor: "rgba(255, 255, 255, 0.1)",
+                textShadowColor: 'transparent',
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 8,
               }}
             >
-              Found {totalCount} card{totalCount !== 1 ? "s" : ""}
+              Found {totalCount} card{totalCount !== 1 ? 's' : ''}
             </Text>
           )}
         </YStack>
       </XStack>
 
       {selectedSet && (
-        // Applica gli stili glassmorphic centralizzati all'elemento del set selezionato
         <XStack
           style={{
-            marginTop: 12, // Mantieni margin specifici
-            padding: 12, // Mantieni padding specifici
-            alignItems: "center",
-            justifyContent: "space-between",
-            ...selectedSetGlassStyles, // Applica gli stili glassmorphic di base per l'elemento selezionato
-            // backgroundColor, borderWidth, borderColor, borderRadius, backdropFilter, boxShadow/elevation sono inclusi
+            marginTop: 12,
+            padding: 12,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: 'var(--backgroundStrong)',
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: 'var(--borderColor)',
           }}
         >
-          <XStack
-            style={{
-              alignItems: "center",
-              flex: 1,
-            }}
-          >
+          <XStack style={{ alignItems: 'center', flex: 1 }}>
             <Image
               source={{ uri: selectedSet.logoUrl }}
               style={{
@@ -168,18 +116,18 @@ export const SearchFilterBar = ({
                 height: 40,
                 marginRight: 12,
                 borderRadius: 8,
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backgroundColor: 'var(--background)',
                 borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.1)",
+                borderColor: 'var(--borderColor)',
               }}
               resizeMode="contain"
             />
             <Text
-              color="rgba(255, 255, 255, 0.9)"
+              color="var(--color1)"
               fontSize={14}
               fontWeight="bold"
               style={{
-                textShadowColor: "rgba(255, 255, 255, 0.1)",
+                textShadowColor: 'transparent',
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 8,
               }}
@@ -188,23 +136,24 @@ export const SearchFilterBar = ({
             </Text>
           </XStack>
 
-          {/* Applica gli stili glassmorphic centralizzati al bottone Clear */}
           <TouchableOpacity
             style={{
-              padding: 8, // Mantieni padding specifici
-              alignItems: "center",
-              justifyContent: "center",
-              ...clearButtonGlassStyles, // Applica gli stili glassmorphic di base per il bottone clear
-              // backgroundColor, borderWidth, borderColor, borderRadius, backdropFilter sono inclusi
+              padding: 8,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--background)',
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: 'var(--borderColor)',
             }}
             onPress={onClearFilter}
           >
             <Text
-              color="rgba(255, 255, 255, 0.8)"
+              color="var(--color7)"
               fontSize={12}
               fontWeight="500"
               style={{
-                textShadowColor: "rgba(255, 255, 255, 0.2)",
+                textShadowColor: 'transparent',
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 4,
               }}

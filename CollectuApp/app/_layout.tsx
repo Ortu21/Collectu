@@ -2,10 +2,9 @@ import { Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../hooks/useAuth";
 import { useEffect } from "react";
 import { useRouter, useSegments } from "expo-router";
-import { DarkTheme ,DefaultTheme, ThemeProvider } from "@react-navigation/native";  
-import { TamaguiProvider } from "tamagui";
-import { tamaguiConfig } from "../tamagui.config";
-import { Platform, useColorScheme } from "react-native";
+import { TamaguiProvider } from 'tamagui';
+import { ThemeProvider as CustomThemeProvider, useTheme } from '../hooks/useTheme';
+import tamaguiConfig from "../tamagui.config";
 import { useFonts } from 'expo-font'
 
 function useProtectedRoute(user: any, isAuthLoading: boolean) {
@@ -75,7 +74,16 @@ export default function RootLayout() {
   }
 
   return (
-    <TamaguiProvider config={tamaguiConfig}>
+    <CustomThemeProvider>
+      <InnerRootLayout />
+    </CustomThemeProvider>
+  );
+}
+
+function InnerRootLayout() {
+  const { theme } = useTheme();
+  return (
+    <TamaguiProvider config={tamaguiConfig} defaultTheme={theme}>
       <AuthProvider>
         <RootLayoutNav />
       </AuthProvider>

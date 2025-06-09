@@ -1,65 +1,50 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useAuth } from '../../hooks/useAuth'; // Assicurati che il percorso sia corretto
+import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'expo-router';
+import ThemeSwitcher from '../../components/ThemeSwitcher';
+import { useTheme } from '../../hooks/useTheme';
+import { YStack, Text, Button } from 'tamagui';
 
 const ProfileScreen = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { theme } = useTheme();
 
   const handleLogout = async () => {
     await logout();
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profilo Utente</Text>
-      {user ? (
-        <View>
-          <Text style={styles.text}>Email: {user.email}</Text>
-          {/* Aggiungi altre informazioni del profilo qui */}
-          <TouchableOpacity style={styles.button} onPress={handleLogout}>
-            <Text style={styles.buttonText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <Text style={styles.text}>Caricamento informazioni utente...</Text>
-      )}
-    </View>
+    <YStack style={{ flex: 1, alignItems: 'center', justifyContent: 'center', background: 'var(--background)', padding: 20 }}>
+      <Text fontSize={24} fontWeight="bold" style={{ color: 'var(--color)', marginBottom: 20 }}>
+        Profilo Utente
+      </Text>
+      <ThemeSwitcher />
+      <YStack style={{ width: 320, padding: 24, alignItems: 'center', borderRadius: 18, background: 'var(--color2)', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+        {user ? (
+          <>
+            <Text style={{ color: 'var(--color)', fontSize: 16, marginBottom: 10 }}>
+              Email: {user.email}
+            </Text>
+            {/* Aggiungi altre informazioni del profilo qui */}
+            <Button
+              style={{ background: 'var(--accent10)', borderRadius: 8, marginTop: 20, width: 180 }}
+              color="var(--background)"
+              fontWeight="bold"
+              fontSize={16}
+              onPress={handleLogout}
+            >
+              Logout
+            </Button>
+          </>
+        ) : (
+          <Text style={{ color: 'var(--color)', fontSize: 16 }}>
+            Caricamento informazioni utente...
+          </Text>
+        )}
+      </YStack>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#121212', // Sfondo scuro
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 16,
-    color: '#ccc',
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: '#FF3B30', // Rosso per logout
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
 
 export default ProfileScreen;

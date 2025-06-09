@@ -3,7 +3,6 @@ import { YStack, Text } from 'tamagui';
 import { PokemonPrice, PokemonPriceDetail } from '../../types/pokemon';
 import { PriceTable } from '../id/PriceTable';
 import { extractArray } from '../../utils/circularReferenceHandler';
-import { getPlatformGlassmorphicStyle, glassmorphicSectionStyles } from '../../styles/glassmorphicStyles';
 
 type PriceSectionProps = {
   prices: PokemonPrice;
@@ -18,19 +17,17 @@ export const PriceSection = ({ prices, title, formatPrice }: PriceSectionProps) 
     return null;
   }
 
-  const sectionGlassStyles = getPlatformGlassmorphicStyle(glassmorphicSectionStyles);
-
   return (
-    <YStack style={{ ...sectionGlassStyles, padding: 16 }}>
-      <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff', marginBottom: 4 }}>{title}</Text>
-      <Text style={{ fontSize: 12, color: '#aaa', marginBottom: 12 }}>
+    <YStack style={{ backgroundColor: 'var(--backgroundStrong)', borderRadius: 16, padding: 16 }}>
+      <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'var(--color1)', marginBottom: 4 }}>{title}</Text>
+      <Text style={{ fontSize: 12, color: 'var(--color7)', marginBottom: 12 }}>
         Updated: {prices.updatedAt}
       </Text>
       
       {priceDetails.map((detail, index) => (
         <YStack key={`price-${index}`} style={{ marginBottom: 16 }}>
           {detail.foilType && (
-            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#ddd', marginBottom: 8, textAlign: 'center' }}>{detail.foilType}</Text>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: 'var(--color2)', marginBottom: 8, textAlign: 'center' }}>{detail.foilType}</Text>
           )}
           <PriceTable 
             key={`price-detail-${index}`} 

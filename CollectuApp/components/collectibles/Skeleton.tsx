@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   cardImage: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#444",
+    backgroundColor: "var(--color4)",
     overflow: "hidden",
     position: "absolute",
     top: 0,
@@ -203,14 +203,14 @@ const styles = StyleSheet.create({
   },
   cardName: {
     height: 20,
-    backgroundColor: "#444",
+    backgroundColor: "var(--color4)",
     marginBottom: 4,
     borderRadius: 4,
     overflow: "hidden",
   },
   cardRarity: {
     height: 16,
-    backgroundColor: "#444",
+    backgroundColor: "var(--color4)",
     marginBottom: 4,
     width: "40%",
     borderRadius: 4,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   },
   cardSet: {
     height: 16,
-    backgroundColor: "#444",
+    backgroundColor: "var(--color4)",
     flex: 1,
     marginRight: 8,
     borderRadius: 4,
@@ -232,17 +232,17 @@ const styles = StyleSheet.create({
   },
   cardNumber: {
     height: 16,
-    backgroundColor: "#444",
+    backgroundColor: "var(--color4)",
     width: 30,
     borderRadius: 4,
     overflow: "hidden",
   },
   imageContainer: {
-    backgroundColor: '#444',
+    backgroundColor: 'var(--color4)',
     overflow: 'hidden',
   },
   baseContainer: {
-    backgroundColor: "#444",
+    backgroundColor: "var(--color4)",
     overflow: "hidden",
   },
   shimmer: {

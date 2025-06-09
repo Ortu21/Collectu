@@ -8,14 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { YStack, XStack, Text, Image } from "tamagui";
 import { PokemonCard } from "../../types/pokemon";
-// Rimuovi l'import di Skeleton da qui
-// import { Skeleton } from './Skeleton';
-// Importa gli stili glassmorphic centralizzati
-import {
-  getPlatformGlassmorphicStyle,
-  glassmorphicImageContainerStyles,
-  glassmorphicInfoContainerStyles,
-} from "../../styles/glassmorphicStyles";
+
 
 interface CardItemProps {
   card: PokemonCard;
@@ -69,23 +62,17 @@ export const CardItem = memo(
 
     const imageHeight = cardDimensions ? cardDimensions.height * 0.6 : 180;
 
-    // Ottieni gli stili glassmorphic per i contenitori immagine e info dalla centralizzazione
-    const imageContainerGlassStyles = getPlatformGlassmorphicStyle(
-      glassmorphicImageContainerStyles,
-    );
-    const infoContainerGlassStyles = getPlatformGlassmorphicStyle(
-      glassmorphicInfoContainerStyles,
-    );
-
     return (
       <AnimatedContainer style={animatedStyles} flex={1}>
         {/* Applica gli stili glassmorphic centralizzati al contenitore dell'immagine */}
         <YStack
           style={{
-            ...imageContainerGlassStyles, // Applica gli stili glassmorphic di base per il contenitore immagine
-            width: "100%", // Mantieni larghezza specifica
-            height: imageHeight, // Mantieni altezza calcolata
-            position: "relative", // Mantieni posizionamento
+            backgroundColor: "var(--background)",
+            borderRadius: 12,
+            padding: 16,
+            width: "100%",
+            height: imageHeight,
+            position: "relative",
             overflow: "hidden", // Mantieni overflow hidden per i bordi arrotondati
             // backgroundColor, borderWidth, borderColor, borderTopLeftRadius, borderTopRightRadius, borderBottomWidth, boxShadow/elevation sono inclusi
           }}
@@ -110,10 +97,10 @@ export const CardItem = memo(
         {/* Applica gli stili glassmorphic centralizzati al contenitore delle informazioni */}
         <YStack
           style={{
-            ...infoContainerGlassStyles, // Applica gli stili glassmorphic di base per il contenitore info
-            padding: 12, // Mantieni padding specifici
-            // borderTopWidth, borderTopColor, borderBottomLeftRadius, borderBottomRightRadius, borderLeftWidth, borderRightWidth, borderBottomWidth, borderColor, boxShadow/elevation sono inclusi
-            overflow: "hidden", // Imposta un overflow hidden per ritagliare correttamente gli angoli inferiori
+            backgroundColor: "var(--background)",
+            padding: 12,
+            borderRadius: 12,
+            overflow: "hidden",
           }}
         >
           <Text

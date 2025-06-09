@@ -2,14 +2,6 @@ import React from "react";
 import { Modal, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { YStack, XStack, Text, Card, Image, Spinner } from "tamagui";
 import { PokemonSet } from "../../types/pokemon";
-// Importa gli stili glassmorphic centralizzati
-import {
-  getPlatformGlassmorphicStyle,
-  glassmorphicModalOverlayStyles,
-  glassmorphicModalContentStyles,
-  glassmorphicLoadingStyles,
-  glassmorphicSetItemStyles,
-} from "../../styles/glassmorphicStyles";
 
 interface SetFilterModalProps {
   isVisible: boolean;
@@ -26,20 +18,6 @@ export const SetFilterModal = ({
   isLoading,
   onSelectSet,
 }: SetFilterModalProps) => {
-  // Ottieni gli stili glassmorphic per i vari elementi dalla centralizzazione
-  const modalOverlayGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicModalOverlayStyles,
-  );
-  const modalContentGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicModalContentStyles,
-  );
-  const loadingGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicLoadingStyles,
-  );
-  const setItemGlassStyles = getPlatformGlassmorphicStyle(
-    glassmorphicSetItemStyles,
-  );
-
   return (
     <Modal
       visible={isVisible}
@@ -47,38 +25,19 @@ export const SetFilterModal = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      {/* Applica gli stili glassmorphic centralizzati all'overlay della modale */}
-      <YStack
-        flex={1}
-        style={modalOverlayGlassStyles} // Applica gli stili glassmorphic di base per l'overlay
-      >
-        {/* Background overlay decorativo con blur (rimane separato se ha logiche diverse) */}
-        <YStack
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            opacity: 0.4,
-            ...(Platform.OS === "web" && {
-              background:
-                "radial-gradient(circle at 30% 40%, rgba(255, 107, 203, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(76, 175, 80, 0.2) 0%, transparent 50%)",
-            }),
-          }}
-        />
-
-        {/* Spacer per spingere il contenuto in basso */}
-        <YStack flex={1} onPress={onClose} />
-
-        {/* Applica gli stili glassmorphic centralizzati al contenitore del contenuto della modale */}
+      <YStack flex={1} style={{ background: "rgba(0,0,0,0.4)" }}>
+        <YStack style={{ flex: 1 }} onPress={onClose} />
         <Card
           style={{
-            padding: 24, // Mantieni padding specifici del layout
-            height: "75%", // Mantieni altezza specifica
-            margin: 0, // Mantieni margin specifico
-            ...modalContentGlassStyles, // Applica gli stili glassmorphic di base per il contenuto modale
-            // backgroundColor, borderWidth, borderColor, borderTopLeftRadius, borderTopRightRadius, backdropFilter, boxShadow/elevation sono inclusi
+            padding: 24,
+            height: "75%",
+            margin: 0,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            background: "var(--color2)",
+            boxShadow: "0 2px 24px rgba(0,0,0,0.18)",
+            borderWidth: 1,
+            borderColor: "var(--color3)",
           }}
         >
           <XStack
@@ -91,7 +50,7 @@ export const SetFilterModal = ({
             <Text
               fontSize={22}
               fontWeight="bold"
-              color="rgba(255, 255, 255, 0.95)"
+              color="var(--color)"
               style={{
                 // Mantieni textShadow solo per web se necessario
                 textShadowColor:
@@ -107,23 +66,19 @@ export const SetFilterModal = ({
             <TouchableOpacity
               onPress={onClose}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                backgroundColor: "rgba(255,255,255,0.08)",
                 borderRadius: 20,
                 width: 40,
                 height: 40,
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 1,
-                borderColor: "rgba(255, 255, 255, 0.15)",
-                ...(Platform.OS === "web" && {
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                }),
+                borderColor: "rgba(255,255,255,0.15)",
               }}
             >
               <Text
                 fontSize={18}
-                color="rgba(255, 255, 255, 0.8)"
+                color="var(--color)"
                 style={{
                   fontWeight: "300",
                   // Mantieni textShadow solo per web se necessario
@@ -148,29 +103,19 @@ export const SetFilterModal = ({
                 alignItems: "center",
               }}
             >
-              {/* Applica gli stili glassmorphic centralizzati all'indicatore di caricamento */}
               <YStack
                 style={{
-                  padding: 24, // Mantieni padding specifici
+                  padding: 24,
                   alignItems: "center",
-                  ...loadingGlassStyles, // Applica gli stili glassmorphic di base per il caricamento
-                  // backgroundColor, borderWidth, borderColor, borderRadius, backdropFilter, boxShadow/elevation sono inclusi
+                  background: "var(--color3)",
+                  borderRadius: 16,
                 }}
               >
-                <Spinner size="large" color="rgba(0, 122, 255, 0.8)" />
+                <Spinner size="large" color="var(--accent10)" />
                 <Text
-                  color="rgba(255, 255, 255, 0.7)"
+                  color="var(--color)"
                   fontSize={16}
-                  style={{
-                    marginTop: 16,
-                    // Mantieni textShadow solo per web se necessario
-                    textShadowColor:
-                      Platform.OS === "web"
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "transparent",
-                    textShadowOffset: { width: 0, height: 0 },
-                    textShadowRadius: 8,
-                  }}
+                  style={{ marginTop: 16 }}
                 >
                   Loading sets...
                 </Text>
@@ -184,18 +129,18 @@ export const SetFilterModal = ({
                 alignItems: "center",
               }}
             >
-              {/* Applica gli stili glassmorphic centralizzati per lo stato vuoto (riutilizza loading) */}
               <YStack
                 style={{
-                  padding: 24, // Mantieni padding specifici
+                  padding: 24,
                   alignItems: "center",
-                  ...loadingGlassStyles, // Utilizza gli stessi stili di caricamento per lo stato vuoto per consistenza visiva
+                  background: "var(--color3)",
+                  borderRadius: 16,
                 }}
               >
                 <Text
                   fontSize={20}
                   fontWeight="bold"
-                  color="rgba(255, 255, 255, 0.9)"
+                  color="var(--color)"
                   style={{
                     textAlign: "center",
                     marginBottom: 12,
@@ -212,7 +157,7 @@ export const SetFilterModal = ({
                 </Text>
                 <Text
                   fontSize={14}
-                  color="rgba(255, 255, 255, 0.6)"
+                  color="var(--color2)"
                   style={{ textAlign: "center" }}
                 >
                   Please try again later
@@ -233,24 +178,25 @@ export const SetFilterModal = ({
                     key={set.setId}
                     onPress={() => onSelectSet(set)}
                   >
-                    {/* Applica gli stili glassmorphic centralizzati agli item del set */}
                     <Card
                       style={{
                         flexDirection: "row" as const, // Mantieni direzione layout
                         alignItems: "center" as const, // Mantieni allineamento
                         padding: 16, // Mantieni padding specifici
-                        ...setItemGlassStyles, // Applica gli stili glassmorphic di base per l'item del set
-                        // backgroundColor, borderWidth, borderColor, borderRadius, backdropFilter, boxShadow/elevation sono inclusi
+                        background: "var(--color3)",
+                        borderRadius: 16,
+                        borderWidth: 1,
+                        borderColor: "var(--color4)",
                       }}
                     >
                       <YStack
                         style={{
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
                           borderRadius: 12,
                           padding: 8,
                           marginRight: 16,
                           borderWidth: 1,
-                          borderColor: "rgba(255, 255, 255, 0.1)",
+                          borderColor: "rgba(255,255,255,0.1)",
                         }}
                       >
                         <Image
@@ -265,7 +211,7 @@ export const SetFilterModal = ({
 
                       <YStack style={{ flex: 1 }}>
                         <Text
-                          color="rgba(255, 255, 255, 0.95)"
+                          color="var(--color)"
                           fontSize={16}
                           fontWeight="bold"
                           style={{
@@ -282,13 +228,13 @@ export const SetFilterModal = ({
                           {set.setName}
                         </Text>
                         <Text
-                          color="rgba(255, 255, 255, 0.6)"
+                          color="var(--color2)"
                           fontSize={14}
                           style={{ marginBottom: 2 }}
                         >
                           {set.series}
                         </Text>
-                        <Text color="rgba(255, 255, 255, 0.5)" fontSize={12}>
+                        <Text color="var(--color3)" fontSize={12}>
                           {set.releaseDate}
                         </Text>
                       </YStack>
@@ -296,13 +242,13 @@ export const SetFilterModal = ({
                       {/* Chevron indicator (rimane invariato) */}
                       <YStack
                         style={{
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
+                          backgroundColor: "rgba(255,255,255,0.05)",
                           borderRadius: 8,
                           padding: 6,
                           marginLeft: 8,
                         }}
                       >
-                        <Text color="rgba(255, 255, 255, 0.4)" fontSize={16}>
+                        <Text color="var(--color2)" fontSize={16}>
                           ›
                         </Text>
                       </YStack>

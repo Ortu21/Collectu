@@ -1,19 +1,9 @@
-import React from "react";
+import { Card, ScrollView, Separator, Text, XStack, YStack } from "tamagui";
 import { useRouter } from "expo-router";
+import { useTheme } from "../../hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  YStack,
-  XStack,
-  Text,
-  Button,
-  Card,
-  Image,
-  Theme,
-  Separator,
-  ScrollView,
-} from "tamagui";
 
-// Dati fittizi per le carte più costose (mantenuti per esempio)
+// Dati fittizi per le carte più costose
 const dummyExpensiveCards = [
   {
     id: "1",
@@ -51,328 +41,286 @@ const stats = [
   {
     label: "Ungraded",
     value: 33,
-    icon: "layers-outline" as const,
+    icon: "layers-outline",
     color: "#4CAF50",
   },
   {
     label: "Sealed",
     value: 0,
-    icon: "cube-outline" as const,
+    icon: "cube-outline",
     color: "#00BFFF",
   },
   {
     label: "Graded",
     value: 0,
-    icon: "star-outline" as const,
+    icon: "star-outline",
     color: "#FFD700",
   },
 ];
 
+// StatCard component
+type StatCardProps = {
+  icon: string;
+  value: number;
+  label: string;
+  color: string;
+};
+
+const StatCard = ({ icon, value, label, color }: StatCardProps) => {
+  return (
+    <YStack
+      style={{
+        alignItems: "center",
+        flex: 1,
+        minWidth: 100,
+        maxWidth: 120,
+        width: "100%",
+        borderRadius: 18,
+        background: "var(--color2)",
+        padding: 16,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+      }}
+    >
+      <Ionicons
+        name={icon as any}
+        size={26}
+        color={color}
+        style={{
+          marginBottom: 4,
+          filter: `drop-shadow(0 2px 4px ${color}40)`,
+        }}
+      />
+      <Text
+        fontSize={22}
+        fontWeight="900"
+        style={{
+          color,
+          marginBottom: 2,
+          filter: `drop-shadow(0 1px 4px ${color}40)`,
+        }}
+      >
+        {value}
+      </Text>
+      <Text fontSize={14} style={{ opacity: 0.6 }}>
+        {label}
+      </Text>
+    </YStack>
+  );
+};
+
 const HomeScreen = () => {
   const router = useRouter();
+  const { theme } = useTheme();
 
+  // Valori demo
   const collectionValue = 107.99;
   const paidValue = 174.69;
   const percentageChange = -38.18;
 
-  const glassCardStyle = {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    backdropFilter: "blur(20px)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-    boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
-  };
-
-  const glassStatsCardStyle = {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
-    backdropFilter: "blur(15px)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.15)",
-    boxShadow: "0 4px 16px 0 rgba(0, 0, 0, 0.2)",
-  };
-
-  const glassListCardStyle = {
-    backgroundColor: "rgba(255, 255, 255, 0.06)",
-    backdropFilter: "blur(18px)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.12)",
-    boxShadow: "0 6px 24px 0 rgba(0, 0, 0, 0.25)",
-  };
-
   return (
-    <Theme name="dark">
-      <YStack
-        flex={1}
-        style={{
-          backgroundColor: "#0a0a0f",
-          backgroundImage:
-            "radial-gradient(circle at 25% 25%, #1a1a2e 0%, transparent 70%), radial-gradient(circle at 75% 75%, #16213e 0%, transparent 70%)",
-        }}
-      >
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack
-            style={{
-              paddingHorizontal: 20,
-              paddingTop: 32,
-              paddingBottom: 32,
-              width: "90%",
-              maxWidth: 1200,
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-          >
-            {/* HEADER */}
-            <YStack style={{ alignItems: "center", marginBottom: 32 }}>
-              <Text
-                fontSize={36}
-                fontWeight="900"
-                style={{
-                  textAlign: "center",
-                  letterSpacing: 0.5,
-                  lineHeight: 44,
-                  background:
-                    "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  marginBottom: 8,
-                  filter: "drop-shadow(0 2px 8px rgba(255, 107, 203, 0.3))",
-                }}
-              >
-                Collectu
-              </Text>
-              <Text
-                fontSize={15}
-                color="rgba(255, 255, 255, 0.7)"
-                style={{ textAlign: "center", maxWidth: 400 }}
-              >
-                Statistiche, cards e valori sempre a portata di mano.
-              </Text>
-            </YStack>
-
-            {/* VALORE COLLEZIONE */}
-            <YStack style={{ alignItems: "center", marginBottom: 32 }}>
-              <Card
-                elevate
-                borderRadius={24}
-                padded
-                style={{
-                  ...glassCardStyle,
-                  alignItems: "center",
-                  paddingVertical: 32,
-                  maxWidth: 400,
-                  width: "100%",
-                }}
-              >
-                <Text
-                  fontSize={16}
-                  color="rgba(255, 255, 255, 0.6)"
-                  style={{ marginBottom: 8 }}
-                >
-                  Valore collezione
-                </Text>
-                <Text
-                  fontSize={40}
-                  fontWeight="900"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    marginBottom: 10,
-                    letterSpacing: 0.5,
-                    filter: "drop-shadow(0 2px 8px rgba(255, 168, 0, 0.2))",
-                  }}
-                >
-                  €{collectionValue.toFixed(2)}
-                </Text>
-                <XStack style={{ alignItems: "center", gap: 8 }}>
-                  <Text color="rgba(255, 255, 255, 0.5)" fontSize={16}>
-                    Pagato €{paidValue.toFixed(2)}
-                  </Text>
-                  <Text
-                    color={percentageChange >= 0 ? "#4CAF50" : "#FF3B30"}
-                    fontWeight="700"
-                    fontSize={16}
-                  >
-                    ({percentageChange.toFixed(2)}%)
-                  </Text>
-                </XStack>
-              </Card>
-            </YStack>
-
-            {/* STATISTICHE */}
-            <XStack
+    <YStack style={{ flex: 1, background: "var(--background)" }}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <YStack
+          style={{
+            paddingHorizontal: 20,
+            paddingTop: 32,
+            paddingBottom: 32,
+            width: "90%",
+            maxWidth: 1200,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          {/* HEADER */}
+          <YStack style={{ alignItems: "center", marginBottom: 32 }}>
+            <Text
+              fontSize={36}
+              fontWeight="900"
               style={{
-                justifyContent: "center",
-                gap: 16,
-                marginBottom: 36,
+                textAlign: "center",
+                letterSpacing: 0.5,
+                lineHeight: 44,
+                background:
+                  "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                marginBottom: 8,
+                filter: "drop-shadow(0 2px 8px rgba(255, 107, 203, 0.3))",
               }}
             >
-              {stats.map((stat) => (
-                <Card
-                  key={stat.label}
-                  elevate
-                  borderRadius={18}
-                  padded
-                  style={{
-                    ...glassStatsCardStyle,
-                    alignItems: "center",
-                    flex: 1,
-                    minWidth: 100,
-                    maxWidth: 120,
-                    width: "100%",
-                  }}
-                >
-                  <Ionicons
-                    name={stat.icon}
-                    size={26}
-                    color={stat.color}
-                    style={{
-                      marginBottom: 4,
-                      filter: `drop-shadow(0 2px 4px ${stat.color}40)`,
-                    }}
-                  />
-                  <Text
-                    fontSize={22}
-                    fontWeight="900"
-                    style={{
-                      color: stat.color,
-                      marginBottom: 2,
-                      filter: `drop-shadow(0 1px 4px ${stat.color}40)`,
-                    }}
-                  >
-                    {stat.value}
-                  </Text>
-                  <Text color="rgba(255, 255, 255, 0.6)" fontSize={14}>
-                    {stat.label}
-                  </Text>
-                </Card>
-              ))}
-            </XStack>
+              Collectu
+            </Text>
+            <Text
+              fontSize={15}
+              opacity={0.7}
+              style={{ textAlign: "center", maxWidth: 400 }}
+            >
+              Statistiche, cards e valori sempre a portata di mano.
+            </Text>
+          </YStack>
 
-            {/* SEPARATORE */}
-            <Separator
+          {/* VALORE COLLEZIONE */}
+          <YStack
+            style={{
+              alignItems: "center",
+              marginBottom: 32,
+              borderRadius: 24,
+              background: "var(--color2)",
+              paddingTop: 32,
+              paddingBottom: 32,
+              maxWidth: 400,
+              width: "100%",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+            }}
+          >
+            <Text fontSize={16} opacity={0.6} style={{ marginBottom: 8 }}>
+              Valore collezione
+            </Text>
+            <Text
+              fontSize={40}
+              fontWeight="900"
               style={{
-                marginVertical: 18,
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                background:
+                  "linear-gradient(90deg, #ff6bcb, #ffa800 60%, #4CAF50 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                marginBottom: 10,
+                letterSpacing: 0.5,
+                filter: "drop-shadow(0 2px 8px rgba(255, 168, 0, 0.2))",
               }}
-            />
-
-            {/* TOP 5 */}
-            <YStack style={{ marginTop: 12 }}>
-              <XStack
+            >
+              €{collectionValue.toFixed(2)}
+            </Text>
+            <XStack style={{ alignItems: "center", gap: 8 }}>
+              <Text fontSize={16} opacity={0.5}>
+                Pagato €{paidValue.toFixed(2)}
+              </Text>
+              <Text
+                fontWeight="700"
+                fontSize={16}
                 style={{
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 16,
+                  color:
+                    percentageChange >= 0
+                      ? "var(--green10)"
+                      : "var(--red10)",
                 }}
               >
-                <Text
-                  fontSize={18}
-                  color="rgba(255, 255, 255, 0.9)"
-                  fontWeight="700"
-                >
-                  Top 5 Most Valuable
-                </Text>
-                <Button
-                  size="$2"
-                  chromeless
+                ({percentageChange.toFixed(2)}%)
+              </Text>
+            </XStack>
+          </YStack>
+
+          {/* STATISTICHE */}
+          <XStack
+            style={{
+              justifyContent: "center",
+              gap: 16,
+              marginBottom: 36,
+            }}
+          >
+            {stats.map((stat) => (
+              <StatCard
+                key={stat.label}
+                icon={stat.icon}
+                value={stat.value}
+                label={stat.label}
+                color={stat.color}
+              />
+            ))}
+          </XStack>
+
+          {/* SEPARATORE */}
+          <Separator
+            style={{
+              marginVertical: 18,
+              backgroundColor: "var(--color2)",
+              opacity: 0.1,
+            }}
+          />
+
+          {/* TOP 5 */}
+          <YStack style={{ marginTop: 12 }}>
+            <XStack
+              style={{
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 16,
+              }}
+            >
+              <Text fontSize={18} fontWeight="700" opacity={0.9}>
+                Top 5 Most Valuable
+              </Text>
+            </XStack>
+            <YStack style={{ gap: 16 }}>
+              {dummyExpensiveCards.map((card) => (
+                <YStack
+                  key={card.id}
                   style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.05)",
-                    backdropFilter: "blur(10px)",
+                    padding: 12,
+                    width: "100%",
                     borderRadius: 12,
+                    background: "var(--color2)",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                   }}
+                  hoverStyle={{ background: "var(--color3)" }}
+                  pressStyle={{ background: "var(--color4)" }}
+                  onPress={() => router.push(`/card/${card.id}`)}
                 >
-                  <Ionicons
-                    name="ellipsis-horizontal"
-                    size={22}
-                    color="rgba(255, 255, 255, 0.7)"
-                  />
-                </Button>
-              </XStack>
-              <YStack style={{ gap: 16 }}>
-                {dummyExpensiveCards.map((card) => (
-                  <Card
-                    key={card.id}
-                    borderRadius={14}
-                    elevate
-                    pressStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      transform: "scale(0.98)",
-                    }}
-                    hoverStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.08)",
-                    }}
-                    style={{
-                      ...glassListCardStyle,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 0,
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      minHeight: 110,
-                    }}
-                    onPress={() => router.push(`/card/${card.id}`)}
-                  >
-                    <YStack
+                  <XStack style={{ alignItems: "center", gap: 12 }}>
+                    <Card
+                      elevate
+                      size="$4"
+                      bordered
                       style={{
-                        width: 86,
-                        height: 116,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: "rgba(255, 255, 255, 0.05)",
-                        borderRadius: 12,
-                        marginRight: 20,
-                        borderWidth: 1,
-                        borderColor: "rgba(255, 255, 255, 0.1)",
-                        boxShadow: "0 4px 16px 0 rgba(0, 0, 0, 0.3)",
+                        width: 60,
+                        height: 84,
+                        borderRadius: 6,
+                        overflow: "hidden",
+                        backgroundColor: "rgba(255,255,255,0.1)",
                       }}
                     >
-                      <Image
-                        source={{ uri: card.smallImageUrl }}
-                        style={{
-                          width: 80,
-                          height: 110,
-                          borderRadius: 8,
-                          backgroundColor: "rgba(255, 255, 255, 0.02)",
-                        }}
-                        resizeMode="cover"
-                      />
-                    </YStack>
-                    <YStack style={{ flex: 1, justifyContent: "center" }}>
+                      {card.smallImageUrl && (
+                        <img
+                          src={card.smallImageUrl}
+                          alt={card.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      )}
+                    </Card>
+                    <YStack style={{ flex: 1 }}>
                       <Text
-                        color="rgba(255, 255, 255, 0.95)"
-                        fontSize={18}
-                        fontWeight="700"
-                        style={{ marginBottom: 2 }}
+                        numberOfLines={1}
+                        fontSize={16}
+                        fontWeight="600"
+                        style={{ marginBottom: 4 }}
                       >
                         {card.name}
                       </Text>
                       <Text
-                        color="#4CAF50"
-                        fontSize={17}
-                        fontWeight="700"
+                        fontSize={18}
+                        fontWeight="800"
                         style={{
-                          filter:
-                            "drop-shadow(0 1px 4px rgba(76, 175, 80, 0.3))",
+                          background:
+                            "linear-gradient(90deg, #ff6bcb 0%, #ffa800 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
                         }}
                       >
                         €{card.price.toFixed(2)}
                       </Text>
                     </YStack>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={22}
-                      color="rgba(255, 255, 255, 0.4)"
-                    />
-                  </Card>
-                ))}
-              </YStack>
+                  </XStack>
+                </YStack>
+              ))}
             </YStack>
           </YStack>
-        </ScrollView>
-      </YStack>
-    </Theme>
+        </YStack>
+      </ScrollView>
+    </YStack>
   );
 };
 
