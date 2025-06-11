@@ -21,5 +21,6 @@
   },
   "yaml.schemas": {
     "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
-  }
+  },
+  "nandorojo-tamagui.configPath": "S:/Progetti/Collectu/CollectuAppV2/.tamagui/tamagui.config.json"
 }

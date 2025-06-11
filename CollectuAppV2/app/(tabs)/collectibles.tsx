@@ -5,27 +5,27 @@ import { useRouter } from "expo-router";
 import {
   YStack,
   Theme,
-  useTheme // Import useTheme to access theme variables
+  useTheme
 } from "tamagui";
-import { useAuth } from "../../hooks/useAuth"; // Adjusted path
-import { PokemonCard } from "../../types/pokemon"; // Adjusted path
-import { usePokemonCards } from "../../hooks/usePokemonCards"; // Adjusted path
-import { usePokemonSets } from "../../hooks/usePokemonSets"; // Adjusted path
-import { CardList } from "../../components/collectibles/CardList"; // Adjusted path
-import { SearchFilterBar } from "../../components/collectibles/SearchFilterBar"; // Adjusted path
-import { SetFilterModal } from "../../components/collectibles/SetFilterModal"; // Adjusted path
+import { useAuth } from "../../hooks/useAuth";
+import { PokemonCard } from "../../types/pokemon";
+import { usePokemonCards } from "../../hooks/usePokemonCards";
+import { usePokemonSets } from "../../hooks/usePokemonSets";
+import { CardList } from "../../components/collectibles/CardList";
+import { SearchFilterBar } from "../../components/collectibles/SearchFilterBar";
+import { SetFilterModal } from "../../components/collectibles/SetFilterModal";
 
 const CollectiblesScreen = () => {
   const { user } = useAuth();
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const theme = useTheme(); // Get theme object
+  const theme = useTheme();
 
-  // Determine number of columns based on screen width
   const getNumColumns = () => {
-    if (width >= 1200) return 5;
-    if (width >= 900) return 4;
-    if (width >= 600) return 3;
+    if (width >= 2000) return 6;
+    if (width >= 1700) return 5;
+    if (width >= 1200) return 4;
+    if (width >= 900) return 3;
     return 2;
   };
 
@@ -59,7 +59,6 @@ const CollectiblesScreen = () => {
   });
 
   const handleCardPress = (card: PokemonCard) => {
-    // Assuming you have a route like /card/[id].tsx or similar in CollectuAppV2
     router.push(`/card/${card.id}`);
   };
 
@@ -67,24 +66,21 @@ const CollectiblesScreen = () => {
     <Theme name="dark">
       <YStack 
         flex={1} 
-        // Use theme variable for background, keep gradient for now
-        backgroundColor={theme.background?.val || "#0a0a0f"} 
+        backgroundColor="$background"
         style={{
-          // The complex gradient might be better as a custom component or a specific theme token if used often
-          background: "linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%)", 
+          background: "linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%)"
         }}
       >
-        {/* Decorative background with blur - kept as inline style for now */}
         <YStack
           fullscreen
           opacity={0.3}
-          zIndex={-1} // Ensure it's behind content
+          zIndex={-1}
           style={{
-            background: "radial-gradient(circle at 20% 30%, rgba(255, 107, 203, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.15) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(255, 168, 0, 0.1) 0%, transparent 60%)",
+            background: "radial-gradient(circle at 20% 30%, rgba(255, 107, 203, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.15) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(255, 168, 0, 0.1) 0%, transparent 60%)"
           }}
         />
         
-        <StatusBar style="light" /> {/* Changed to light for dark theme based on common practice */}
+        <StatusBar style="light" />
         
         <SearchFilterBar
           searchQuery={searchQuery}

@@ -1,6 +1,6 @@
 import React from "react";
-import { TextInput, TouchableOpacity } from "react-native"; // Removed Platform as it wasn't used
-import { YStack, XStack, Text, Image } from "tamagui";
+import { TouchableOpacity } from "react-native"; // Removed Platform as it wasn't used
+import { YStack, XStack, Text, Image, Input } from "tamagui";
 import { PokemonSet } from "../../types/pokemon"; // Adjust path if necessary
 
 interface SearchFilterBarProps {
@@ -25,16 +25,10 @@ export const SearchFilterBar = ({
   return (
     <YStack backgroundColor="$background" padding={16} borderRadius={12}>
       <XStack alignItems="center" marginBottom={10}>
-        <TextInput
+        <Input
           style={{
             flex: 1,
             padding: 12,
-            fontSize: 16,
-            color: "$color1", // Tamagui color token
-            backgroundColor: "$backgroundStrong", // Tamagui color token
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: "$borderColor", // Tamagui color token
           }}
           placeholder="Search cards..."
           placeholderTextColor="$color6" // Tamagui color token
@@ -44,19 +38,7 @@ export const SearchFilterBar = ({
       </XStack>
 
       <XStack alignItems="center" justifyContent="space-between" gap={10}>
-        <TouchableOpacity
-          style={{
-            padding: 12,
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 80,
-            backgroundColor: "$backgroundStrong", // Tamagui color token
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: "$borderColor", // Tamagui color token
-          }}
-          onPress={onFilterPress}
-        >
+        <TouchableOpacity onPress={onFilterPress}>
           <Text
             color="$color1" // Tamagui color token
             fontSize={16}
@@ -66,7 +48,12 @@ export const SearchFilterBar = ({
           </Text>
         </TouchableOpacity>
 
-        <YStack height={30} justifyContent="center" alignItems="center" marginTop={5}>
+        <YStack
+          height={30}
+          justifyContent="center"
+          alignItems="center"
+          marginTop={5}
+        >
           {totalCount > 0 && !isLoading && (
             <Text
               color="$color7" // Tamagui color token
@@ -75,7 +62,7 @@ export const SearchFilterBar = ({
               textAlign="center"
               opacity={0.9}
             >
-              Found {totalCount} card{totalCount !== 1 ? 's' : ''}
+              Found {totalCount} card{totalCount !== 1 ? "s" : ""}
             </Text>
           )}
         </YStack>
@@ -118,8 +105,8 @@ export const SearchFilterBar = ({
           <TouchableOpacity
             style={{
               padding: 8,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               backgroundColor: "$background", // Tamagui color token
               borderRadius: 8,
               borderWidth: 1,

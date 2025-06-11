@@ -13,7 +13,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/');
+      router.replace('/(tabs)/collectibles');
     }
   }, [user, loading, router]);
 

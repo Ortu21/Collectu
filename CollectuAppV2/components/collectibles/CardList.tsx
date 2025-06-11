@@ -7,7 +7,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { YStack, XStack, Text, Card, Spinner } from "tamagui";
-import { PokemonCard } from "../../types/pokemon"; // Adjust path if necessary
+import { PokemonCard } from "../../types/pokemon";
 import { CardItem } from "./CardItem";
 import { Skeleton } from "./Skeleton";
 
@@ -51,19 +51,13 @@ export const CardList = ({
     const itemDelay = index * 50;
     const isSkeletonItem = typeof item === "number";
     return (
-      <TouchableOpacity
+      <YStack
         key={isSkeletonItem ? `skeleton-${index}` : (item as PokemonCard).id}
-        style={{
-          flex: 1,
-          backgroundColor: "$backgroundPress", // Example: Using a theme variable
-          borderRadius: 12,
-          padding: 16,
-          // elevation: 3, // Consider using Tamagui's shadow props if needed
-          width: cardDimensions.width,
-          marginBottom: itemSpacing,
-        }}
-        onPress={isSkeletonItem ? undefined : () => onCardPress(item as PokemonCard)}
-        disabled={isSkeletonItem}
+        width={cardDimensions.width}
+        marginBottom={itemSpacing}
+        borderRadius={12}
+        padding="$2"
+        backgroundColor="transparent"
       >
         {isSkeletonItem ? (
           <Animated.View style={{ opacity: 1 }}>
@@ -72,7 +66,7 @@ export const CardList = ({
         ) : (
           <CardItem card={item as PokemonCard} onPress={onCardPress} cardDimensions={cardDimensions} animationDelay={itemDelay} />
         )}
-      </TouchableOpacity>
+      </YStack>
     );
   };
 
@@ -85,8 +79,8 @@ export const CardList = ({
   const ListFooterComponent = () => (
     <XStack justifyContent="center" alignItems="center" padding={16}>
       {!isLoading && isLoadingMore && (
-        <YStack padding={12} flexDirection="row" alignItems="center" gap={8} backgroundColor="$backgroundFocus" borderRadius={12}>
-          <Spinner size="small" color="$accentColor10" />
+        <YStack padding={12} flexDirection="row" alignItems="center" gap={8} backgroundColor="$background" borderRadius={12}>
+          <Spinner size="small" color="$color" />
           <Text color="$color" fontSize={14}>Loading more cards...</Text>
         </YStack>
       )}
@@ -101,12 +95,23 @@ export const CardList = ({
   if (error) {
     return (
       <YStack flex={1} justifyContent="center" alignItems="center" padding={20}>
-        <Card alignItems="center" padding={24} maxWidth={320} width="100%" backgroundColor="$backgroundStrong" borderRadius={12}>
+        <Card alignItems="center" padding={24} maxWidth={320} width="100%" backgroundColor="$background" borderRadius={12}>
           <Text fontSize={18} color="$red10" fontWeight="bold" textAlign="center" marginBottom={8}>⚠️ Error</Text>
           <Text fontSize={14} color="$color" textAlign="center" marginBottom={16} lineHeight={20}>{error}</Text>
-          <TouchableOpacity style={{ backgroundColor: "$red10", borderRadius: 8, padding: 12, alignItems: "center", width: 120 }} onPress={onRefresh}>
-            <Text color="$colorInverse" fontSize={16} fontWeight="bold">Retry</Text>
-          </TouchableOpacity>
+          <Card
+            backgroundColor="$red10"
+            borderRadius={8}
+            padding={0}
+            alignItems="center"
+            width={120}
+            pressStyle={{ opacity: 0.8 }}
+            onPress={onRefresh}
+            asChild
+          >
+            <TouchableOpacity style={{ width: '100%', padding: 12, alignItems: 'center', borderRadius: 8 }}>
+              <Text color="$color" fontSize={16} fontWeight="bold">Retry</Text>
+            </TouchableOpacity>
+          </Card>
         </Card>
       </YStack>
     );
@@ -115,10 +120,10 @@ export const CardList = ({
   if (!isLoading && cards.length === 0) {
     return (
       <YStack flex={1} justifyContent="center" alignItems="center" padding={20}>
-        <Card alignItems="center" padding={32} maxWidth={320} width="100%" backgroundColor="$backgroundStrong" borderRadius={12}>
+        <Card alignItems="center" padding={32} maxWidth={320} width="100%" backgroundColor="$background" borderRadius={12}>
           <Text fontSize={48} marginBottom={16} opacity={0.6}>📦</Text>
           <Text fontSize={18} color="$color" fontWeight="bold" textAlign="center" marginBottom={8}>No cards found</Text>
-          <Text fontSize={14} color="$colorFocus" textAlign="center" lineHeight={20}>Try adjusting your search or filters</Text>
+          <Text fontSize={14} color="$color" textAlign="center" lineHeight={20}>Try adjusting your search or filters</Text>
         </Card>
       </YStack>
     );

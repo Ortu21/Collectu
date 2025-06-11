@@ -1,4 +1,4 @@
-import React, { useEffect, memo, useRef } from "react";
+import React, { useEffect, memo } from "react";
 import { Platform } from "react-native";
 import Animated, {
   useSharedValue,
@@ -6,8 +6,8 @@ import Animated, {
   withTiming,
   withSpring,
 } from "react-native-reanimated";
-import { YStack, XStack, Text, Image } from "tamagui";
-import { PokemonCard } from "../../types/pokemon"; // Adjust path if necessary
+import { Card, YStack, XStack, Text, Image, H6 } from "tamagui";
+import { PokemonCard } from "../../types/pokemon";
 
 interface CardItemProps {
   card: PokemonCard;
@@ -24,12 +24,10 @@ export const CardItem = memo(
     const opacity = useSharedValue(0);
     const scale = useSharedValue(0.95);
 
-    const animatedStyles = useAnimatedStyle(() => {
-      return {
-        opacity: opacity.value,
-        transform: [{ scale: scale.value }],
-      };
-    });
+    const animatedStyles = useAnimatedStyle(() => ({
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    }));
 
     useEffect(() => {
       setTimeout(() => {
@@ -38,108 +36,63 @@ export const CardItem = memo(
       }, animationDelay);
     }, [animationDelay]);
 
-    const cardIdRef = useRef(card.id);
-
-    useEffect(() => {
-      if (cardIdRef.current !== card.id) {
-        cardIdRef.current = card.id;
-      }
-    }, [card.id]);
-
-    const AnimatedContainer =
+    const imageHeight = cardDimensions ? cardDimensions.height * 0.8 : 240;
+    const AnimatedCard =
       Platform.OS === "web"
-        ? Animated.createAnimatedComponent(YStack)
-        : Animated.View;
-
-    const imageHeight = cardDimensions ? cardDimensions.height * 0.6 : 180;
+        ? Animated.createAnimatedComponent(Card)
+        : Animated.createAnimatedComponent(Card);
 
     return (
-      <AnimatedContainer style={animatedStyles} flex={1}>
-        <YStack
-          backgroundColor="$background"
+      <AnimatedCard
+        elevate
+        bordered
+        animation="bouncy"
+        scale={0.9}
+        hoverStyle={{ scale: 1.05 }}
+        pressStyle={{ scale: 1 }}
+        style={animatedStyles}
+        onPress={() => onPress(card)}
+      >
+        <Card.Header
+          padding={"$2"}
           borderRadius={12}
-          padding={16}
-          width="100%"
-          height={imageHeight}
-          position="relative"
-          overflow="hidden"
+          marginBottom="$2"
+          marginTop={"$2"}
         >
           <Image
             source={{ uri: card.smallImageUrl || card.largeImageUrl }}
             style={{
               width: "100%",
               height: imageHeight,
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderRadius: 8,
             }}
             resizeMode="contain"
           />
-        </YStack>
+        </Card.Header>
 
-        <YStack
-          backgroundColor="$background"
-          padding={12}
-          borderRadius={12}
-          overflow="hidden"
-          marginTop={8} // Added some margin for separation
-        >
-          <Text
-            fontSize={16}
-            fontWeight="bold"
-            color="$color.gray12"
-            marginBottom={4}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {card.name}
-          </Text>
+        <Card.Footer padding={"$2"}>
+          <YStack gap="$2" padding={"$2"} width="100%">
+            <H6 fontWeight="bold">{card.name}</H6>
 
-          <Text
-            fontSize={12}
-            color="$accentColor9" // Example: Using accent color for rarity
-            marginBottom={4}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {card.rarity || "Common"}
-          </Text>
+            <Text>{card.rarity || "Common"}</Text>
 
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Text
-              fontSize={12}
-              color="$color.gray10"
-              flex={1}
-              numberOfLines={1}
-              ellipsizeMode="tail"
+            <XStack
+              justifyContent="space-between"
+              alignItems="center"
+              width="100%"
             >
-              {card.setName || "Unknown Set"}
-            </Text>
-
-            <YStack
-              backgroundColor="$backgroundTransparent"
-              borderRadius={6}
-              paddingHorizontal={6}
-              paddingVertical={2}
-              marginLeft={8}
-            >
-              <Text
-                fontSize={11}
-                color="$color.gray11"
-                fontWeight="500"
+              <Text>{card.setName || "Unknown Set"}</Text>
+              <Card
+                bordered
+                paddingHorizontal="$2"
+                paddingVertical="$1"
+                marginLeft="$2"
               >
-                #{card.number || "?"}
-              </Text>
-            </YStack>
-          </XStack>
-        </YStack>
-      </AnimatedContainer>
+                <Text style={{ color: "$" }}>#{card.number || "?"}</Text>
+              </Card>
+            </XStack>
+          </YStack>
+        </Card.Footer>
+      </AnimatedCard>
     );
   },
   (prevProps, nextProps) => {
