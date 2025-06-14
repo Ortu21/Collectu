@@ -5,7 +5,4 @@ import { createTamagui } from 'tamagui'
 export const config = createTamagui({
   ...defaultConfig,
   themes,
-  defaultTheme: 'dark',
-  shouldAddPrefersColorThemes: true,
-  themeClassNameOnRoot: true,
 })

@@ -4,7 +4,6 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import {
   YStack,
-  Theme,
   useTheme
 } from "tamagui";
 import { useAuth } from "../../hooks/useAuth";
@@ -63,56 +62,54 @@ const CollectiblesScreen = () => {
   };
 
   return (
-    <Theme name="dark">
-      <YStack 
-        flex={1} 
-        backgroundColor="$background"
+    <YStack 
+      flex={1} 
+      backgroundColor="$background"
+      style={{
+        background: "linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%)"
+      }}
+    >
+      <YStack
+        fullscreen
+        opacity={0.3}
+        zIndex={-1}
         style={{
-          background: "linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%)"
+          background: "radial-gradient(circle at 20% 30%, rgba(255, 107, 203, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.15) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(255, 168, 0, 0.1) 0%, transparent 60%)"
         }}
-      >
-        <YStack
-          fullscreen
-          opacity={0.3}
-          zIndex={-1}
-          style={{
-            background: "radial-gradient(circle at 20% 30%, rgba(255, 107, 203, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.15) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(255, 168, 0, 0.1) 0%, transparent 60%)"
-          }}
-        />
-        
-        <StatusBar style="light" />
-        
-        <SearchFilterBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onFilterPress={() => setIsSetModalVisible(true)}
-          selectedSet={selectedSet}
-          onClearFilter={clearSetFilter}
-          totalCount={totalCount}
-          isLoading={isLoading}
-        />
-        
-        <SetFilterModal
-          isVisible={isSetModalVisible}
-          onClose={() => setIsSetModalVisible(false)}
-          sets={sets}
-          isLoading={isLoadingSets}
-          onSelectSet={handleSetSelect}
-        />
-        
-        <CardList
-          cards={cards}
-          isLoading={isLoading}
-          isLoadingMore={isLoadingMore}
-          error={error}
-          totalCount={totalCount}
-          onRefresh={handleRefresh}
-          onLoadMore={handleLoadMore}
-          onCardPress={handleCardPress}
-          numColumns={numColumns}
-        />
-      </YStack>
-    </Theme>
+      />
+      
+      <StatusBar style="light" />
+      
+      <SearchFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onFilterPress={() => setIsSetModalVisible(true)}
+        selectedSet={selectedSet}
+        onClearFilter={clearSetFilter}
+        totalCount={totalCount}
+        isLoading={isLoading}
+      />
+      
+      <SetFilterModal
+        isVisible={isSetModalVisible}
+        onClose={() => setIsSetModalVisible(false)}
+        sets={sets}
+        isLoading={isLoadingSets}
+        onSelectSet={handleSetSelect}
+      />
+      
+      <CardList
+        cards={cards}
+        isLoading={isLoading}
+        isLoadingMore={isLoadingMore}
+        error={error}
+        totalCount={totalCount}
+        onRefresh={handleRefresh}
+        onLoadMore={handleLoadMore}
+        onCardPress={handleCardPress}
+        numColumns={numColumns}
+      />
+    </YStack>
   );
 };
 

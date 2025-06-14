@@ -104,9 +104,5 @@ const builtThemes = createThemes({
 
 export type Themes = typeof builtThemes
 
-// the process.env conditional here is optional but saves web client-side bundle
-// size by leaving out themes JS. tamagui automatically hydrates themes from CSS
-// back into JS for you, and the bundler plugins set TAMAGUI_ENVIRONMENT. so
-// long as you are using the Vite, Next, Webpack plugins this should just work,
-// but if not you can just export builtThemes directly as themes:
-export const themes: Themes = builtThemes
+// Using a memoized export to prevent unnecessary re-computations
+export const themes: Themes = Object.freeze(builtThemes)

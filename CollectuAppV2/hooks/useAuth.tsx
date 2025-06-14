@@ -13,6 +13,7 @@ interface UseAuthReturn {
   login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
   logout: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
+  clearError: () => void;
 }
 
 const REMEMBER_ME_KEY = '@rememberMe';
@@ -41,6 +42,13 @@ const useFirebaseAuth = (): UseAuthReturn => {
     return () => unsubscribe();
   }, []);
 
+  const extractAuthError = (err: any, fallback: string) => {
+    if (err?.code && typeof err.code === 'string' && err.code.startsWith('auth/')) return err.code;
+    // Se già presente un errore auth/ non sovrascrivere con fallback
+    if (error && error.startsWith('auth/')) return error;
+    return fallback;
+  };
+
   const register = async (email: string, password: string, userName: string) => {
     try {
       setLoading(true);
@@ -57,8 +65,9 @@ const useFirebaseAuth = (): UseAuthReturn => {
         creationTime: new Date(userCredential.user.metadata.creationTime || ''),
         lastSignInTime: new Date(userCredential.user.metadata.lastSignInTime || '')
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Si è verificato un errore durante la registrazione');
+    } catch (err: any) {
+      // Solo se non c'è già un errore auth/ setta l'errore
+      setError(prev => (prev && prev.startsWith('auth/')) ? prev : extractAuthError(err, 'auth/internal-error'));
       throw err;
     } finally {
       setLoading(false);
@@ -77,8 +86,8 @@ const useFirebaseAuth = (): UseAuthReturn => {
       } catch (e) {
         // ignore
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Si è verificato un errore durante il login');
+    } catch (err: any) {
+      setError(prev => (prev && prev.startsWith('auth/')) ? prev : extractAuthError(err, 'auth/internal-error'));
       throw err;
     } finally {
       setLoading(false);
@@ -95,8 +104,8 @@ const useFirebaseAuth = (): UseAuthReturn => {
       } catch (e) {
         // ignore
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Si è verificato un errore durante il logout');
+    } catch (err: any) {
+      setError(extractAuthError(err, 'auth/internal-error'));
       throw err;
     } finally {
       setLoading(false);
@@ -108,13 +117,15 @@ const useFirebaseAuth = (): UseAuthReturn => {
       setLoading(true);
       setError(null);
       await sendPasswordResetEmail(auth, email);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Si è verificato un errore durante l\'invio dell\'email di reset');
+    } catch (err: any) {
+      setError(extractAuthError(err, 'auth/internal-error'));
       throw err;
     } finally {
       setLoading(false);
     }
   };
+
+  const clearError = () => setError(null);
 
   return {
     loading,
@@ -124,7 +135,8 @@ const useFirebaseAuth = (): UseAuthReturn => {
     register,
     login,
     logout,
-    sendPasswordReset
+    sendPasswordReset,
+    clearError
   };
 };
 
