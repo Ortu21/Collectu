@@ -3,14 +3,23 @@ import { TouchableOpacity } from "react-native";
 import { YStack, XStack, Text, Image, Input, useTheme } from "tamagui";
 import { PokemonSet } from "../../types/pokemon";
 
-// Utility per estrarre sempre una stringa colore
-function getColor(token: any, fallback?: string) {
-  if (!token) return fallback || undefined;
-  if (typeof token === "string") return token;
-  if (typeof token === "object" && typeof token.val === "string")
-    return token.val;
-  return fallback || undefined;
-}
+// Utility per estrarre sempre una stringa colore dal token Tamagui
+const getColor = (token: any) =>
+  typeof token === "string" ? token : token?.val;
+
+const useSearchBarTheme = (theme: any) => ({
+  bg: getColor(theme.background),
+  chipBg: getColor(theme.green8),
+  chipBgHover: getColor(theme.green10),
+  border: getColor(theme.borderColor),
+  color: getColor(theme.color),
+  color1: getColor(theme.color1),
+  color6: getColor(theme.color6),
+  color7: getColor(theme.color7),
+  color10: getColor(theme.color10),
+  focus: getColor(theme.colorFocus),
+  accent: getColor(theme.accent10),
+});
 
 interface SearchFilterBarProps {
   searchQuery: string;
@@ -31,24 +40,15 @@ export const SearchFilterBar = ({
   totalCount,
   isLoading,
 }: SearchFilterBarProps) => {
-  const theme = useTheme();
-  const bg = getColor(theme.background, "#fff");
-  const strongBg = getColor(theme.backgroundStrong, "#f5f5f5");
-  const border = getColor(theme.borderColor, "#e0e0e0");
-  const color = getColor(theme.color, "#222");
-  const color1 = getColor(theme.color1, "#111");
-  const color6 = getColor(theme.color6, "#888");
-  const color7 = getColor(theme.color7, "#666");
-  const focus = getColor(theme.colorFocus, "#555");
-  const accent = getColor(theme.accent10, "#6c47ff");
+  const theme = useSearchBarTheme(useTheme());
 
   return (
-    <YStack backgroundColor={bg} padding={16} borderRadius={12}>
+    <YStack backgroundColor={theme.bg} padding={16} borderRadius={12}>
       <XStack alignItems="center" marginBottom={10}>
         <Input
           style={{ flex: 1, padding: 12 }}
           placeholder="Search cards..."
-          placeholderTextColor={color6}
+          placeholderTextColor={theme.color6}
           value={searchQuery}
           onChangeText={onSearchChange}
         />
@@ -56,7 +56,7 @@ export const SearchFilterBar = ({
 
       <XStack alignItems="center" justifyContent="space-between" gap={10}>
         <TouchableOpacity onPress={onFilterPress}>
-          <Text color={accent} fontSize={16} fontWeight="bold">
+          <Text color={theme.accent} fontSize={16} fontWeight="bold">
             Set
           </Text>
         </TouchableOpacity>
@@ -69,7 +69,7 @@ export const SearchFilterBar = ({
         >
           {totalCount > 0 && !isLoading && (
             <Text
-              color={color7}
+              color={theme.color7}
               fontSize={13}
               fontWeight="500"
               textAlign="center"
@@ -82,51 +82,67 @@ export const SearchFilterBar = ({
       </XStack>
 
       {selectedSet && (
-        <XStack
-          marginTop={12}
-          padding={12}
-          alignItems="center"
-          justifyContent="space-between"
-          backgroundColor={strongBg}
-          borderRadius={12}
-          borderWidth={1}
-          borderColor={border}
-        >
-          <XStack alignItems="center" flex={1}>
+        <XStack marginTop={12} alignItems="center">
+          <XStack
+            paddingVertical={2}
+            paddingHorizontal={4}
+            alignItems="center"
+            backgroundColor={theme.chipBg}
+            borderRadius={20}
+            borderWidth={2}
+            borderColor="transparent"
+            gap={4}
+            minHeight={44}
+            maxWidth={140}
+            width={140}
+            overflow="hidden"
+            hoverStyle={{
+              backgroundColor: theme.chipBgHover,
+              borderColor: theme.accent,
+              shadowColor: theme.accent,
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 2 },
+            }}
+          >
             <Image
               source={{ uri: selectedSet.logoUrl }}
               style={{
-                width: 40,
-                height: 40,
-                marginRight: 12,
-                borderRadius: 8,
-                backgroundColor: bg,
-                borderWidth: 1,
-                borderColor: border,
+                flex: 1,
+                height: 38,
+                aspectRatio: 2.4,
+                borderRadius: 10,
+                alignSelf: "center",
+                marginLeft: 6,
+                marginRight: 6,
               }}
               resizeMode="contain"
             />
-            <Text color={color1} fontSize={14} fontWeight="bold">
-              {selectedSet.setName}
-            </Text>
+            <TouchableOpacity
+              style={{
+                marginLeft: 0,
+                padding: 0,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 10,
+                height: 28,
+                width: 28,
+                minWidth: 24,
+                minHeight: 24,
+              }}
+              onPress={onClearFilter}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text
+                color={theme.color}
+                fontSize={18}
+                fontWeight="500"
+                style={{ lineHeight: 20 }}
+              >
+                ✕
+              </Text>
+            </TouchableOpacity>
           </XStack>
-
-          <TouchableOpacity
-            style={{
-              padding: 8,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: bg,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: border,
-            }}
-            onPress={onClearFilter}
-          >
-            <Text color={color7} fontSize={12} fontWeight="500">
-              Clear
-            </Text>
-          </TouchableOpacity>
         </XStack>
       )}
     </YStack>

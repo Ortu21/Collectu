@@ -46,21 +46,24 @@ const SetCard = ({ set, onSelect, theme, selected }: { set: PokemonSet; onSelect
     borderWidth={1}
     borderColor={selected ? theme.accent : theme.cardBorder}
     paddingHorizontal={28}
-    paddingVertical={18}
     minWidth={0}
     flexDirection="row"
     alignItems="center"
     elevate
     shadowColor={selected ? theme.cardShadowHover : theme.cardShadow}
     shadowRadius={selected ? 20 : 10}
-    style={{ width: '100%', minHeight: 100, marginBottom: 36, cursor: 'pointer', transition: 'box-shadow 0.18s, background 0.18s, border 0.18s', boxSizing: 'border-box', overflow: 'hidden' }}
+    animation="quick"
     hoverStyle={{
       backgroundColor: selected ? theme.accent : theme.cardHoverBg,
       borderColor: selected ? theme.accent : theme.cardHoverBorder,
       shadowColor: theme.cardShadowHover,
-      shadowRadius: 20,
+      shadowRadius: 28,
+      y: -6,
+      scale: 1.02,
+      animation: 'bouncy',
     }}
-    pressStyle={{}}
+    pressStyle={{ scale: 1, y: 0}}
+    style={{ width: '100%', minHeight: 100, marginBottom: 8, cursor: 'pointer', boxSizing: 'border-box', overflow: 'hidden', transition: 'box-shadow 0.18s, background 0.18s, border 0.18s' }}
     onPress={() => onSelect(set)}
   >
     <YStack
@@ -70,7 +73,7 @@ const SetCard = ({ set, onSelect, theme, selected }: { set: PokemonSet; onSelect
       justifyContent="center"
       style={{ minWidth: 70, minHeight: 70, marginRight: 18 }}
     >
-      <Image source={{ uri: set.logoUrl }} style={{ width: 56, height: 56 }} resizeMode="contain" />
+      <Image source={{ uri: set.logoUrl }} style={{ width: 150, height: 150 }} resizeMode="contain" />
     </YStack>
     <YStack flex={1} justifyContent="center" alignItems="flex-start" paddingVertical={4}>
       <Text fontSize={18} fontWeight="700" color={selected ? '#fff' : theme.cardText} marginBottom={4} numberOfLines={1} ellipsizeMode="tail">
@@ -97,7 +100,7 @@ export const SetFilterModal = ({ isVisible, onClose, sets, isLoading, onSelectSe
     numColumns = 2;
     maxModalWidth = 900;
   }
-  const gridPadding = isWeb ? 36 : 0;
+  const gridPadding = isWeb ? 8 : 0;
 
   return (
     <Modal visible={isVisible} transparent animationType="slide" onRequestClose={onClose}>
@@ -151,7 +154,7 @@ export const SetFilterModal = ({ isVisible, onClose, sets, isLoading, onSelectSe
               </YStack>
             </YStack>
           ) : (
-            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{paddingLeft: gridPadding, paddingRight: gridPadding}}>
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{paddingLeft: gridPadding, paddingRight: gridPadding, marginTop: 2}}>
               {isWeb && numColumns > 1 ? (
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
                   {sets.map((set) => (

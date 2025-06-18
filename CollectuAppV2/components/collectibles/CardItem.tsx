@@ -70,16 +70,18 @@ export const CardItem = memo(
       <AnimatedCard
         elevate
         bordered
-        animation="bouncy"
+        animation="quick"
         scale={0.97}
         hoverStyle={{
           scale: 1.04,
+          y: -6,
           shadowColor: hoverShadow,
           shadowRadius: 18,
           borderColor: hoverBorder,
           backgroundColor: hoverBg,
+          animation: 'bouncy',
         }}
-        pressStyle={{ scale: 0.98 }}
+        pressStyle={{ scale: 0.98, y: 0 }}
         style={[
           animatedStyles,
           {
