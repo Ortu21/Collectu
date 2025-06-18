@@ -7,7 +7,15 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { useTheme } from 'tamagui'; // Import useTheme
+import { useTheme } from 'tamagui';
+
+// Utility per estrarre sempre una stringa colore
+function getColor(token: any, fallback?: string) {
+  if (!token) return fallback || undefined;
+  if (typeof token === 'string') return token;
+  if (typeof token === 'object' && typeof token.val === 'string') return token.val;
+  return fallback || undefined;
+}
 
 interface SkeletonProps {
   width?: number | string;
@@ -31,10 +39,16 @@ export const Skeleton = ({
   variant = 'text',
   cardDimensions,
 }: SkeletonProps) => {
-  const theme = useTheme(); // Get current theme
+  const theme = useTheme();
   const shimmerPosition = useSharedValue(-400);
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.95);
+
+  // Colori dinamici
+  const bg = getColor(theme.background, '#fff');
+  const strongBg = getColor(theme.backgroundStrong, '#f5f5f5');
+  const focusBg = getColor(theme.backgroundFocus, '#ececec');
+  const hoverBg = getColor(theme.backgroundHover, '#e0e0e0');
 
   const shimmerAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -56,12 +70,12 @@ export const Skeleton = ({
   useEffect(() => {
     setTimeout(() => {
       shimmerPosition.value = withRepeat(
-        withTiming(400 + (typeof width === 'number' ? width : 200), { // Adjust shimmer travel based on width
-          duration: 1500, // Slightly faster shimmer
+        withTiming(400 + (typeof width === 'number' ? width : 200), {
+          duration: 1500,
           easing: Easing.bezier(0.4, 0.0, 0.2, 1),
         }),
         -1,
-        false // No yoyo
+        false
       );
 
       opacity.value = withTiming(1, { duration: 300 });
@@ -70,27 +84,25 @@ export const Skeleton = ({
         easing: Easing.out(Easing.cubic),
       });
     }, animationDelay);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [animationDelay, width]); // Added width to dependencies
+  }, [animationDelay, width]);
 
-  // Define styles inside the component to access theme
   const styles = StyleSheet.create({
     cardContainer: {
       flex: 1,
     },
     cardImageContainer: {
       width: "100%",
-      height: cardDimensions ? cardDimensions.height * 0.6 : 180, // Use passed height or default
+      height: cardDimensions ? cardDimensions.height * 0.6 : 180,
       position: "relative",
       overflow: "hidden",
       borderTopLeftRadius: 10,
       borderTopRightRadius: 10,
-      backgroundColor: theme.backgroundStrong?.val, // Use theme variable
+      backgroundColor: strongBg,
     },
     cardImage: {
       width: "100%",
       height: "100%",
-      backgroundColor: theme.backgroundFocus?.val, // Use theme variable
+      backgroundColor: focusBg,
       overflow: "hidden",
       position: "absolute",
       top: 0,
@@ -100,14 +112,14 @@ export const Skeleton = ({
     },
     cardInfo: {
       padding: 10,
-      backgroundColor: theme.background?.val, // Use theme variable
+      backgroundColor: bg,
       borderBottomLeftRadius: 10,
       borderBottomRightRadius: 10,
     },
     cardName: {
       width: '70%',
       height: 20,
-      backgroundColor: theme.backgroundFocus?.val, // Use theme variable
+      backgroundColor: focusBg,
       borderRadius: 4,
       marginBottom: 6,
       overflow: "hidden",
@@ -115,7 +127,7 @@ export const Skeleton = ({
     cardRarity: {
       width: '50%',
       height: 15,
-      backgroundColor: theme.backgroundFocus?.val, // Use theme variable
+      backgroundColor: focusBg,
       borderRadius: 4,
       marginBottom: 8,
       overflow: "hidden",
@@ -127,29 +139,29 @@ export const Skeleton = ({
     cardSet: {
       width: '60%',
       height: 15,
-      backgroundColor: theme.backgroundFocus?.val, // Use theme variable
+      backgroundColor: focusBg,
       borderRadius: 4,
       overflow: "hidden",
     },
     cardNumber: {
       width: '30%',
       height: 15,
-      backgroundColor: theme.backgroundFocus?.val, // Use theme variable
+      backgroundColor: focusBg,
       borderRadius: 4,
       overflow: "hidden",
     },
     shimmer: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: theme.backgroundHover?.val, // Shimmer color from theme
-      opacity: 0.3, // Shimmer opacity
+      backgroundColor: hoverBg,
+      opacity: 0.3,
     },
     baseContainer: {
-      backgroundColor: theme.backgroundFocus?.val, // Use theme variable
+      backgroundColor: focusBg,
       overflow: "hidden",
       position: 'relative',
     },
     imageContainer: {
-      backgroundColor: theme.backgroundFocus?.val, // Use theme variable
+      backgroundColor: focusBg,
       overflow: "hidden",
       position: 'relative',
     }
@@ -188,9 +200,9 @@ export const Skeleton = ({
           <View style={[
             styles.imageContainer,
             { width, height },
-            cardDimensions ? { 
-              width: cardDimensions.width, 
-              height: cardDimensions.height * 0.6 
+            cardDimensions ? {
+              width: cardDimensions.width,
+              height: cardDimensions.height * 0.6
             } : null,
             style
           ]}>
@@ -211,7 +223,7 @@ export const Skeleton = ({
             <Animated.View style={[styles.shimmer, shimmerAnimatedStyle]} />
           </View>
         );
-      default: // text
+      default:
         return (
           <View style={[
             styles.baseContainer,
@@ -225,7 +237,7 @@ export const Skeleton = ({
   };
 
   return (
-    <Animated.View style={[containerAnimatedStyle, style]}> {/* Added style prop here */}
+    <Animated.View style={[containerAnimatedStyle, style]}>
       {getSkeletonContent()}
     </Animated.View>
   );

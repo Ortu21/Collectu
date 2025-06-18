@@ -1,8 +1,8 @@
 import { createThemes, defaultComponentThemes } from '@tamagui/theme-builder'
 import * as Colors from '@tamagui/colors'
 
-const darkPalette = ['hsla(315, 15%, 1%, 1)','hsla(315, 15%, 6%, 1)','hsla(315, 15%, 12%, 1)','hsla(315, 15%, 17%, 1)','hsla(315, 15%, 23%, 1)','hsla(315, 15%, 28%, 1)','hsla(315, 15%, 34%, 1)','hsla(315, 15%, 39%, 1)','hsla(315, 15%, 45%, 1)','hsla(315, 15%, 50%, 1)','hsla(0, 15%, 93%, 1)','hsla(0, 15%, 99%, 1)']
-const lightPalette = ['hsla(315, 15%, 81%, 1)','hsla(315, 15%, 78%, 1)','hsla(315, 15%, 74%, 1)','hsla(315, 15%, 71%, 1)','hsla(315, 15%, 67%, 1)','hsla(315, 15%, 64%, 1)','hsla(315, 15%, 60%, 1)','hsla(315, 15%, 57%, 1)','hsla(315, 15%, 53%, 1)','hsla(315, 15%, 50%, 1)','hsla(0, 15%, 15%, 1)','hsla(0, 15%, 1%, 1)']
+const darkPalette = ['hsla(299, 16%, 1%, 1)','hsla(299, 16%, 6%, 1)','hsla(299, 16%, 12%, 1)','hsla(299, 16%, 17%, 1)','hsla(299, 16%, 23%, 1)','hsla(299, 16%, 28%, 1)','hsla(299, 16%, 34%, 1)','hsla(299, 16%, 39%, 1)','hsla(299, 16%, 45%, 1)','hsla(299, 16%, 50%, 1)','hsla(0, 15%, 93%, 1)','hsla(0, 15%, 99%, 1)']
+const lightPalette = ['hsla(299, 16%, 85%, 1)','hsla(299, 16%, 81%, 1)','hsla(299, 16%, 77%, 1)','hsla(299, 16%, 73%, 1)','hsla(299, 16%, 69%, 1)','hsla(299, 16%, 66%, 1)','hsla(299, 16%, 62%, 1)','hsla(299, 16%, 58%, 1)','hsla(299, 16%, 54%, 1)','hsla(299, 16%, 50%, 1)','hsla(0, 15%, 15%, 1)','hsla(0, 15%, 1%, 1)']
 
 const lightShadows = {
   shadow1: 'rgba(0,0,0,0.04)',
@@ -104,5 +104,13 @@ const builtThemes = createThemes({
 
 export type Themes = typeof builtThemes
 
-// Using a memoized export to prevent unnecessary re-computations
-export const themes: Themes = Object.freeze(builtThemes)
+// the process.env conditional here is optional but saves web client-side bundle
+// size by leaving out themes JS. tamagui automatically hydrates themes from CSS
+// back into JS for you, and the bundler plugins set TAMAGUI_ENVIRONMENT. so
+// long as you are using the Vite, Next, Webpack plugins this should just work,
+// but if not you can just export builtThemes directly as themes:
+export const themes: Themes =
+  process.env.TAMAGUI_ENVIRONMENT === 'client' &&
+  process.env.NODE_ENV === 'production'
+    ? ({} as any)
+    : (builtThemes as any)

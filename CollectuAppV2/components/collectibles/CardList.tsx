@@ -6,7 +6,7 @@ import {
   Animated,
   ViewStyle,
 } from "react-native";
-import { YStack, XStack, Text, Card, Spinner } from "tamagui";
+import { YStack, XStack, Text, Card, Spinner, useTheme } from "tamagui";
 import { PokemonCard } from "../../types/pokemon";
 import { CardItem } from "./CardItem";
 import { Skeleton } from "./Skeleton";
@@ -35,14 +35,14 @@ export const CardList = ({
   numColumns = 2,
 }: CardListProps) => {
   const { width } = useWindowDimensions();
-  const itemSpacing = 8;
+  const theme = useTheme();
+  const itemSpacing = 32; // spacing aumentato per più aria tra le card
 
   const getCardDimensions = () => {
-    const containerHorizontalPadding = 8;
-    const availableWidth = width - containerHorizontalPadding * 2;
-    const totalSpaceBetweenColumns = itemSpacing * (numColumns - 1);
-    const cardWidth = (availableWidth - totalSpaceBetweenColumns) / numColumns;
-    const cardHeight = cardWidth * 1.4;
+    // Calculate available width considering padding and gaps
+    const availableWidth = width - (numColumns + 1) * itemSpacing;
+    const cardWidth = availableWidth / numColumns;
+    const cardHeight = cardWidth * 1.4; // Maintain aspect ratio
     return { width: cardWidth, height: cardHeight };
   };
   const cardDimensions = getCardDimensions();
@@ -56,15 +56,20 @@ export const CardList = ({
         width={cardDimensions.width}
         marginBottom={itemSpacing}
         borderRadius={12}
-        padding="$2"
-        backgroundColor="transparent"
+        backgroundColor={theme.$backgroundTransparent?.val}
       >
         {isSkeletonItem ? (
           <Animated.View style={{ opacity: 1 }}>
             <Skeleton variant="card" cardDimensions={cardDimensions} animationDelay={itemDelay} />
           </Animated.View>
         ) : (
-          <CardItem card={item as PokemonCard} onPress={onCardPress} cardDimensions={cardDimensions} animationDelay={itemDelay} />
+          <CardItem 
+            card={item as PokemonCard} 
+            onPress={onCardPress} 
+            cardDimensions={cardDimensions} 
+            animationDelay={itemDelay}
+            theme={theme}
+          />
         )}
       </YStack>
     );
@@ -79,27 +84,23 @@ export const CardList = ({
   const ListFooterComponent = () => (
     <XStack justifyContent="center" alignItems="center" padding={16}>
       {!isLoading && isLoadingMore && (
-        <YStack padding={12} flexDirection="row" alignItems="center" gap={8} backgroundColor="$background" borderRadius={12}>
-          <Spinner size="small" color="$color" />
-          <Text color="$color" fontSize={14}>Loading more cards...</Text>
+        <YStack padding={12} flexDirection="row" alignItems="center" gap={8} backgroundColor={theme.background?.val} borderRadius={12}>
+          <Spinner size="small" color={theme.color?.val} />
+          <Text color={theme.color?.val} fontSize={14}>Loading more cards...</Text>
         </YStack>
       )}
     </XStack>
   );
-
-  const columnWrapperStyle: ViewStyle = {
-    justifyContent: "space-between",
-    gap: itemSpacing,
-  };
+  
 
   if (error) {
     return (
       <YStack flex={1} justifyContent="center" alignItems="center" padding={20}>
-        <Card alignItems="center" padding={24} maxWidth={320} width="100%" backgroundColor="$background" borderRadius={12}>
-          <Text fontSize={18} color="$red10" fontWeight="bold" textAlign="center" marginBottom={8}>⚠️ Error</Text>
-          <Text fontSize={14} color="$color" textAlign="center" marginBottom={16} lineHeight={20}>{error}</Text>
+        <Card alignItems="center" padding={24} maxWidth={320} width="100%" backgroundColor={theme.background?.val} borderRadius={12}>
+          <Text fontSize={18} color={theme.red10?.val} fontWeight="bold" textAlign="center" marginBottom={8}>⚠️ Error</Text>
+          <Text fontSize={14} color={theme.color?.val} textAlign="center" marginBottom={16} lineHeight={20}>{error}</Text>
           <Card
-            backgroundColor="$red10"
+            backgroundColor={theme.red10?.val}
             borderRadius={8}
             padding={0}
             alignItems="center"
@@ -109,7 +110,7 @@ export const CardList = ({
             asChild
           >
             <TouchableOpacity style={{ width: '100%', padding: 12, alignItems: 'center', borderRadius: 8 }}>
-              <Text color="$color" fontSize={16} fontWeight="bold">Retry</Text>
+              <Text color={theme.color?.val} fontSize={16} fontWeight="bold">Retry</Text>
             </TouchableOpacity>
           </Card>
         </Card>
@@ -120,10 +121,10 @@ export const CardList = ({
   if (!isLoading && cards.length === 0) {
     return (
       <YStack flex={1} justifyContent="center" alignItems="center" padding={20}>
-        <Card alignItems="center" padding={32} maxWidth={320} width="100%" backgroundColor="$background" borderRadius={12}>
+        <Card alignItems="center" padding={32} maxWidth={320} width="100%" backgroundColor={theme.background?.val} borderRadius={12}>
           <Text fontSize={48} marginBottom={16} opacity={0.6}>📦</Text>
-          <Text fontSize={18} color="$color" fontWeight="bold" textAlign="center" marginBottom={8}>No cards found</Text>
-          <Text fontSize={14} color="$color" textAlign="center" lineHeight={20}>Try adjusting your search or filters</Text>
+          <Text fontSize={18} color={theme.color?.val} fontWeight="bold" textAlign="center" marginBottom={8}>No cards found</Text>
+          <Text fontSize={14} color={theme.color?.val} textAlign="center" lineHeight={20}>Try adjusting your search or filters</Text>
         </Card>
       </YStack>
     );
@@ -139,8 +140,13 @@ export const CardList = ({
         key={`list-${numColumns}`}
         renderItem={renderItem}
         keyExtractor={(item, index) => isLoading ? `skeleton-${index}` : `${(item as PokemonCard).id}-${index}`}
-        contentContainerStyle={{ padding: itemSpacing }}
-        columnWrapperStyle={columnWrapperStyle}
+        contentContainerStyle={{ paddingVertical: itemSpacing, paddingHorizontal: itemSpacing }}
+        columnWrapperStyle={{
+          paddingHorizontal: 0, // padding già su contentContainerStyle
+          justifyContent: "space-between",
+          gap: itemSpacing,
+          alignItems: "flex-start",
+        }}
         onRefresh={onRefresh}
         refreshing={isLoading}
         onEndReached={onLoadMore}
@@ -152,6 +158,7 @@ export const CardList = ({
         updateCellsBatchingPeriod={50}
         initialNumToRender={numColumns * 3}
         windowSize={numColumns * 5}
+        showsVerticalScrollIndicator={false}
       />
     </YStack>
   );
